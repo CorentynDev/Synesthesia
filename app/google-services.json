@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "505127396288",
+    "project_id": "synesthesia-2",
+    "storage_bucket": "synesthesia-2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:505127396288:android:65155a4fb7aa9cae901e25",
+        "android_client_info": {
+          "package_name": "com.example.synesthesia"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWYRf4wUFbgaGqpW0tisjmezuzmOiGoUU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

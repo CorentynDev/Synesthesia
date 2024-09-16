@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Synesthesia</string>
+    <string name="recommendation_title">${recommendation.title}</string>
+    <string name="recommendation_date">${recommendation.date}</string>
+    <string name="recommendation_cover">Recommendation cover</string>
+</resources>
