@@ -100,25 +100,28 @@ app:layout_constraintEnd_toEndOf="parent">
 </ScrollView>
 
     <!-- Footer (Menu de navigation) -->
-<LinearLayout
-android:id="@+id/footer"
-android:layout_width="0dp"
-android:layout_height="wrap_content"
-android:orientation="horizontal"
-android:padding="16dp"
-android:background="@color/gray_dark"
-app:layout_constraintBottom_toBottomOf="parent"
-app:layout_constraintStart_toStartOf="parent"
-app:layout_constraintEnd_toEndOf="parent"
-app:layout_constraintHeight_percent="0.1"> <!-- 10% de la hauteur de l'écran -->
+    <LinearLayout
+        android:id="@+id/footer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/gray_dark"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.1">
 
-<TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Menu"
-    android:textColor="@color/white"
-    android:textSize="16sp" />
+        <!-- Menu de création -->
+        <Button
+            android:id="@+id/createRecommendationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create"
+            android:textColor="@color/white" />
 
-</LinearLayout>
+        <!-- Autres éléments du menu (si existants) -->
+    </LinearLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
