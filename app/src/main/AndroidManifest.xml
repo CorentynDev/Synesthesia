@@ -30,8 +30,8 @@
         <!-- MainActivity -->
         <activity android:name=".MainActivity" android:exported="true" />
 
-        <!-- CreateRecommendationActivity (permet de créer des recommandations) -->
-        <activity android:name=".CreateRecommendationActivity" />
+        <!-- BookDetailsActivity -->
+        <activity android:name=".BookDetailsActivity" />
 
         <!-- SearchBookActivity -->
         <activity android:name=".SearchBookActivity" />

@@ -1,10 +1,41 @@
 package com.example.synesthesia.models;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
 import java.util.List;
 
-public class Book implements Serializable {
+public class Book implements Parcelable {
     private VolumeInfo volumeInfo;
+
+    public Book(VolumeInfo volumeInfo) {
+        this.volumeInfo = volumeInfo;
+    }
+
+    protected Book(Parcel in) {
+        volumeInfo = in.readParcelable(VolumeInfo.class.getClassLoader());
+    }
+
+    public static final Creator<Book> CREATOR = new Creator<Book>() {
+        @Override
+        public Book createFromParcel(Parcel in) {
+            return new Book(in);
+        }
+
+        @Override
+        public Book[] newArray(int size) {
+            return new Book[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeParcelable(volumeInfo, i);
+    }
 
     public VolumeInfo getVolumeInfo() {
         return volumeInfo;
@@ -14,14 +45,49 @@ public class Book implements Serializable {
         this.volumeInfo = volumeInfo;
     }
 
-    public static class VolumeInfo {
+    // Classe VolumeInfo
+    public static class VolumeInfo implements Parcelable {
         private String title;
         private List<String> authors;
         private String publishedDate;
-        private String description;
         private ImageLinks imageLinks;
+        private String description;  // Ajouté pour la description du livre
 
-        // Getters and setters pour les champs
+        protected VolumeInfo(Parcel in) {
+            title = in.readString();
+            authors = in.createStringArrayList();
+            publishedDate = in.readString();
+            imageLinks = in.readParcelable(ImageLinks.class.getClassLoader());
+            description = in.readString();  // Ajouté pour lire la description
+        }
+
+        public static final Creator<VolumeInfo> CREATOR = new Creator<VolumeInfo>() {
+            @Override
+            public VolumeInfo createFromParcel(Parcel in) {
+                return new VolumeInfo(in);
+            }
+
+            @Override
+            public VolumeInfo[] newArray(int size) {
+                return new VolumeInfo[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(title);
+            parcel.writeStringList(authors);
+            parcel.writeString(publishedDate);
+            parcel.writeParcelable(imageLinks, i);
+            parcel.writeString(description);  // Ajouté pour écrire la description
+        }
+
+        // Getters et Setters
         public String getTitle() {
             return title;
         }
@@ -46,14 +112,6 @@ public class Book implements Serializable {
             this.publishedDate = publishedDate;
         }
 
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
-        }
-
         public ImageLinks getImageLinks() {
             return imageLinks;
         }
@@ -61,11 +119,47 @@ public class Book implements Serializable {
         public void setImageLinks(ImageLinks imageLinks) {
             this.imageLinks = imageLinks;
         }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
     }
 
-    public static class ImageLinks {
+    // Classe ImageLinks
+    public static class ImageLinks implements Parcelable {
         private String thumbnail;
 
+        protected ImageLinks(Parcel in) {
+            thumbnail = in.readString();
+        }
+
+        public static final Creator<ImageLinks> CREATOR = new Creator<ImageLinks>() {
+            @Override
+            public ImageLinks createFromParcel(Parcel in) {
+                return new ImageLinks(in);
+            }
+
+            @Override
+            public ImageLinks[] newArray(int size) {
+                return new ImageLinks[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(thumbnail);
+        }
+
+        // Getters et Setters
         public String getThumbnail() {
             return thumbnail;
         }

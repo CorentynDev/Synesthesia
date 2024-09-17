@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,7 +30,7 @@ public class BookRecommendationDialog extends DialogFragment {
     public static BookRecommendationDialog newInstance(Book book) {
         BookRecommendationDialog dialog = new BookRecommendationDialog();
         Bundle args = new Bundle();
-        args.putSerializable("book", book);
+        args.putParcelable("book", book);  // Utiliser putParcelable() ici
         dialog.setArguments(args);
         return dialog;
     }
@@ -37,38 +38,31 @@ public class BookRecommendationDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_book_recommendation, container, false);
+        View view = inflater.inflate(R.layout.item_search_result, container, false);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        book = (Book) getArguments().getSerializable("book");
+        // Récupérer l'objet Book depuis les arguments
+        book = getArguments().getParcelable("book");  // Utiliser getParcelable() ici
 
-        TextView titleTextView = view.findViewById(R.id.bookTitleTextView);
-        TextView authorTextView = view.findViewById(R.id.bookAuthorTextView);
-        TextView publishedDateTextView = view.findViewById(R.id.bookPublishedDateTextView);
-        ImageView bookImageView = view.findViewById(R.id.bookImageView);
-        EditText commentEditText = view.findViewById(R.id.commentEditText);
-        Button recommendButton = view.findViewById(R.id.recommendButton);
-        Button cancelButton = view.findViewById(R.id.cancelButton);
+        // Initialiser les éléments de la vue
+        TextView titleTextView = view.findViewById(R.id.bookTitle);
+        TextView authorTextView = view.findViewById(R.id.bookAuthor);
+        TextView publishedDateTextView = view.findViewById(R.id.bookDate);
+        ImageView bookImageView = view.findViewById(R.id.bookThumbnail);
 
-        titleTextView.setText(book.getVolumeInfo().getTitle());
-        authorTextView.setText(book.getVolumeInfo().getAuthors() != null
-                ? book.getVolumeInfo().getAuthors().get(0) : "Inconnu");
-        publishedDateTextView.setText(book.getVolumeInfo().getPublishedDate());
-        if (book.getVolumeInfo().getImageLinks() != null) {
-            Glide.with(requireContext())
-                    .load(book.getVolumeInfo().getImageLinks().getThumbnail())
-                    .into(bookImageView);
+        // Remplir les données du livre
+        if (book != null) {
+            titleTextView.setText(book.getVolumeInfo().getTitle());
+            authorTextView.setText(book.getVolumeInfo().getAuthors() != null ? book.getVolumeInfo().getAuthors().get(0) : "Inconnu");
+            publishedDateTextView.setText(book.getVolumeInfo().getPublishedDate());
+            if (book.getVolumeInfo().getImageLinks() != null) {
+                Glide.with(requireContext())
+                        .load(book.getVolumeInfo().getImageLinks().getThumbnail())
+                        .into(bookImageView);
+            }
         }
-
-        recommendButton.setOnClickListener(v -> {
-            String comment = commentEditText.getText().toString();
-            submitRecommendation(book, comment);
-            dismiss();
-        });
-
-        cancelButton.setOnClickListener(v -> dismiss());
 
         return view;
     }
@@ -89,12 +83,11 @@ public class BookRecommendationDialog extends DialogFragment {
         db.collection("recommendations")
                 .add(recommendation)
                 .addOnSuccessListener(documentReference -> {
-                    // Optionnel : gérer le succès de l'ajout
-                    // Par exemple, afficher un message de succès ou mettre à jour l'interface utilisateur
+                    Toast.makeText(getContext(), "Recommandation créée", Toast.LENGTH_SHORT).show();
+                    dismiss(); // Ferme la fenêtre modale après la création
                 })
                 .addOnFailureListener(e -> {
-                    // Optionnel : gérer l'échec de l'ajout
-                    // Par exemple, afficher un message d'erreur
+                    Toast.makeText(getContext(), "Erreur lors de la création de la recommandation", Toast.LENGTH_SHORT).show();
                 });
     }
 }

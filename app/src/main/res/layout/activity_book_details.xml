@@ -1,51 +1,65 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Retour en arrière -->
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Retour"
+        android:layout_gravity="start"
+        android:onClick="onBackPressed" />
+
+    <!-- Image du livre -->
     <ImageView
-        android:id="@+id/bookImageView"
+        android:id="@+id/bookImage"
         android:layout_width="150dp"
         android:layout_height="200dp"
         android:layout_gravity="center"
         android:contentDescription="Image du livre" />
 
+    <!-- Informations sur le livre -->
     <TextView
-        android:id="@+id/bookTitleTextView"
-        android:layout_width="match_parent"
+        android:id="@+id/bookTitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Titre du livre"
         android:textStyle="bold"
-        android:textSize="18sp"
-        android:gravity="center"
-        android:paddingTop="8dp" />
-
-    <TextView
-        android:id="@+id/bookAuthorTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Auteur"
-        android:gravity="center"
-        android:paddingTop="4dp" />
-
-    <TextView
-        android:id="@+id/bookPublishedDateTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Date de publication"
-        android:gravity="center"
-        android:paddingTop="4dp" />
-
-    <!-- Ajout d'un champ pour que l'utilisateur entre une note ou un commentaire -->
-    <EditText
-        android:id="@+id/commentEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Ajoutez une note ou un commentaire"
+        android:textSize="20sp"
         android:layout_marginTop="16dp" />
 
-    <!-- Boutons pour sauvegarder ou annuler -->
+    <TextView
+        android:id="@+id/bookAuthor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Auteur"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/bookPublishedDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Date de publication"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/bookDescription"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:textSize="14sp"
+        android:layout_marginTop="16dp" />
+
+    <!-- Champ pour entrer un commentaire et les boutons Sauvegarder/Annuler -->
+    <EditText
+        android:id="@+id/commentField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Ajoutez une note ou un commentaire" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -66,4 +80,5 @@
             android:layout_height="wrap_content"
             android:text="Annuler" />
     </LinearLayout>
+
 </LinearLayout>

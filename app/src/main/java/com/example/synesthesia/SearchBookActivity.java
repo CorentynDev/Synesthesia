@@ -65,7 +65,7 @@ public class SearchBookActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     List<Book> books = response.body().getItems();
                     // Initialisation de l'Adapter pour afficher les résultats
-                    booksAdapter = new BooksAdapter(books, book -> openBookDetails(book)); // Méthode à ajouter
+                    booksAdapter = new BooksAdapter(books, SearchBookActivity.this);
                     booksRecyclerView.setAdapter(booksAdapter);
                 }
             }
@@ -79,8 +79,8 @@ public class SearchBookActivity extends AppCompatActivity {
 
     // Méthode pour ouvrir une modale ou une autre activité avec les détails du livre sélectionné
     private void openBookDetails(Book book) {
-        // Ouvrir une modale avec les détails du livre (à implémenter à l'étape suivante)
         BookRecommendationDialog dialog = BookRecommendationDialog.newInstance(book);
         dialog.show(getSupportFragmentManager(), "BookRecommendationDialog");
     }
+
 }
