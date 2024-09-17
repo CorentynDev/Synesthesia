@@ -8,12 +8,9 @@ public class Recommendation {
     private String coverUrl;
     private String userId;
 
-    // Constructeur sans argument (obligatoire pour Firestore)
     public Recommendation() {
-        // Constructeur par défaut requis pour Firestore
     }
 
-    // Constructeur avec arguments
     public Recommendation(String id, String title, String date, String coverUrl, String userId) {
         this.id = id;
         this.title = title;
@@ -22,7 +19,6 @@ public class Recommendation {
         this.userId = userId;
     }
 
-    // Getters et Setters
     public String getId() {
         return id;
     }
