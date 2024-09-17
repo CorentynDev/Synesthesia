@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +12,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -26,6 +29,21 @@ public class MainActivity extends AppCompatActivity {
 
         // Lire les données
         getRecommendationData();
+
+        // Appelle la méthode pour récupérer les infos de l'utilisateur
+        getUserProfile();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            // Redirection vers LoginActivity si l'utilisateur n'est pas connecté
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
     }
 
     // Obtenir les données depuis Firestore
@@ -47,6 +65,33 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("FirestoreData", "Recommendation: " + recommendationTitle + ", publication date: " + recommendationDate + ", cover: " + recommendationCover);
             }
         }).addOnFailureListener(e -> Log.e("FirestoreData", "Error when fetching documents: ", e));
+    }
+
+    // Méthode pour récupérer et afficher le pseudonyme de l'utilisateur
+    private void getUserProfile() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        // Référence à la TextView pour le pseudonyme
+        TextView profileSummary = findViewById(R.id.profileSummary);
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+
+            // Rechercher les informations de l'utilisateur dans Firestore
+            db.collection("users").document(userId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            // Récupérer le pseudonyme de l'utilisateur
+                            String username = documentSnapshot.getString("username");
+
+                            // Afficher le pseudonyme dans la TextView
+                            profileSummary.setText("Welcome, " + username + "!");
+                        } else {
+                            Log.d("UserProfile", "No such document");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("UserProfile", "Error fetching user data", e);
+                    });
+        }
     }
 
     // Méthode pour créer et ajouter dynamiquement une carte
