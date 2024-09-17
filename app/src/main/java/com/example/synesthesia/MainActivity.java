@@ -102,9 +102,6 @@ public class MainActivity extends AppCompatActivity {
         TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
         titleTextView.setText(recommendation.getTitle());
 
-        //TextView authorTextView = cardView.findViewById(R.id.recommendationAuthor);
-        //authorTextView.setText(recommendation.getAuthor());
-
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
         dateTextView.setText(recommendation.getDate());
 
