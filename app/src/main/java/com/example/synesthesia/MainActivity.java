@@ -342,11 +342,14 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("Firestore", "Error updating comment count", e));
     }
 
-    // Méthode pour récupérer et afficher le pseudonyme de l'utilisateur
+    // Méthode pour récupérer les informations de l'utilisateur
     private void getUserProfile() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        // Référence à l'ImageView pour la photo de profil
+        ImageView profileImageView = findViewById(R.id.profileImageView);
         // Référence à la TextView pour le pseudonyme
         TextView profileSummary = findViewById(R.id.profileSummary);
+
         if (currentUser != null) {
             String userId = currentUser.getUid();
 
@@ -354,11 +357,23 @@ public class MainActivity extends AppCompatActivity {
             db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            // Récupérer le pseudonyme de l'utilisateur
+                            // Récupérer l'URL de la photo de profil et le pseudonyme
+                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
                             String username = documentSnapshot.getString("username");
 
                             // Afficher le pseudonyme dans la TextView
-                            profileSummary.setText("Welcome, " + username + "!");
+                            if (username != null && !username.isEmpty()) {
+                                profileSummary.setText("Welcome, " + username + "!");
+                            }
+
+                            // Afficher la photo de profil dans l'ImageView
+                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                                // Utiliser Glide ou Picasso pour charger l'image
+                                Glide.with(this)
+                                        .load(profileImageUrl)
+                                        .placeholder(R.drawable.placeholder_image) // Image à afficher pendant le chargement
+                                        .into(profileImageView);
+                            }
                         } else {
                             Log.d("UserProfile", "No such document");
                         }
