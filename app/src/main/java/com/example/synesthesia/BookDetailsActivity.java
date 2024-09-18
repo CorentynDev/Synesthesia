@@ -1,8 +1,6 @@
 package com.example.synesthesia;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -58,31 +56,44 @@ public class BookDetailsActivity extends AppCompatActivity {
 
         submitButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
-            if (!comment.isEmpty()) {
-                submitRecommendation(book, comment);
-            } else {
-                Toast.makeText(BookDetailsActivity.this, "Please enter a comment", Toast.LENGTH_SHORT).show();
-            }
+
+            // Permettre la soumission de la recommandation même sans commentaire
+            submitRecommendation(book, comment.isEmpty() ? "" : comment);
         });
     }
 
     private void submitRecommendation(Book book, String comment) {
         String userId = mAuth.getCurrentUser().getUid();
 
-        Recommendation recommendation = new Recommendation(
-                book.getVolumeInfo().getTitle(),
-                book.getVolumeInfo().getAuthors() != null ? book.getVolumeInfo().getAuthors().get(0) : "Inconnu",
-                book.getVolumeInfo().getPublishedDate(),
-                comment,
-                userId
-        );
+        // Récupérer le pseudo de l'utilisateur à partir de Firestore
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String username = documentSnapshot.getString("username");
 
-        db.collection("recommendations")
-                .add(recommendation)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(BookDetailsActivity.this, "Recommendation saved", Toast.LENGTH_SHORT).show();
-                    finish(); // Close the activity after saving
+                        // Créer un objet Recommendation avec les informations nécessaires
+                        Recommendation recommendation = new Recommendation(
+                                null,  // ID sera généré automatiquement par Firestore
+                                book.getVolumeInfo().getTitle(),
+                                book.getVolumeInfo().getPublishedDate(),
+                                book.getVolumeInfo().getImageLinks() != null ? book.getVolumeInfo().getImageLinks().getThumbnail() : null,
+                                userId,
+                                username,
+                                comment
+                        );
+
+                        // Ajouter la recommandation à Firestore
+                        db.collection("recommendations")
+                                .add(recommendation)
+                                .addOnSuccessListener(documentReference -> {
+                                    Toast.makeText(BookDetailsActivity.this, "Recommendation saved", Toast.LENGTH_SHORT).show();
+                                    finish(); // Ferme l'activité après l'enregistrement
+                                })
+                                .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error saving recommendation", Toast.LENGTH_SHORT).show());
+                    } else {
+                        Toast.makeText(BookDetailsActivity.this, "User not found", Toast.LENGTH_SHORT).show();
+                    }
                 })
-                .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error saving recommendation", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error fetching user data", Toast.LENGTH_SHORT).show());
     }
 }

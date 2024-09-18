@@ -66,28 +66,4 @@ public class BookRecommendationDialog extends DialogFragment {
 
         return view;
     }
-
-    private void submitRecommendation(Book book, String comment) {
-        String userId = mAuth.getCurrentUser().getUid();
-
-        // Créer un objet de recommandation avec les détails
-        Recommendation recommendation = new Recommendation(
-                book.getVolumeInfo().getTitle(),
-                book.getVolumeInfo().getAuthors() != null ? book.getVolumeInfo().getAuthors().get(0) : "Inconnu",
-                book.getVolumeInfo().getPublishedDate(),
-                comment,
-                userId
-        );
-
-        // Ajouter la recommandation à Firestore
-        db.collection("recommendations")
-                .add(recommendation)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(getContext(), "Recommandation créée", Toast.LENGTH_SHORT).show();
-                    dismiss(); // Ferme la fenêtre modale après la création
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Erreur lors de la création de la recommandation", Toast.LENGTH_SHORT).show();
-                });
-    }
 }
