@@ -5,11 +5,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.synesthesia.models.Recommendation;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,6 +29,39 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = FirebaseFirestore.getInstance();
+
+        Button createRecommendationButton = findViewById(R.id.createRecommendationButton);
+        createRecommendationButton.setOnClickListener(v -> {
+            // Création de la fenêtre modale avec les options de types de recommandation
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle("Choisissez un type de recommandation");
+
+            // Options de type de recommandation
+            String[] types = {"Musique", "Film", "Jeux Vidéo", "Livre"};
+
+            // Gestion du clic sur l'une des options
+            builder.setItems(types, (dialog, which) -> {
+                switch (which) {
+                    case 0: // Musique
+                        // Lancer une activité pour la création de recommandation musicale (si implémentée plus tard)
+                        break;
+                    case 1: // Film
+                        // Lancer une activité pour la création de recommandation de films (si implémentée plus tard)
+                        break;
+                    case 2: // Jeux Vidéo
+                        // Lancer une activité pour la création de recommandation de jeux vidéo (si implémentée plus tard)
+                        break;
+                    case 3: // Livre
+                        // Lancer l'Activity pour la recherche de livres
+                        Intent intent = new Intent(MainActivity.this, SearchBookActivity.class);
+                        startActivity(intent);
+                        break;
+                }
+            });
+            // Afficher la fenêtre modale
+            builder.create().show();
+        });
+
 
         // Lire les données
         getRecommendationData();
@@ -46,25 +82,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Obtenir les données depuis Firestore
     public void getRecommendationData() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
-            // Référence au conteneur de cartes
             LinearLayout recommendationList = findViewById(R.id.recommendationList);
-            recommendationList.removeAllViews();  // Efface les vues précédentes si nécessaire
+            recommendationList.removeAllViews();
 
-            // Pour chaque document, créer une carte
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                String recommendationTitle = document.getString("title");
-                String recommendationDate = document.getString("date");
-                String recommendationCover = document.getString("cover");
-
-                // Créer une nouvelle carte pour chaque recommandation
-                addRecommendationCard(recommendationList, recommendationTitle, recommendationDate, recommendationCover);
-
-                Log.d("FirestoreData", "Recommendation: " + recommendationTitle + ", publication date: " + recommendationDate + ", cover: " + recommendationCover);
+                Recommendation recommendation = document.toObject(Recommendation.class);
+                addRecommendationCard(recommendationList, recommendation);
             }
         }).addOnFailureListener(e -> Log.e("FirestoreData", "Error when fetching documents: ", e));
+    }
+
+    public void addRecommendationCard(LinearLayout container, Recommendation recommendation) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
+
+        TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
+        titleTextView.setText(recommendation.getTitle());
+
+        TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
+        dateTextView.setText(recommendation.getDate());
+
+        // Affichez d'autres informations si disponibles
+
+        container.addView(cardView);
     }
 
     // Méthode pour récupérer et afficher le pseudonyme de l'utilisateur
@@ -92,33 +135,5 @@ public class MainActivity extends AppCompatActivity {
                         Log.e("UserProfile", "Error fetching user data", e);
                     });
         }
-    }
-
-    // Méthode pour créer et ajouter dynamiquement une carte
-    public void addRecommendationCard(LinearLayout container, String title, String date, String coverUrl) {
-        // Utilisation de LayoutInflater pour gonfler la vue de la carte depuis le fichier XML
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
-
-        // Associe les données de la recommandation aux vues de la carte
-        TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
-        titleTextView.setText(title);
-
-        TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
-        dateTextView.setText(date);
-
-        ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
-
-        // Utilisation de Glide pour charger l'image à partir de l'URL
-        Glide.with(this)
-                .load(coverUrl)  // URL de l'image
-                .placeholder(R.color.gray_medium)  // Image de substitution pendant le chargement
-                .error(R.color.red)  // Image de substitution en cas d'erreur
-                .into(coverImageView);  // Charge l'image dans l'ImageView
-        Log.d("GlideImageLoad", "Loading image from URL: " + coverUrl);
-
-
-        // Ajoute la carte au conteneur LinearLayout
-        container.addView(cardView);
     }
 }

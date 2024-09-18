@@ -30,6 +30,11 @@
         <!-- MainActivity -->
         <activity android:name=".MainActivity" android:exported="true" />
 
+        <!-- BookDetailsActivity -->
+        <activity android:name=".BookDetailsActivity" />
+
+        <!-- SearchBookActivity -->
+        <activity android:name=".SearchBookActivity" />
     </application>
 
 </manifest>

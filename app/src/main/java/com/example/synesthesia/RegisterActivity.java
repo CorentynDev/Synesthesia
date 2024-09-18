@@ -23,7 +23,7 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText usernameField;
     private EditText passwordField;
     private Button registerButton;
-    private TextView loginRedirect; // TextView pour rediriger vers LoginActivity
+    private TextView loginRedirect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +39,8 @@ public class RegisterActivity extends AppCompatActivity {
         usernameField = findViewById(R.id.registerUsername);
         passwordField = findViewById(R.id.registerPassword);
         registerButton = findViewById(R.id.registerButton);
-        loginRedirect = findViewById(R.id.loginRedirect); // Initialiser le TextView de redirection
+        loginRedirect = findViewById(R.id.loginRedirect);
 
-        // Lors du clic sur le bouton d'inscription
         registerButton.setOnClickListener(v -> {
             String email = emailField.getText().toString();
             String username = usernameField.getText().toString();
