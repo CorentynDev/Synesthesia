@@ -108,10 +108,16 @@ public class MainActivity extends AppCompatActivity {
 
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 Log.d("MainActivity", "Document ID: " + document.getId());
+
+                // Créer l'objet Recommendation à partir du document
                 Recommendation recommendation = document.toObject(Recommendation.class);
+
                 if (recommendation != null) {
-                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle());
-                    // Utilise un code simplifié pour ajouter la carte, sans autres appels Firestore
+                    // Assigner l'ID du document Firestore à la recommandation
+                    recommendation.setId(document.getId());
+                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendation.getId());
+
+                    // Ajouter la recommandation à l'UI
                     addRecommendationCard(recommendationList, recommendation);
                 } else {
                     Log.e("MainActivity", "Failed to parse recommendation");
@@ -120,17 +126,6 @@ public class MainActivity extends AppCompatActivity {
         }).addOnFailureListener(e -> {
             Log.e("FirestoreData", "Error when fetching documents: ", e);
         });
-    }
-
-    private void addSimpleRecommendationCard(LinearLayout container, Recommendation recommendation) {
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
-
-        TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
-        titleTextView.setText(recommendation.getTitle());
-
-        // Ajouter la carte à la vue parent
-        container.addView(cardView);
     }
 
     public void addRecommendationCard(LinearLayout container, Recommendation recommendation) {
@@ -168,11 +163,25 @@ public class MainActivity extends AppCompatActivity {
         likeCounter.setText(String.valueOf(recommendation.getLikesCount()));
 
         likeButton.setOnClickListener(v -> {
-            // Vérifier si l'utilisateur a déjà aimé cette recommandation
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
             if (currentUser != null) {
                 String userId = currentUser.getUid();
-                toggleLike(recommendation.getId(), userId, !isLiked(userId, recommendation));
+                boolean isCurrentlyLiked = isLiked(userId, recommendation); // Vérifie si déjà liké
+
+                // Met à jour immédiatement l'interface utilisateur en fonction de l'état actuel
+                updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, recommendation.getLikesCount());
+
+                // Appel de la méthode toggleLike pour mettre à jour dans Firestore
+                toggleLike(recommendation.getId(), userId, !isCurrentlyLiked);
+
+                // Mettre à jour l'objet recommendation localement
+                if (isCurrentlyLiked) {
+                    recommendation.setLikesCount(recommendation.getLikesCount() - 1);
+                    recommendation.getLikedBy().remove(userId);
+                } else {
+                    recommendation.setLikesCount(recommendation.getLikesCount() + 1);
+                    recommendation.getLikedBy().add(userId);
+                }
             }
         });
 
@@ -183,6 +192,17 @@ public class MainActivity extends AppCompatActivity {
         // Ajoutez la carte à la vue parent
         container.addView(cardView);
     }
+
+    private void updateLikeUI(ImageView likeButton, TextView likeCounter, boolean isCurrentlyLiked, int currentLikesCount) {
+        if (isCurrentlyLiked) {
+            likeButton.setImageResource(R.drawable.like); // Icône "non liké"
+            likeCounter.setText(String.valueOf(currentLikesCount - 1)); // Diminue le compteur
+        } else {
+            likeButton.setImageResource(R.drawable.given_like); // Icône "liké"
+            likeCounter.setText(String.valueOf(currentLikesCount + 1)); // Augmente le compteur
+        }
+    }
+
 
     private boolean isLiked(String userId, Recommendation recommendation) {
         List<String> likedBy = recommendation.getLikedBy();
@@ -223,14 +243,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            // Mettre à jour les données
+            // Mettre à jour les données dans Firestore
             transaction.update(recommendationRef, "likesCount", likesCount);
             transaction.update(recommendationRef, "likedBy", likedBy);
 
             return null;
         }).addOnSuccessListener(aVoid -> {
             Log.d("ToggleLike", "Transaction success!");
-            // Vous pouvez également mettre à jour l'UI ici si nécessaire
         }).addOnFailureListener(e -> {
             Log.e("ToggleLike", "Transaction failure.", e);
         });
