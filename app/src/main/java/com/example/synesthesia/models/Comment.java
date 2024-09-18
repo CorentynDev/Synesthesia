@@ -1,11 +1,11 @@
 package com.example.synesthesia.models;
 
-import java.security.Timestamp;
+import com.google.firebase.Timestamp; // Assurez-vous d'importer la bonne classe Timestamp
 
 public class Comment {
     private String userId;
     private String commentText;
-    private Timestamp timestamp;
+    private Timestamp timestamp; // Utiliser Firebase Timestamp
 
     // Constructeur vide requis pour Firebase
     public Comment() {

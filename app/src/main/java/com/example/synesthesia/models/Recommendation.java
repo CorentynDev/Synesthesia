@@ -9,8 +9,8 @@ public class Recommendation {
     private String date;
     private String coverUrl;
     private String userId;
-    private String username;  // Nouveau champ pour le pseudo de l'utilisateur
-    private String comment;   // Nouveau champ pour le commentaire
+    private String username;  // Champ pour le pseudo de l'utilisateur
+    private List<Comment> comments; // Liste des commentaires
     private int likesCount;
     private List<String> likedBy;
 
@@ -19,14 +19,14 @@ public class Recommendation {
     }
 
     // Constructeur avec tous les champs
-    public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, String comment) {
+    public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, List<Comment> comments) {
         this.id = id;
         this.title = title;
         this.date = date;
         this.coverUrl = coverUrl;
         this.userId = userId;
-        this.username = username;  // Initialiser le pseudo de l'utilisateur
-        this.comment = comment;    // Initialiser le commentaire
+        this.username = username;
+        this.comments = comments;
     }
 
     // Getters et setters pour tous les champs
@@ -79,30 +79,26 @@ public class Recommendation {
         this.username = username;
     }
 
-    public String getComment() {
-        return comment;
+    public List<Comment> getComments() {
+        return comments;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 
-    // Getter pour likesCount
     public int getLikesCount() {
         return likesCount;
     }
 
-    // Setter pour likesCount
     public void setLikesCount(int likesCount) {
         this.likesCount = likesCount;
     }
 
-    // Getter pour likedBy
     public List<String> getLikedBy() {
         return likedBy;
     }
 
-    // Setter pour likedBy
     public void setLikedBy(List<String> likedBy) {
         this.likedBy = likedBy;
     }

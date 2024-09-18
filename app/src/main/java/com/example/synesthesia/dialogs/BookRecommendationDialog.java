@@ -30,7 +30,7 @@ public class BookRecommendationDialog extends DialogFragment {
     public static BookRecommendationDialog newInstance(Book book) {
         BookRecommendationDialog dialog = new BookRecommendationDialog();
         Bundle args = new Bundle();
-        args.putParcelable("book", book);  // Utiliser putParcelable() ici
+        args.putParcelable("book", book);
         dialog.setArguments(args);
         return dialog;
     }
@@ -44,7 +44,7 @@ public class BookRecommendationDialog extends DialogFragment {
         mAuth = FirebaseAuth.getInstance();
 
         // Récupérer l'objet Book depuis les arguments
-        book = getArguments().getParcelable("book");  // Utiliser getParcelable() ici
+        book = getArguments().getParcelable("book");
 
         // Initialiser les éléments de la vue
         TextView titleTextView = view.findViewById(R.id.bookTitle);

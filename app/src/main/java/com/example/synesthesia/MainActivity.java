@@ -99,16 +99,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void getRecommendationData() {
+        Log.d("MainActivity", "Starting to fetch recommendations");
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
+            Log.d("MainActivity", "Successfully fetched recommendations");
             LinearLayout recommendationList = findViewById(R.id.recommendationList);
             recommendationList.removeAllViews();
 
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                Log.d("MainActivity", "Document ID: " + document.getId());
                 Recommendation recommendation = document.toObject(Recommendation.class);
-                addRecommendationCard(recommendationList, recommendation);
+                if (recommendation != null) {
+                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle());
+                    // Utilise un code simplifié pour ajouter la carte, sans autres appels Firestore
+                    addRecommendationCard(recommendationList, recommendation);
+                } else {
+                    Log.e("MainActivity", "Failed to parse recommendation");
+                }
             }
-        }).addOnFailureListener(e -> Log.e("FirestoreData", "Error when fetching documents: ", e));
+        }).addOnFailureListener(e -> {
+            Log.e("FirestoreData", "Error when fetching documents: ", e);
+        });
+    }
+
+    private void addSimpleRecommendationCard(LinearLayout container, Recommendation recommendation) {
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
+
+        TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
+        titleTextView.setText(recommendation.getTitle());
+
+        // Ajouter la carte à la vue parent
+        container.addView(cardView);
     }
 
     public void addRecommendationCard(LinearLayout container, Recommendation recommendation) {
@@ -140,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         // Configurer le bouton de like
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
-        Button commentButton = cardView.findViewById(R.id.commentButton);
+        ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
         // Configurer l'affichage du nombre de likes
         likeCounter.setText(String.valueOf(recommendation.getLikesCount()));

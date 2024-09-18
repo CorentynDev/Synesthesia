@@ -26,10 +26,13 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
         return new CommentViewHolder(view);
     }
 
-    @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = commentList.get(position);
-        holder.commentText.setText(comment.getCommentText());
+        if (comment.getCommentText() != null) {
+            holder.commentText.setText(comment.getCommentText());
+        } else {
+            holder.commentText.setText("No comment available");
+        }
     }
 
     @Override

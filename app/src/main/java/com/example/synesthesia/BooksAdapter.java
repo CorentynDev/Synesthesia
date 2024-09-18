@@ -72,16 +72,28 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
         }
 
         public void bind(Book book) {
-            bookTitleTextView.setText(book.getVolumeInfo().getTitle());
-            bookAuthorTextView.setText(book.getVolumeInfo().getAuthors() != null ? book.getVolumeInfo().getAuthors().get(0) : "Unknown");
-            bookPublishedDateTextView.setText(book.getVolumeInfo().getPublishedDate());
+            if (book.getVolumeInfo() != null) {
+                bookTitleTextView.setText(book.getVolumeInfo().getTitle() != null ? book.getVolumeInfo().getTitle() : "Titre inconnu");
+                bookAuthorTextView.setText(book.getVolumeInfo().getAuthors() != null && !book.getVolumeInfo().getAuthors().isEmpty() ? book.getVolumeInfo().getAuthors().get(0) : "Auteur inconnu");
+                bookPublishedDateTextView.setText(book.getVolumeInfo().getPublishedDate() != null ? book.getVolumeInfo().getPublishedDate() : "Date inconnue");
 
-            // Charger l'image de couverture avec Glide
-            Glide.with(bookCoverImageView.getContext())
-                    .load(book.getVolumeInfo().getImageLinks().getThumbnail())
-                    .placeholder(R.color.gray_medium) // Image de remplacement pendant le chargement
-                    .error(R.color.red) // Image de remplacement en cas d'erreur
-                    .into(bookCoverImageView);
+                if (book.getVolumeInfo().getImageLinks() != null) {
+                    Glide.with(bookCoverImageView.getContext())
+                            .load(book.getVolumeInfo().getImageLinks().getThumbnail())
+                            .placeholder(R.color.gray_medium) // Image de remplacement pendant le chargement
+                            .error(R.color.red) // Image de remplacement en cas d'erreur
+                            .into(bookCoverImageView);
+                } else {
+                    // Si les liens d'image sont nuls, mettre une image de remplacement ou un placeholder
+                    bookCoverImageView.setImageResource(R.drawable.placeholder_image); // Assure-toi d'avoir une image placeholder dans res/drawable
+                }
+            } else {
+                // Gérer le cas où book.getVolumeInfo() est nul
+                bookTitleTextView.setText("Titre inconnu");
+                bookAuthorTextView.setText("Auteur inconnu");
+                bookPublishedDateTextView.setText("Date inconnue");
+                bookCoverImageView.setImageResource(R.drawable.placeholder_image);
+            }
         }
     }
 }

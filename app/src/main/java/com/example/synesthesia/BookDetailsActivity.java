@@ -11,9 +11,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Book;
+import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class BookDetailsActivity extends AppCompatActivity {
 
@@ -62,7 +67,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         });
     }
 
-    private void submitRecommendation(Book book, String comment) {
+    private void submitRecommendation(Book book, String commentText) {
         String userId = mAuth.getCurrentUser().getUid();
 
         // Récupérer le pseudo de l'utilisateur à partir de Firestore
@@ -70,6 +75,13 @@ public class BookDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String username = documentSnapshot.getString("username");
+
+                        // Créer le premier commentaire (note de l'utilisateur)
+                        Comment firstComment = new Comment(userId, commentText, new com.google.firebase.Timestamp(new Date()));
+
+                        // Créer une liste de commentaires avec le premier commentaire
+                        List<Comment> commentsList = new ArrayList<>();
+                        commentsList.add(firstComment);
 
                         // Créer un objet Recommendation avec les informations nécessaires
                         Recommendation recommendation = new Recommendation(
@@ -79,7 +91,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 book.getVolumeInfo().getImageLinks() != null ? book.getVolumeInfo().getImageLinks().getThumbnail() : null,
                                 userId,
                                 username,
-                                comment
+                                commentsList  // Liste de commentaires, contenant la note
                         );
 
                         // Ajouter la recommandation à Firestore
@@ -96,4 +108,5 @@ public class BookDetailsActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error fetching user data", Toast.LENGTH_SHORT).show());
     }
+
 }
