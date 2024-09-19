@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.models.Recommendation;
-
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -48,41 +47,32 @@ public class MainActivity extends AppCompatActivity {
 
         Button createRecommendationButton = findViewById(R.id.createRecommendationButton);
         createRecommendationButton.setOnClickListener(v -> {
-            // Création de la fenêtre modale avec les options de types de recommandation
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle("Choisissez un type de recommandation");
 
-            // Options de type de recommandation
             String[] types = {"Musique", "Film", "Jeux Vidéo", "Livre"};
 
-            // Gestion du clic sur l'une des options
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
-                    case 0: // Musique
+                    case 0:
                         // Lancer une activité pour la création de recommandation musicale (si implémentée plus tard)
                         break;
-                    case 1: // Film
+                    case 1:
                         // Lancer une activité pour la création de recommandation de films (si implémentée plus tard)
                         break;
-                    case 2: // Jeux Vidéo
+                    case 2:
                         // Lancer une activité pour la création de recommandation de jeux vidéo (si implémentée plus tard)
                         break;
-                    case 3: // Livre
-                        // Lancer l'Activity pour la recherche de livres
+                    case 3:
                         Intent intent = new Intent(MainActivity.this, SearchBookActivity.class);
                         startActivity(intent);
                         break;
                 }
             });
-            // Afficher la fenêtre modale
             builder.create().show();
         });
 
-
-        // Lire les données
         getRecommendationData();
-
-        // Appelle la méthode pour récupérer les infos de l'utilisateur
         getUserProfile();
     }
 
@@ -91,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
-            // Redirection vers LoginActivity si l'utilisateur n'est pas connecté
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
@@ -100,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void getRecommendationData() {
         Log.d("MainActivity", "Starting to fetch recommendations");
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
             Log.d("MainActivity", "Successfully fetched recommendations");
             LinearLayout recommendationList = findViewById(R.id.recommendationList);
@@ -109,15 +97,12 @@ public class MainActivity extends AppCompatActivity {
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 Log.d("MainActivity", "Document ID: " + document.getId());
 
-                // Créer l'objet Recommendation à partir du document
                 Recommendation recommendation = document.toObject(Recommendation.class);
 
                 if (recommendation != null) {
-                    // Assigner l'ID du document Firestore à la recommandation
                     recommendation.setId(document.getId());
                     Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendation.getId());
 
-                    // Ajouter la recommandation à l'UI
                     addRecommendationCard(recommendationList, recommendation);
                 } else {
                     Log.e("MainActivity", "Failed to parse recommendation");
@@ -139,8 +124,6 @@ public class MainActivity extends AppCompatActivity {
         dateTextView.setText(recommendation.getDate());
 
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
-
-        // Rechercher le pseudo de l'utilisateur avec l'ID utilisateur
         db.collection("users").document(recommendation.getUserId()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -154,34 +137,31 @@ public class MainActivity extends AppCompatActivity {
                     userTextView.setText("Erreur de chargement");
                 });
 
-        // Configurer le bouton de like
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
-        // Configurer l'affichage du nombre de likes
+        List<String> likedBy = recommendation.getLikedBy();
+        if (likedBy == null) {
+            likedBy = new ArrayList<>();
+            recommendation.setLikedBy(likedBy);
+        }
+
         likeCounter.setText(String.valueOf(recommendation.getLikesCount()));
 
         likeButton.setOnClickListener(v -> {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
             if (currentUser != null) {
                 String userId = currentUser.getUid();
-                boolean isCurrentlyLiked = isLiked(userId, recommendation); // Vérifie si déjà liké
+                boolean isCurrentlyLiked = isLiked(userId, recommendation);
 
-                // Met à jour immédiatement l'interface utilisateur en fonction de l'état actuel
                 updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, recommendation.getLikesCount());
 
-                // Appel de la méthode toggleLike pour mettre à jour dans Firestore
                 toggleLike(recommendation.getId(), userId, !isCurrentlyLiked);
 
-                // Mettre à jour l'objet recommendation localement
-                if (isCurrentlyLiked) {
-                    recommendation.setLikesCount(recommendation.getLikesCount() - 1);
-                    recommendation.getLikedBy().remove(userId);
-                } else {
-                    recommendation.setLikesCount(recommendation.getLikesCount() + 1);
-                    recommendation.getLikedBy().add(userId);
-                }
+                // Utiliser updateLikeList pour gérer likedBy
+                updateLikeList(userId, recommendation, !isCurrentlyLiked);
+                recommendation.setLikesCount(isCurrentlyLiked ? recommendation.getLikesCount() - 1 : recommendation.getLikesCount() + 1);
             }
         });
 
@@ -189,8 +169,23 @@ public class MainActivity extends AppCompatActivity {
             showCommentModal(recommendation.getId());
         });
 
-        // Ajoutez la carte à la vue parent
         container.addView(cardView);
+    }
+
+    private void updateLikeList(String userId, Recommendation recommendation, boolean addLike) {
+        List<String> likedBy = recommendation.getLikedBy();
+        if (likedBy == null) {
+            likedBy = new ArrayList<>();
+            recommendation.setLikedBy(likedBy);
+        }
+
+        if (addLike) {
+            if (!likedBy.contains(userId)) {
+                likedBy.add(userId);
+            }
+        } else {
+            likedBy.remove(userId);
+        }
     }
 
     private void updateLikeUI(ImageView likeButton, TextView likeCounter, boolean isCurrentlyLiked, int currentLikesCount) {
@@ -202,7 +197,6 @@ public class MainActivity extends AppCompatActivity {
             likeCounter.setText(String.valueOf(currentLikesCount + 1)); // Augmente le compteur
         }
     }
-
 
     private boolean isLiked(String userId, Recommendation recommendation) {
         List<String> likedBy = recommendation.getLikedBy();
@@ -223,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
                 throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
-            // Lire les données actuelles
             int likesCount = snapshot.getLong("likesCount").intValue();
             List<String> likedBy = (List<String>) snapshot.get("likedBy");
 
@@ -243,7 +236,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            // Mettre à jour les données dans Firestore
             transaction.update(recommendationRef, "likesCount", likesCount);
             transaction.update(recommendationRef, "likedBy", likedBy);
 
@@ -256,7 +248,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showCommentModal(String recommendationId) {
-        // Inflate the modal view
         LayoutInflater inflater = LayoutInflater.from(this);
         View modalView = inflater.inflate(R.layout.comment_modal, null);
 
@@ -265,31 +256,26 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
 
-        // Récupérer les vues de la modale
         EditText commentInput = modalView.findViewById(R.id.commentInput);
         Button postCommentButton = modalView.findViewById(R.id.postCommentButton);
         RecyclerView commentsRecyclerView = modalView.findViewById(R.id.commentsRecyclerView);
         ImageView closeModalButton = modalView.findViewById(R.id.closeModalButton);
 
-        // Configurer le RecyclerView pour afficher les commentaires
         commentsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         List<Comment> commentList = new ArrayList<>();
         CommentsAdapter adapter = new CommentsAdapter(commentList);
         commentsRecyclerView.setAdapter(adapter);
 
-        // Charger les commentaires depuis Firestore
         loadComments(recommendationId, commentList, adapter);
 
-        // Gestion du clic pour poster un commentaire
         postCommentButton.setOnClickListener(v -> {
             String commentText = commentInput.getText().toString().trim();
             if (!commentText.isEmpty()) {
                 postComment(recommendationId, commentText);
-                commentInput.setText(""); // Vider le champ après publication
+                commentInput.setText("");
             }
         });
 
-        // Gestion du clic pour fermer la modale
         closeModalButton.setOnClickListener(v -> dialog.dismiss());
     }
 
@@ -318,17 +304,14 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser != null) {
             String userId = currentUser.getUid();
 
-            // Créer un objet commentaire
             Map<String, Object> comment = new HashMap<>();
             comment.put("userId", userId);
             comment.put("commentText", commentText);
             comment.put("timestamp", FieldValue.serverTimestamp());
 
-            // Ajouter le commentaire à la collection Firestore
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        // Mise à jour du compteur de commentaires
                         updateCommentCount(recommendationId, 1);
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
@@ -342,36 +325,28 @@ public class MainActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("Firestore", "Error updating comment count", e));
     }
 
-    // Méthode pour récupérer les informations de l'utilisateur
     private void getUserProfile() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        // Référence à l'ImageView pour la photo de profil
         ImageView profileImageView = findViewById(R.id.profileImageView);
-        // Référence à la TextView pour le pseudonyme
         TextView profileSummary = findViewById(R.id.profileSummary);
 
         if (currentUser != null) {
             String userId = currentUser.getUid();
 
-            // Rechercher les informations de l'utilisateur dans Firestore
             db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            // Récupérer l'URL de la photo de profil et le pseudonyme
                             String profileImageUrl = documentSnapshot.getString("profileImageUrl");
                             String username = documentSnapshot.getString("username");
 
-                            // Afficher le pseudonyme dans la TextView
                             if (username != null && !username.isEmpty()) {
                                 profileSummary.setText("Welcome, " + username + "!");
                             }
 
-                            // Afficher la photo de profil dans l'ImageView
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                                // Utiliser Glide ou Picasso pour charger l'image
                                 Glide.with(this)
                                         .load(profileImageUrl)
-                                        .placeholder(R.drawable.placeholder_image) // Image à afficher pendant le chargement
+                                        .placeholder(R.drawable.placeholder_image)
                                         .into(profileImageView);
                             }
                         } else {
