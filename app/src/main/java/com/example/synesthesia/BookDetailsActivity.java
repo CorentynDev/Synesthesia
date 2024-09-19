@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -56,14 +57,20 @@ public class BookDetailsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         // Bouton pour soumettre une recommandation
-        Button submitButton = findViewById(R.id.saveButton);
+        Button recommendButton = findViewById(R.id.recommendButton);  // Bouton renommé
         EditText commentField = findViewById(R.id.commentField);
 
-        submitButton.setOnClickListener(v -> {
+        recommendButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
 
             // Permettre la soumission de la recommandation même sans commentaire
             submitRecommendation(book, comment.isEmpty() ? "" : comment);
+        });
+
+        // Bouton de retour pour revenir à la page de résultats
+        Button backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> {
+            finish(); // Ferme cette activité et revient à l'activité précédente
         });
     }
 
