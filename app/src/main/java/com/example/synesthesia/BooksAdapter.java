@@ -65,7 +65,7 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
                     Book selectedBook = books.get(position);
                     // Ouvre BookDetailsActivity
                     Intent intent = new Intent(context, BookDetailsActivity.class);
-                    intent.putExtra("book", selectedBook);  // Passe le livre sélectionné à l'activité
+                    intent.putExtra("book", selectedBook);
                     context.startActivity(intent);
                 }
             });

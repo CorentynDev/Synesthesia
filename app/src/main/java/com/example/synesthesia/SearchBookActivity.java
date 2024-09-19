@@ -31,7 +31,7 @@ public class SearchBookActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_book); // Layout à créer plus tard
+        setContentView(R.layout.activity_search_book);
 
         // Initialisation de Retrofit pour Google Books API
         Retrofit retrofit = new Retrofit.Builder()
