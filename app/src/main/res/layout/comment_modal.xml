@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/gray_medium"
+    android:layout_gravity="center"
+    android:gravity="center">
+
+    <!-- Header avec le bouton de fermeture -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <ImageView
+            android:id="@+id/closeModalButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/close" />
+    </LinearLayout>
+
+    <!-- Zone pour écrire un commentaire -->
+    <EditText
+        android:id="@+id/commentInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Écrire un commentaire..."
+        android:background="@color/white"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Bouton pour publier le commentaire -->
+    <Button
+        android:id="@+id/postCommentButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Publier"
+        android:backgroundTint="@color/black"
+        android:textColor="@color/white" />
+
+    <!-- Liste des commentaires -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/commentsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp"
+        android:background="@color/gray_dark" />
+</LinearLayout>

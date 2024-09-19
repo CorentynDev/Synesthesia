@@ -30,7 +30,7 @@ public class BookRecommendationDialog extends DialogFragment {
     public static BookRecommendationDialog newInstance(Book book) {
         BookRecommendationDialog dialog = new BookRecommendationDialog();
         Bundle args = new Bundle();
-        args.putParcelable("book", book);  // Utiliser putParcelable() ici
+        args.putParcelable("book", book);
         dialog.setArguments(args);
         return dialog;
     }
@@ -44,7 +44,7 @@ public class BookRecommendationDialog extends DialogFragment {
         mAuth = FirebaseAuth.getInstance();
 
         // Récupérer l'objet Book depuis les arguments
-        book = getArguments().getParcelable("book");  // Utiliser getParcelable() ici
+        book = getArguments().getParcelable("book");
 
         // Initialiser les éléments de la vue
         TextView titleTextView = view.findViewById(R.id.bookTitle);
@@ -65,29 +65,5 @@ public class BookRecommendationDialog extends DialogFragment {
         }
 
         return view;
-    }
-
-    private void submitRecommendation(Book book, String comment) {
-        String userId = mAuth.getCurrentUser().getUid();
-
-        // Créer un objet de recommandation avec les détails
-        Recommendation recommendation = new Recommendation(
-                book.getVolumeInfo().getTitle(),
-                book.getVolumeInfo().getAuthors() != null ? book.getVolumeInfo().getAuthors().get(0) : "Inconnu",
-                book.getVolumeInfo().getPublishedDate(),
-                comment,
-                userId
-        );
-
-        // Ajouter la recommandation à Firestore
-        db.collection("recommendations")
-                .add(recommendation)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(getContext(), "Recommandation créée", Toast.LENGTH_SHORT).show();
-                    dismiss(); // Ferme la fenêtre modale après la création
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Erreur lors de la création de la recommandation", Toast.LENGTH_SHORT).show();
-                });
     }
 }

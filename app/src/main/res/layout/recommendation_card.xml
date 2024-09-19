@@ -15,7 +15,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- En-tête avec pseudo utilisateur et lien "Suivre" -->
+        <!-- En-tête avec pseudo utilisateur -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,17 +29,6 @@
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/followButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Suivre"
-                android:textColor="@color/black"
-                android:backgroundTint="@color/white"
-                android:layout_marginStart="8dp"
-                android:padding="4dp"
-                app:cornerRadius="4dp" />
         </LinearLayout>
 
         <!-- Informations du produit recommandé -->
@@ -83,6 +72,7 @@
             android:layout_marginTop="16dp"
             android:gravity="center_vertical">
 
+            <!-- Like button with counter -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="32dp"
@@ -91,9 +81,10 @@
 
                 <ImageView
                     android:id="@+id/likeButton"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/like" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/like"
+                    app:tint="@color/white" />
 
                 <TextView
                     android:id="@+id/likeCounter"
@@ -104,6 +95,7 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
+            <!-- Comment button -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -113,10 +105,26 @@
 
                 <ImageView
                     android:id="@+id/commentButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:src="@drawable/comment" />
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/comment"
+                    app:tint="@color/white" />
+            </LinearLayout>
+
+            <!-- Bookmark button -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginStart="16dp">
+
+                <ImageView
+                    android:id="@+id/bookmarkRecommendationButton"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/bookmark"
+                    app:tint="@color/white" />
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>
