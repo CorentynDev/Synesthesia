@@ -2,6 +2,7 @@ package com.example.synesthesia;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.synesthesia.models.Book;
 
 import java.util.List;
@@ -77,18 +79,24 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
                 bookAuthorTextView.setText(book.getVolumeInfo().getAuthors() != null && !book.getVolumeInfo().getAuthors().isEmpty() ? book.getVolumeInfo().getAuthors().get(0) : "Auteur inconnu");
                 bookPublishedDateTextView.setText(book.getVolumeInfo().getPublishedDate() != null ? book.getVolumeInfo().getPublishedDate() : "Date inconnue");
 
-                if (book.getVolumeInfo().getImageLinks() != null) {
+                // Check if image URL is available
+                if (book.getVolumeInfo().getImageLinks() != null && book.getVolumeInfo().getImageLinks().getThumbnail() != null) {
+                    String thumbnailUrl = book.getVolumeInfo().getImageLinks().getThumbnail();
+                    Log.d("BooksAdapter", "Thumbnail URL: " + thumbnailUrl);
+
                     Glide.with(bookCoverImageView.getContext())
-                            .load(book.getVolumeInfo().getImageLinks().getThumbnail())
-                            .placeholder(R.color.gray_medium) // Image de remplacement pendant le chargement
-                            .error(R.color.red) // Image de remplacement en cas d'erreur
+                            .load(thumbnailUrl)
+                            .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache en disque pour réutilisation
+                            .skipMemoryCache(false) // Utiliser le cache en mémoire
+                            .placeholder(R.drawable.image_progress) // Image de chargement
+                            .error(R.drawable.placeholder_image) // Image en cas d'échec
                             .into(bookCoverImageView);
                 } else {
-                    // Si les liens d'image sont nuls, mettre une image de remplacement ou un placeholder
-                    bookCoverImageView.setImageResource(R.drawable.placeholder_image); // Assure-toi d'avoir une image placeholder dans res/drawable
+                    // Si aucune URL d'image n'est disponible, affichez une image par défaut
+                    bookCoverImageView.setImageResource(R.drawable.placeholder_image);
                 }
             } else {
-                // Gérer le cas où book.getVolumeInfo() est nul
+                // Si VolumeInfo est null, définissez des valeurs par défaut
                 bookTitleTextView.setText("Titre inconnu");
                 bookAuthorTextView.setText("Auteur inconnu");
                 bookPublishedDateTextView.setText("Date inconnue");

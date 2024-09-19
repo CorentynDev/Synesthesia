@@ -5,10 +5,12 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.synesthesia.api.GoogleBooksApi;
 import com.example.synesthesia.dialogs.BookRecommendationDialog;
 import com.example.synesthesia.models.Book;
@@ -47,6 +49,30 @@ public class SearchBookActivity extends AppCompatActivity {
 
         EditText searchField = findViewById(R.id.searchField);
         Button searchButton = findViewById(R.id.searchButton);
+
+        // Ajouter le OnScrollListener à RecyclerView ici
+        booksRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                // Inform Glide that we are scrolling, so it can optimize memory use.
+                Glide.with(SearchBookActivity.this).resumeRequests();
+            }
+
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    // Charger les images uniquement lorsque le scrolling est terminé
+                    Glide.with(SearchBookActivity.this).resumeRequests();
+                } else {
+                    // Met en pause les requêtes Glide pendant le scrolling
+                    Glide.with(SearchBookActivity.this).pauseRequests();
+                }
+            }
+        });
 
         // Déclenche la recherche lorsque le bouton est cliqué
         searchButton.setOnClickListener(v -> {
