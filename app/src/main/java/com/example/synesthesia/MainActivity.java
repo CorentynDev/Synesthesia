@@ -117,12 +117,15 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
 
+        // Récupérer et afficher le titre de la recommandation
         TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
         titleTextView.setText(recommendation.getTitle());
 
+        // Récupérer et afficher la date de la recommandation
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
         dateTextView.setText(recommendation.getDate());
 
+        // Récupérer et afficher le pseudo utilisateur
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         db.collection("users").document(recommendation.getUserId()).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -137,10 +140,23 @@ public class MainActivity extends AppCompatActivity {
                     userTextView.setText("Erreur de chargement");
                 });
 
+        // Récupérer et afficher l'image de couverture
+        ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
+        if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
+            Glide.with(this)
+                    .load(recommendation.getCoverUrl()) // Utiliser coverUrl pour charger l'image
+                    .placeholder(R.drawable.placeholder_image) // Image de remplacement pendant le chargement
+                    .into(coverImageView);
+        } else {
+            coverImageView.setImageResource(R.drawable.placeholder_image); // Image par défaut si l'URL est vide ou manquante
+        }
+
+        // Gestion du bouton "like"
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
+        // Initialisation des likes
         List<String> likedBy = recommendation.getLikedBy();
         if (likedBy == null) {
             likedBy = new ArrayList<>();
@@ -165,10 +181,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Gestion des commentaires
         commentButton.setOnClickListener(v -> {
             showCommentModal(recommendation.getId());
         });
 
+        // Ajouter la carte à la vue conteneur
         container.addView(cardView);
     }
 
