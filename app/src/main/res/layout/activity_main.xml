@@ -15,7 +15,7 @@
         android:id="@+id/header"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp"
         android:background="@color/gray_dark"
         app:layout_constraintTop_toTopOf="parent"
@@ -25,9 +25,9 @@
 
         <ImageView
             android:id="@+id/profileImageView"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center_vertical"
             android:layout_marginBottom="8dp"
             android:scaleType="centerCrop"
             android:background="@color/gray_medium" />
@@ -40,7 +40,7 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:layout_gravity="center" />
+            android:layout_gravity="center_vertical" />
     </LinearLayout>
 
     <!-- Partie centrale scrollable (Flux de recommandations) -->
