@@ -94,7 +94,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             });
 
             // Modifier pour gérer le clic sur le bouton de lecture/pause
-            holder.playPauseButton.setOnClickListener(v -> togglePlayPause(holder, (Track) item));
+            //holder.playPauseButton.setOnClickListener(v -> togglePlayPause(holder, (Track) item));
         } else {
             Log.e("MusicAdapter", "Index out of bounds: " + position);
         }
@@ -131,7 +131,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             playPauseButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    togglePlayPause();
+                    //togglePlayPause();
                 }
             });
         }
