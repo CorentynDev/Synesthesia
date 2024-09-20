@@ -21,13 +21,26 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="60dp"
+        android:clickable="true"
+        android:contentDescription="Profile picture"
+        android:focusable="true"
+        android:src="@drawable/default_profil_picture"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerTitle" />
+
     <EditText
         android:id="@+id/registerEmail"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:background="@color/black"
-        android:backgroundTint="@color/black"
         android:hint="Email"
         android:inputType="textEmailAddress"
         android:padding="12dp"
@@ -37,7 +50,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerPassword" />
+        app:layout_constraintTop_toBottomOf="@+id/profileImageView" />
 
     <EditText
         android:id="@+id/registerUsername"
@@ -53,13 +66,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/registerEmail" />
+        app:layout_constraintTop_toBottomOf="@+id/registerPassword" />
 
     <EditText
         android:id="@+id/registerPassword"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="20dp"
         android:background="@color/black"
         android:hint="Password"
         android:inputType="textPassword"
@@ -70,7 +83,38 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/registerTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/registerEmail" />
+
+    <EditText
+        android:id="@+id/profileImageUrl"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@color/black"
+        android:hint="Or enter image URL"
+        android:padding="12dp"
+        android:textAlignment="center"
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/registerUsername" />
+
+    <Button
+        android:id="@+id/pasteImageUrlButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:backgroundTint="@color/gray_medium"
+        android:padding="12dp"
+        android:text="Use Image URL"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/profileImageUrl" />
 
     <Button
         android:id="@+id/registerButton"

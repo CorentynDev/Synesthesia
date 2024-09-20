@@ -21,7 +21,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.1"> <!-- 10% de la hauteur de l'écran -->
+        app:layout_constraintHeight_percent="0.15">
+
+        <ImageView
+            android:id="@+id/profileImageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_marginBottom="8dp"
+            android:scaleType="centerCrop"
+            android:background="@color/gray_medium" />
 
         <TextView
             android:id="@+id/profileSummary"
@@ -30,7 +39,8 @@
             android:text="User Profile Summary"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_gravity="center" />
     </LinearLayout>
 
     <!-- Partie centrale scrollable (Flux de recommandations) -->
