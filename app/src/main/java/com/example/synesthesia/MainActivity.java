@@ -43,18 +43,21 @@ public class MainActivity extends AppCompatActivity {
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
                     case 0: // Musique
-                        // Lancer une activité pour la création de recommandation musicale (si implémentée plus tard)
+                        Intent musicIntent = new Intent(MainActivity.this, SearchMusicActivity.class);
+                        startActivity(musicIntent);
                         break;
                     case 1: // Film
                         // Lancer une activité pour la création de recommandation de films (si implémentée plus tard)
                         break;
                     case 2: // Jeux Vidéo
                         // Lancer une activité pour la création de recommandation de jeux vidéo (si implémentée plus tard)
+                        Intent game_intent = new Intent(MainActivity.this, SearchGameActivity.class);
+                        startActivity(game_intent);
                         break;
                     case 3: // Livre
                         // Lancer l'Activity pour la recherche de livres
-                        Intent intent = new Intent(MainActivity.this, SearchBookActivity.class);
-                        startActivity(intent);
+                        Intent book_intent = new Intent(MainActivity.this, SearchBookActivity.class);
+                        startActivity(book_intent);
                         break;
                 }
             });
