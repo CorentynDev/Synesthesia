@@ -94,12 +94,34 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             });
 
             // Modifier pour gérer le clic sur le bouton de lecture/pause
-            //holder.playPauseButton.setOnClickListener(v -> togglePlayPause(holder, (Track) item));
+            if (item instanceof Track) { // S'assurer que c'est bien un Track avant de caster
+                holder.playPauseButton.setOnClickListener(v -> togglePlayPause(holder, (Track) item));
+            }
         } else {
             Log.e("MusicAdapter", "Index out of bounds: " + position);
         }
     }
 
+    private void togglePlayPause(MusicViewHolder holder, Track track) {
+        if (holder.isPlaying) {
+            holder.playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
+            holder.stopPlayback();
+        } else {
+            // Désactiver le bouton pendant la préparation pour éviter les doubles clics
+            holder.playPauseButton.setEnabled(false);
+
+            // Si un autre morceau est en cours de lecture, arrêtez-le
+            if (currentlyPlayingViewHolder != null && currentlyPlayingViewHolder != holder) {
+                currentlyPlayingViewHolder.stopPlayback();
+                currentlyPlayingViewHolder.playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
+            }
+
+            // Démarrer la nouvelle lecture
+            holder.startPlayback(track);
+            currentlyPlayingViewHolder = holder;
+        }
+        holder.isPlaying = !holder.isPlaying;
+    }
 
     @Override
     public int getItemCount() {
@@ -131,30 +153,19 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             playPauseButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //togglePlayPause();
+                    if (getAdapterPosition() != RecyclerView.NO_POSITION) {
+                        // Obtenez l'objet Track pour cet élément
+                        Object item = items.get(getAdapterPosition());
+                        if (item instanceof Track) {
+                            Track track = (Track) item;
+                            // Appelle la méthode togglePlayPause définie dans MusicAdapter avec les bons arguments
+                            togglePlayPause(MusicViewHolder.this, track);
+                        }
+                    }
                 }
             });
+
         }
-
-        private void togglePlayPause(MusicViewHolder holder, Track track) {
-            if (holder.isPlaying) {
-                holder.playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
-                holder.stopPlayback();
-            } else {
-                holder.playPauseButton.setImageResource(R.drawable.pause);
-                // Arrêtez la lecture précédente
-                if (currentlyPlayingViewHolder != null && currentlyPlayingViewHolder != holder) {
-                    currentlyPlayingViewHolder.stopPlayback();
-                    currentlyPlayingViewHolder.playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
-                }
-                // Démarrer la nouvelle lecture
-                holder.startPlayback(track);
-                currentlyPlayingViewHolder = holder;
-            }
-            holder.isPlaying = !holder.isPlaying;
-        }
-
-
 
         public void bindArtist(Artist artist) {
             titleTextView.setText(artist.getName());
@@ -213,39 +224,68 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
         public void startPlayback(Track track) {
             if (globalMediaPlayer != null && globalMediaPlayer.isPlaying()) {
-                globalMediaPlayer.stop();
-                globalMediaPlayer.release();
-            }
+                globalMediaPlayer.pause();
+                globalMediaPlayer.seekTo(0); // Remettre le lecteur au début
+                globalMediaPlayer.start(); // Reprendre la lecture
+                Log.d("MusicAdapter", "Reprise de la lecture de la piste : " + previewUrl);
+            } else {
+                if (globalMediaPlayer != null) {
+                    globalMediaPlayer.reset();
+                } else {
+                    globalMediaPlayer = new MediaPlayer();
+                }
 
-            globalMediaPlayer = new MediaPlayer();
-            previewUrl = track.getPreviewUrl();
+                previewUrl = track.getPreviewUrl();
 
-            Log.d("MusicAdapter", "Démarrage de la lecture avec l'URL: " + previewUrl);
+                Log.d("MusicAdapter", "Démarrage de la lecture avec l'URL: " + previewUrl);
 
-            if (previewUrl == null || previewUrl.isEmpty()) {
-                Log.e("MusicAdapter", "URL de prévisualisation invalide ou nulle.");
-                return;
-            }
+                if (previewUrl == null || previewUrl.isEmpty()) {
+                    Log.e("MusicAdapter", "URL de prévisualisation invalide ou nulle.");
+                    return;
+                }
 
-            try {
-                globalMediaPlayer.setDataSource(context, Uri.parse(previewUrl));
-                globalMediaPlayer.setOnPreparedListener(mp -> {
-                    mp.start();
-                    Log.d("MusicAdapter", "Lecture démarrée");
-                });
-                globalMediaPlayer.prepareAsync();
-            } catch (IOException e) {
-                Log.e("MusicAdapter", "Erreur lors de la lecture de la prévisualisation", e);
+                try {
+                    globalMediaPlayer.setDataSource(context, Uri.parse(previewUrl));
+
+                    // Désactivez le bouton pendant la préparation pour éviter les clics multiples
+                    playPauseButton.setEnabled(false);
+
+                    globalMediaPlayer.setOnPreparedListener(mp -> {
+                        mp.start(); // Démarre la lecture après préparation
+                        Log.d("MusicAdapter", "Lecture démarrée");
+
+                        // Changer l'icône en pause
+                        playPauseButton.setImageResource(R.drawable.pause);
+
+                        // Activer le bouton une fois prêt
+                        playPauseButton.setEnabled(true);
+
+                        isPlaying = true; // Mettez à jour l'état de lecture
+                    });
+
+                    globalMediaPlayer.setOnCompletionListener(mp -> {
+                        // Remettre l'icône de lecture une fois la lecture terminée
+                        playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
+                        isPlaying = false;
+                    });
+
+                    globalMediaPlayer.prepareAsync(); // Prépare le lecteur de manière asynchrone
+                } catch (IOException e) {
+                    Log.e("MusicAdapter", "Erreur lors de la lecture de la prévisualisation", e);
+                    // Réactiver le bouton en cas d'erreur
+                    playPauseButton.setEnabled(true);
+                }
             }
         }
 
         public void stopPlayback() {
             if (globalMediaPlayer != null) {
-                globalMediaPlayer.stop();
-                globalMediaPlayer.release();
-                globalMediaPlayer = null;
+                globalMediaPlayer.pause();
+                globalMediaPlayer.seekTo(0); // Réinitialiser la position au début
+                isPlaying = false;
             }
         }
+
 
     }
 
