@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.models.Recommendation;
 import com.bumptech.glide.Glide;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -136,9 +137,14 @@ public class MainActivity extends AppCompatActivity {
         TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
         titleTextView.setText(recommendation.getTitle());
 
-        // Récupérer et afficher la date de la recommandation
+        // Récupérer et afficher la date de la recommandation sous forme "il y a"
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
-        dateTextView.setText(recommendation.getDate());
+        Timestamp timestamp = recommendation.getTimestamp(); // Assure-toi que Recommendation a un champ Timestamp
+        if (timestamp != null) {
+            dateTextView.setText(getTimeAgo(timestamp));
+        } else {
+            dateTextView.setText("Date inconnue");
+        }
 
         // Récupérer et afficher le pseudo utilisateur
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
@@ -394,6 +400,32 @@ public class MainActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> {
                         Log.e("UserProfile", "Error fetching user data", e);
                     });
+        }
+    }
+
+    private String getTimeAgo(Timestamp timestamp) {
+        long time = timestamp.toDate().getTime(); // Convertir le Timestamp Firestore en millisecondes
+        long now = System.currentTimeMillis();
+
+        if (time > now || time <= 0) {
+            return "à l'instant";
+        }
+
+        final long diff = now - time;
+        if (diff < 60 * 1000) { // moins d'une minute
+            return "Il y a " + diff / 1000 + " secondes";
+        } else if (diff < 2 * 60 * 1000) {
+            return "Il y a une minute";
+        } else if (diff < 50 * 60 * 1000) {
+            return "Il y a " + diff / (60 * 1000) + " minutes";
+        } else if (diff < 90 * 60 * 1000) {
+            return "Il y a une heure";
+        } else if (diff < 24 * 60 * 60 * 1000) {
+            return "Il y a " + diff / (60 * 60 * 1000) + " heures";
+        } else if (diff < 48 * 60 * 60 * 1000) {
+            return "Hier";
+        } else {
+            return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
         }
     }
 }
