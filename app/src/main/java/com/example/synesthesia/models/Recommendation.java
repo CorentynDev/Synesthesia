@@ -11,17 +11,16 @@ public class Recommendation {
     private String date;
     private String coverUrl;
     private String userId;
-    private String username;  // Champ pour le pseudo de l'utilisateur
-    private List<Comment> comments; // Liste des commentaires
+    private String username;
+    private List<Comment> comments;
     private int likesCount;
     private List<String> likedBy;
     private Timestamp timestamp;
 
-    // Constructeur par défaut (nécessaire pour Firebase)
+    // Empty constructor required for Firebase
     public Recommendation() {
     }
 
-    // Constructeur avec tous les champs
     public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp) {
         this.id = id;
         this.title = title;
@@ -32,8 +31,6 @@ public class Recommendation {
         this.comments = comments;
         this.timestamp = timestamp;
     }
-
-    // Getters et setters pour tous les champs
 
     public String getId() {
         return id;
@@ -47,48 +44,12 @@ public class Recommendation {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public String getCoverUrl() {
         return coverUrl;
     }
 
-    public void setCoverUrl(String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
-
     public String getUserId() {
         return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
     }
 
     public int getLikesCount() {
@@ -109,9 +70,5 @@ public class Recommendation {
 
     public Timestamp getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(Timestamp timestamp) {
-        this.timestamp = timestamp;
     }
 }

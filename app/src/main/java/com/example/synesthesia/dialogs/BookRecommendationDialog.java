@@ -46,13 +46,11 @@ public class BookRecommendationDialog extends DialogFragment {
         // Récupérer l'objet Book depuis les arguments
         book = getArguments().getParcelable("book");
 
-        // Initialiser les éléments de la vue
         TextView titleTextView = view.findViewById(R.id.bookTitle);
         TextView authorTextView = view.findViewById(R.id.bookAuthor);
         TextView publishedDateTextView = view.findViewById(R.id.bookDate);
         ImageView bookImageView = view.findViewById(R.id.bookThumbnail);
 
-        // Remplir les données du livre
         if (book != null) {
             titleTextView.setText(book.getVolumeInfo().getTitle());
             authorTextView.setText(book.getVolumeInfo().getAuthors() != null ? book.getVolumeInfo().getAuthors().get(0) : "Inconnu");

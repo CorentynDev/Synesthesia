@@ -75,8 +75,6 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case 2:
                         // Lancer une activité pour la création de recommandation de jeux vidéo (si implémentée plus tard)
-                        Intent game_intent = new Intent(MainActivity.this, SearchGameActivity.class);
-                        startActivity(game_intent);
                         break;
                     case 3: // Livre
                         // Lancer l'Activity pour la recherche de livres
