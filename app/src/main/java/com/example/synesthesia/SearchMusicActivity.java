@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -65,6 +66,10 @@ public class SearchMusicActivity extends AppCompatActivity {
             } else if (item instanceof Album) {
                 Album album = (Album) item;
                 Log.d("SearchMusic", "Clicked on album: " + album.getTitle());
+                // Démarrer l'activité AlbumDetailsActivity et passer l'album sélectionné
+                Intent intent = new Intent(SearchMusicActivity.this, AlbumDetailsActivity.class);
+                intent.putExtra("album", album); // Passer l'album via Intent
+                startActivity(intent);
             } else if (item instanceof Track) {
                 Track track = (Track) item;
                 Log.d("SearchMusic", "Clicked on track: " + track.getTitle());

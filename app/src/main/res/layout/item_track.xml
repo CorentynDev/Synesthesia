@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/itemTrackLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp">
+
+    <!-- Titre de la piste -->
+    <TextView
+        android:id="@+id/trackTitleTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Titre de la Piste"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <!-- Durée de la piste -->
+    <TextView
+        android:id="@+id/trackDurationTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="3:45"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:layout_marginEnd="16dp" />
+
+    <!-- Bouton Play/Pause -->
+    <ImageButton
+        android:id="@+id/trackPlayPauseButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/bouton_de_lecture" />
+</LinearLayout>

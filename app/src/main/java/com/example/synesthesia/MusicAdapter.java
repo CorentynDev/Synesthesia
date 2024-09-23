@@ -33,7 +33,6 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     private int currentlyPlayingPosition = RecyclerView.NO_POSITION;
 
     // Nouvelle variable pour stocker le ViewHolder en lecture
-    private MusicViewHolder currentlyPlayingViewHolder;
     private MediaPlayer globalMediaPlayer;
 
 
@@ -209,9 +208,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 artistTextView.setText("Unknown Artist");
             }
 
-            if (album.getCoverUrl() != null) {
+            if (album.getCoverXl() != null) {
                 Glide.with(context)
-                        .load(album.getCoverUrl())
+                        .load(album.getCoverXl())
                         .placeholder(R.drawable.placeholder_image)
                         .into(imageView);
             } else {
@@ -221,11 +220,11 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
         public void bindTrack(Track track) {
             titleTextView.setText(track.getTitle());
-            artistTextView.setText(track.getArtistName());
+            artistTextView.setText(track.getArtist().getName());
 
             if (track.getAlbum() != null) {
                 Glide.with(context)
-                        .load(track.getAlbum().getCoverUrl())
+                        .load(track.getAlbum().getCoverXl())
                         .placeholder(R.drawable.placeholder_image)
                         .into(imageView);
             } else {

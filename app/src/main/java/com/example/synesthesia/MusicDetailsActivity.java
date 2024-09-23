@@ -65,13 +65,13 @@ public class MusicDetailsActivity extends AppCompatActivity {
 
         // Définir les détails du morceau
         musicTitle.setText(track.getTitle());
-        musicArtist.setText(track.getArtistName());
+        musicArtist.setText(track.getArtist().getName());
         musicDuration.setText(formatDuration(track.getDuration()));
 
         // Déterminer l'URL de couverture appropriée
         String coverUrl = null;
         if (track.getAlbum() != null) {
-            coverUrl = track.getAlbum().getCoverUrl();
+            coverUrl = track.getAlbum().getCoverXl();
         } else if (track.getArtist() != null) { // Utilisez getArtist() pour obtenir l'objet Artist
             coverUrl = track.getArtist().getImageUrl(); // Utilisez la méthode appropriée pour obtenir l'URL de l'image de l'artiste
         }
@@ -126,7 +126,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
                         // Déterminer l'URL de couverture appropriée pour la recommandation
                         String recommendationCoverUrl = null;
                         if (track.getAlbum() != null) {
-                            recommendationCoverUrl = track.getAlbum().getCoverUrl();
+                            recommendationCoverUrl = track.getAlbum().getCoverXl();
                         } else if (track.getArtist() != null) {
                             recommendationCoverUrl = track.getArtist().getImageUrl();
                         }

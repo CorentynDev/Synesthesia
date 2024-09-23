@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/albumDetailsLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".AlbumDetailsActivity">
+
+    <!-- Image de couverture de l'album -->
+    <ImageView
+        android:id="@+id/albumCoverImageView"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center_horizontal"
+        android:scaleType="centerCrop"
+        android:src="@drawable/placeholder_image" />
+
+    <!-- Titre de l'album -->
+    <TextView
+        android:id="@+id/albumTitleTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Titre de l'Album"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold" />
+
+    <!-- Nom de l'artiste -->
+    <TextView
+        android:id="@+id/albumArtistTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nom de l'Artiste"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <!-- Nombre de pistes -->
+    <TextView
+        android:id="@+id/albumTracksCountTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="17 pistes"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+    <!-- RecyclerView pour afficher les pistes de l'album -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/tracksRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="16dp" />
+
+    <!-- Bouton de retour -->
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Retour" />
+
+</LinearLayout>
