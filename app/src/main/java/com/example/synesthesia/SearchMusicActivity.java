@@ -76,6 +76,9 @@ public class SearchMusicActivity extends AppCompatActivity {
     }
 
     private void performSearch() {
+        // Réinitialiser le player avant d'effectuer une nouvelle recherche
+        musicAdapter.resetPlayer();
+
         String query = searchField.getText().toString().trim();
         if (query.isEmpty()) {
             return;
