@@ -1,6 +1,7 @@
 package com.example.synesthesia;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -57,13 +58,14 @@ public class UserProfileActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                        String pseudo = documentSnapshot.getString("pseudo");
+                        String pseudo = documentSnapshot.getString("username");
                         String email = documentSnapshot.getString("email");
 
                         if (profileImageUrl != null) {
                             Picasso.get().load(profileImageUrl).into(userProfileImageView);
                         }
 
+                        Log.d("PROFIL", "Pseudonyme de l'utilisateur : " + pseudo);
                         userPseudoTextView.setText(pseudo);
                         userEmailTextView.setText(email);
                     }
