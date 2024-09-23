@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class BookDetailsActivity extends AppCompatActivity {
 
@@ -72,7 +73,7 @@ public class BookDetailsActivity extends AppCompatActivity {
     }
 
     private void submitRecommendation(Book book, String commentText) {
-        String userId = mAuth.getCurrentUser().getUid();
+        String userId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -87,7 +88,6 @@ public class BookDetailsActivity extends AppCompatActivity {
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
 
                         Recommendation recommendation = new Recommendation(
-                                null,  // ID sera généré automatiquement par Firestore
                                 book.getVolumeInfo().getTitle(),
                                 book.getVolumeInfo().getPublishedDate(),
                                 book.getVolumeInfo().getImageLinks() != null ? book.getVolumeInfo().getImageLinks().getThumbnail() : null,
@@ -100,7 +100,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(BookDetailsActivity.this, "Recommendation saved", Toast.LENGTH_SHORT).show();
+                                    String recommendationId = documentReference.getId();
+                                    Toast.makeText(BookDetailsActivity.this, "Recommendation saved with ID: " + recommendationId, Toast.LENGTH_SHORT).show();
                                     finish();
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error saving recommendation", Toast.LENGTH_SHORT).show());

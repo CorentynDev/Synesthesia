@@ -1,12 +1,10 @@
 package com.example.synesthesia.models;
 
 import java.util.List;
-
 import com.google.firebase.Timestamp;
 
 public class Recommendation {
 
-    private String id;
     private String title;
     private String coverUrl;
     private String userId;
@@ -18,20 +16,11 @@ public class Recommendation {
     public Recommendation() {
     }
 
-    public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp) {
-        this.id = id;
+    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp) {
         this.title = title;
         this.coverUrl = coverUrl;
         this.userId = userId;
         this.timestamp = timestamp;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getTitle() {
