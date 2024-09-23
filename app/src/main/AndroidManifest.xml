@@ -31,8 +31,17 @@
         <!-- RegisterActivity (Activité pour créer un compte) -->
         <activity android:name=".RegisterActivity" android:exported="true"/>
 
-        <!-- MainActivity -->
-        <activity android:name=".MainActivity" android:exported="true" />
+        <!-- Déclaration de MainActivity -->
+        <activity android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Déclaration de MusicDetailsActivity -->
+        <activity android:name=".MusicDetailsActivity" />
 
         <!-- BookDetailsActivity -->
         <activity android:name=".BookDetailsActivity" />
