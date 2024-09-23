@@ -2,6 +2,8 @@ package com.example.synesthesia.models;
 
 import java.util.List;
 
+import com.google.firebase.Timestamp;
+
 public class Recommendation {
 
     private String id;
@@ -13,13 +15,14 @@ public class Recommendation {
     private List<Comment> comments; // Liste des commentaires
     private int likesCount;
     private List<String> likedBy;
+    private Timestamp timestamp;
 
     // Constructeur par défaut (nécessaire pour Firebase)
     public Recommendation() {
     }
 
     // Constructeur avec tous les champs
-    public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, List<Comment> comments) {
+    public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp) {
         this.id = id;
         this.title = title;
         this.date = date;
@@ -27,6 +30,7 @@ public class Recommendation {
         this.userId = userId;
         this.username = username;
         this.comments = comments;
+        this.timestamp = timestamp;
     }
 
     // Getters et setters pour tous les champs
@@ -101,5 +105,13 @@ public class Recommendation {
 
     public void setLikedBy(List<String> likedBy) {
         this.likedBy = likedBy;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
     }
 }

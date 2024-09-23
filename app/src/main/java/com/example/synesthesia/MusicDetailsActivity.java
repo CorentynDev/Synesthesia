@@ -133,6 +133,9 @@ public class MusicDetailsActivity extends AppCompatActivity {
 
                         Log.d(TAG, "Recommendation Cover URL: " + recommendationCoverUrl);
 
+                        // Créer un timestamp pour la recommandation
+                        Timestamp recommendationTimestamp = new Timestamp(new Date());
+
                         // Créer un objet Recommendation avec les détails de la musique
                         Recommendation recommendation = new Recommendation(
                                 null, // ID sera auto-généré par Firestore
@@ -141,7 +144,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 recommendationCoverUrl, // Cover image URL correcte
                                 userId,
                                 username,
-                                commentsList // Liste des commentaires
+                                commentsList, // Liste des commentaires
+                                recommendationTimestamp // Timestamp ajouté
                         );
 
                         // Ajouter la recommandation à Firestore
