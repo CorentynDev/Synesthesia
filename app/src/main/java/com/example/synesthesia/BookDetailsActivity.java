@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Book;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -94,6 +95,9 @@ public class BookDetailsActivity extends AppCompatActivity {
                         List<Comment> commentsList = new ArrayList<>();
                         commentsList.add(firstComment);
 
+                        // Créer un timestamp pour la recommandation
+                        Timestamp recommendationTimestamp = new Timestamp(new Date());
+
                         // Créer un objet Recommendation avec les informations nécessaires
                         Recommendation recommendation = new Recommendation(
                                 null,  // ID sera généré automatiquement par Firestore
@@ -102,7 +106,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 book.getVolumeInfo().getImageLinks() != null ? book.getVolumeInfo().getImageLinks().getThumbnail() : null,
                                 userId,
                                 username,
-                                commentsList  // Liste de commentaires, contenant la note
+                                commentsList,  // Liste de commentaires, contenant la note
+                                recommendationTimestamp // Timestamp ajouté
                         );
 
                         // Ajouter la recommandation à Firestore
