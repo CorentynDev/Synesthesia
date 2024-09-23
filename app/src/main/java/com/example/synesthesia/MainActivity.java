@@ -29,6 +29,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import com.example.synesthesia.models.Comment;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -141,11 +142,16 @@ public class MainActivity extends AppCompatActivity {
 
         // Récupérer et afficher le pseudo utilisateur
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
+        ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
         db.collection("users").document(recommendation.getUserId()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String username = documentSnapshot.getString("username");
                         userTextView.setText(username);
+                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                        if (profileImageUrl != null) {
+                            Picasso.get().load(profileImageUrl).into(profileImageView);
+                        }
                     } else {
                         userTextView.setText("Utilisateur inconnu");
                     }
