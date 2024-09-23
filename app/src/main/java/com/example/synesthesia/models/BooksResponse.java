@@ -2,7 +2,8 @@ package com.example.synesthesia.models;
 
 import java.util.List;
 
-public class BooksResponse {
+public class
+BooksResponse {
     private final List<Book> items;
 
     public BooksResponse(List<Book> items) {

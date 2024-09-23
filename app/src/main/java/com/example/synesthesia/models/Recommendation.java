@@ -8,11 +8,8 @@ public class Recommendation {
 
     private String id;
     private String title;
-    private String date;
     private String coverUrl;
     private String userId;
-    private String username;
-    private List<Comment> comments;
     private int likesCount;
     private List<String> likedBy;
     private Timestamp timestamp;
@@ -24,11 +21,8 @@ public class Recommendation {
     public Recommendation(String id, String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp) {
         this.id = id;
         this.title = title;
-        this.date = date;
         this.coverUrl = coverUrl;
         this.userId = userId;
-        this.username = username;
-        this.comments = comments;
         this.timestamp = timestamp;
     }
 

@@ -7,10 +7,6 @@ import java.util.List;
 public class Book implements Parcelable {
     private final VolumeInfo volumeInfo;
 
-    public Book(VolumeInfo volumeInfo) {
-        this.volumeInfo = volumeInfo;
-    }
-
     protected Book(Parcel in) {
         volumeInfo = in.readParcelable(VolumeInfo.class.getClassLoader());
     }
