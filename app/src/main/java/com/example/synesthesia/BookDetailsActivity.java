@@ -65,6 +65,10 @@ public class BookDetailsActivity extends AppCompatActivity {
 
             // Permettre la soumission de la recommandation même sans commentaire
             submitRecommendation(book, comment.isEmpty() ? "" : comment);
+            // Rediriger l'utilisateur à la page de la main activity
+            Intent intent = new Intent(BookDetailsActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
         });
 
         // Bouton de retour pour revenir à la page de résultats
