@@ -43,7 +43,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        holder.likesCountTextView.setText(String.valueOf("Likes number: " + recommendation.getLikesCount()));
+        holder.likesCountTextView.setText("Likes number: " + recommendation.getLikesCount());
     }
 
     @Override

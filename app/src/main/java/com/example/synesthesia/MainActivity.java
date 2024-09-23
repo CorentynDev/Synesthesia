@@ -156,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
                     userTextView.setText("Erreur de chargement");
                 });
 
-        // Récupérer et afficher l'image de couverture
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
             Glide.with(this)
@@ -167,19 +166,19 @@ public class MainActivity extends AppCompatActivity {
             coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Gestion du bouton "like"
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
-        // Initialisation des likes
-        List<String> likedBy = recommendation.getLikedBy();
-        if (likedBy == null) {
+        final List<String> likedBy;
+        if (recommendation.getLikedBy() == null) {
             likedBy = new ArrayList<>();
             recommendation.setLikedBy(likedBy);
+        } else {
+            likedBy = recommendation.getLikedBy();
         }
 
-        likeCounter.setText(String.valueOf(recommendation.getLikesCount()));
+        likeCounter.setText(String.valueOf(likedBy.size()));
 
         likeButton.setOnClickListener(v -> {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -187,22 +186,18 @@ public class MainActivity extends AppCompatActivity {
                 String userId = currentUser.getUid();
                 boolean isCurrentlyLiked = isLiked(userId, recommendation);
 
-                updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, recommendation.getLikesCount());
+                updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, likedBy.size());
 
                 toggleLike(recommendationId, userId, !isCurrentlyLiked);
 
-                // Utiliser updateLikeList pour gérer likedBy
                 updateLikeList(userId, recommendation, !isCurrentlyLiked);
-                recommendation.setLikesCount(isCurrentlyLiked ? recommendation.getLikesCount() - 1 : recommendation.getLikesCount() + 1);
             }
         });
 
-        // Gestion des commentaires
         commentButton.setOnClickListener(v -> {
             showCommentModal(recommendationId);
         });
 
-        // Ajouter la carte à la vue conteneur
         container.addView(cardView);
     }
 
@@ -251,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
                 throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
-            int likesCount = snapshot.getLong("likesCount").intValue();
             List<String> likedBy = (List<String>) snapshot.get("likedBy");
 
             if (likedBy == null) {
@@ -261,16 +255,11 @@ public class MainActivity extends AppCompatActivity {
             if (isLiked) {
                 if (!likedBy.contains(userId)) {
                     likedBy.add(userId);
-                    likesCount++;
                 }
             } else {
-                if (likedBy.contains(userId)) {
-                    likedBy.remove(userId);
-                    likesCount--;
-                }
+                likedBy.remove(userId);
             }
 
-            transaction.update(recommendationRef, "likesCount", likesCount);
             transaction.update(recommendationRef, "likedBy", likedBy);
 
             return null;
@@ -347,17 +336,10 @@ public class MainActivity extends AppCompatActivity {
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        updateCommentCount(recommendationId, 1);
+                        // Pas besoin de mettre à jour le nombre de commentaires
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
         }
-    }
-
-    private void updateCommentCount(String recommendationId, int countChange) {
-        DocumentReference recommendationRef = db.collection("recommendations").document(recommendationId);
-        recommendationRef.update("commentsCount", FieldValue.increment(countChange))
-                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Comment count updated"))
-                .addOnFailureListener(e -> Log.e("Firestore", "Error updating comment count", e));
     }
 
     private void getUserProfile() {

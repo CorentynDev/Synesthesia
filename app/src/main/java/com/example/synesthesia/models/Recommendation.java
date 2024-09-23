@@ -8,7 +8,6 @@ public class Recommendation {
     private String title;
     private String coverUrl;
     private String userId;
-    private int likesCount;
     private List<String> likedBy;
     private Timestamp timestamp;
 
@@ -35,14 +34,6 @@ public class Recommendation {
         return userId;
     }
 
-    public int getLikesCount() {
-        return likesCount;
-    }
-
-    public void setLikesCount(int likesCount) {
-        this.likesCount = likesCount;
-    }
-
     public List<String> getLikedBy() {
         return likedBy;
     }
@@ -53,5 +44,9 @@ public class Recommendation {
 
     public Timestamp getTimestamp() {
         return timestamp;
+    }
+
+    public int getLikesCount() {
+        return likedBy != null ? likedBy.size() : 0;
     }
 }
