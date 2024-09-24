@@ -86,6 +86,7 @@ public class BookDetailsActivity extends AppCompatActivity {
                         commentsList.add(firstComment);
 
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
+                        String type = "book";
 
                         Recommendation recommendation = new Recommendation(
                                 book.getVolumeInfo().getTitle(),
@@ -94,7 +95,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 userId,
                                 username,
                                 commentsList,
-                                recommendationTimestamp
+                                recommendationTimestamp,
+                                type
                         );
 
                         db.collection("recommendations")

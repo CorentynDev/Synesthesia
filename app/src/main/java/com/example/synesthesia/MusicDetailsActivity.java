@@ -122,6 +122,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
                         Log.d(TAG, "Recommendation Cover URL: " + recommendationCoverUrl);
 
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
+                        String type = "music";
 
                         Recommendation recommendation = new Recommendation(
                                 track.getTitle(),
@@ -130,7 +131,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 userId,
                                 username,
                                 commentsList,
-                                recommendationTimestamp
+                                recommendationTimestamp,
+                                type
                         );
 
                         db.collection("recommendations")
