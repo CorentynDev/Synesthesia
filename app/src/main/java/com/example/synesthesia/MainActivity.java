@@ -13,12 +13,14 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -42,17 +44,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = FirebaseFirestore.getInstance();
 
-        Button profileButton = findViewById(R.id.profileButton);
+        ImageView profileButton = findViewById(R.id.profileButton);
         profileButton.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
             startActivity(intent);
         });
 
-        Button createRecommendationButton = findViewById(R.id.createRecommendationButton);
+        ImageView createRecommendationButton = findViewById(R.id.createRecommendationButton);
         createRecommendationButton.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle("Choisissez un type de recommandation");
@@ -374,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
                             String username = documentSnapshot.getString("username");
 
                             if (username != null && !username.isEmpty()) {
-                                profileSummary.setText("Welcome, " + username + "!");
+                                profileSummary.setText(username);
                             }
 
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
