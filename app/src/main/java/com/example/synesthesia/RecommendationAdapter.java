@@ -4,15 +4,17 @@ import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.models.Recommendation;
+import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAdapter.ViewHolder> {
@@ -27,7 +29,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_recommendation, parent, false);
+                .inflate(R.layout.recommendation_card, parent, false);
         return new ViewHolder(view);
     }
 
@@ -43,7 +45,22 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        holder.likesCountTextView.setText("Likes number: " + recommendation.getLikesCount());
+        final List<String> likedBy;
+        if (recommendation.getLikedBy() == null) {
+            likedBy = new ArrayList<>();
+            recommendation.setLikedBy(likedBy);
+        } else {
+            likedBy = recommendation.getLikedBy();
+        }
+        holder.likesCountTextView.setText(String.valueOf(likedBy.size()));
+
+        // Date de publication
+        if (recommendation.getTimestamp() != null) {
+            String timeAgo = getTimeAgo(recommendation.getTimestamp());
+            holder.dateTextView.setText(timeAgo);
+        } else {
+            holder.dateTextView.setText("Date inconnue");
+        }
     }
 
     @Override
@@ -62,14 +79,40 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         ImageView coverImageView;
         TextView titleTextView;
         TextView likesCountTextView;
-        TextView commentsTextView;
+        TextView dateTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
-            coverImageView = itemView.findViewById(R.id.recommendationCoverImageView);
-            titleTextView = itemView.findViewById(R.id.recommendationTitleTextView);
-            likesCountTextView = itemView.findViewById(R.id.recommendationLikesCountTextView);
-            commentsTextView = itemView.findViewById(R.id.recommendationCommentsTextView);
+            coverImageView = itemView.findViewById(R.id.recommendationCover);
+            titleTextView = itemView.findViewById(R.id.recommendationTitle);
+            likesCountTextView = itemView.findViewById(R.id.likeCounter);
+            dateTextView = itemView.findViewById(R.id.recommendationDate);
+        }
+    }
+
+    private String getTimeAgo(Timestamp timestamp) {
+        long time = timestamp.toDate().getTime();
+        long now = System.currentTimeMillis();
+
+        if (time > now || time <= 0) {
+            return "à l'instant";
+        }
+
+        final long diff = now - time;
+        if (diff < 60 * 1000) {
+            return "Il y a " + diff / 1000 + " secondes";
+        } else if (diff < 2 * 60 * 1000) {
+            return "Il y a une minute";
+        } else if (diff < 50 * 60 * 1000) {
+            return "Il y a " + diff / (60 * 1000) + " minutes";
+        } else if (diff < 90 * 60 * 1000) {
+            return "Il y a une heure";
+        } else if (diff < 24 * 60 * 60 * 1000) {
+            return "Il y a " + diff / (60 * 60 * 1000) + " heures";
+        } else if (diff < 48 * 60 * 60 * 1000) {
+            return "Hier";
+        } else {
+            return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
         }
     }
 }
