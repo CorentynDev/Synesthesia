@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -26,13 +27,11 @@ import java.util.List;
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHolder> {
 
-    private List<Object> items; // Une liste générique pour stocker des artistes, albums, ou pistes
-    private Context context;
-    private OnItemClickListener listener;
+    private final List<Object> items;
+    private final Context context;
 
     private int currentlyPlayingPosition = RecyclerView.NO_POSITION;
 
-    // Nouvelle variable pour stocker le ViewHolder en lecture
     private MediaPlayer globalMediaPlayer;
 
 
@@ -41,31 +40,28 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
         this.context = context;
     }
 
-    // Méthode pour définir l'écouteur de clics
     public void setOnItemClickListener(OnItemClickListener listener) {
-        this.listener = listener;
     }
 
-    // Méthode pour mettre à jour les artistes
+    @SuppressLint("NotifyDataSetChanged")
     public void updateArtists(List<Artist> artists) {
         items.clear();
         items.addAll(artists);
         notifyDataSetChanged();
     }
 
-    // Méthode pour mettre à jour les albums
+    @SuppressLint("NotifyDataSetChanged")
     public void updateAlbums(List<Album> albums) {
         items.clear();
         items.addAll(albums);
         notifyDataSetChanged();
     }
 
-    // Méthode pour mettre à jour les pistes
+    @SuppressLint("NotifyDataSetChanged")
     public void updateTracks(List<Track> tracks) {
         items.clear();
         items.addAll(tracks);
         notifyDataSetChanged();
-        // Optionnel: vérifiez les données après la mise à jour
         checkTracksData(tracks);
     }
 
@@ -85,7 +81,6 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 Track track = (Track) item;
                 holder.bindTrack(track);
 
-                // Définir l’image du bouton lecture/pause en fonction de la position actuellement en lecture
                 if (position == currentlyPlayingPosition) {
                     holder.playPauseButton.setImageResource(R.drawable.pause);
                 } else {
@@ -94,20 +89,19 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
                 holder.playPauseButton.setOnClickListener(v -> togglePlayPause(holder, position, track));
 
-                // Ouvrir MusicDetailsActivity au clic sur le morceau
                 holder.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(context, MusicDetailsActivity.class);
-                    intent.putExtra("track", track); // Assurez-vous que Track implémente Serializable ou Parcelable
+                    intent.putExtra("track", track);
                     context.startActivity(intent);
                 });
             } else if (item instanceof Artist) {
                 holder.bindArtist((Artist) item);
-                holder.playPauseButton.setVisibility(View.GONE); // Masquer le bouton lecture pour les artistes
+                holder.playPauseButton.setVisibility(View.GONE);
             } else if (item instanceof Album) {
                 holder.bindAlbum((Album) item);
-                holder.playPauseButton.setVisibility(View.GONE); // Masquer le bouton lecture pour les albums
+                holder.playPauseButton.setVisibility(View.GONE);
             } else {
-                holder.playPauseButton.setVisibility(View.GONE); // Masquer le bouton lecture pour les types inconnus
+                holder.playPauseButton.setVisibility(View.GONE);
             }
         } else {
             Log.e("MusicAdapter", "Index hors limites : " + position);
@@ -116,7 +110,6 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
     private void togglePlayPause(MusicViewHolder holder, int position, Track track) {
         if (position == currentlyPlayingPosition) {
-            // Si c'est la même piste, mettre en pause ou reprendre
             if (globalMediaPlayer != null) {
                 if (globalMediaPlayer.isPlaying()) {
                     globalMediaPlayer.pause();
@@ -127,12 +120,10 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 }
             }
         } else {
-            // Démarrer une nouvelle piste
             if (globalMediaPlayer != null) {
-                // Si une autre piste est en cours, arrêtez-la
                 if (globalMediaPlayer.isPlaying()) {
                     globalMediaPlayer.stop();
-                    notifyItemChanged(currentlyPlayingPosition); // Réinitialise l'ancienne piste
+                    notifyItemChanged(currentlyPlayingPosition);
                 }
                 globalMediaPlayer.reset();
             } else {
@@ -147,14 +138,14 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                     if (currentlyPlayingPosition != RecyclerView.NO_POSITION) {
                         notifyItemChanged(currentlyPlayingPosition);
                     }
-                    currentlyPlayingPosition = position; // Met à jour la position en cours
-                    notifyItemChanged(position); // Met à jour l'icône de la nouvelle piste
+                    currentlyPlayingPosition = position;
+                    notifyItemChanged(position);
                 });
 
                 globalMediaPlayer.setOnCompletionListener(mp -> {
                     holder.playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
-                    currentlyPlayingPosition = RecyclerView.NO_POSITION; // Réinitialise la position
-                    notifyItemChanged(position); // Met à jour l'icône après la fin
+                    currentlyPlayingPosition = RecyclerView.NO_POSITION;
+                    notifyItemChanged(position);
                 });
 
                 globalMediaPlayer.prepareAsync();
@@ -171,10 +162,10 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     }
 
     public class MusicViewHolder extends RecyclerView.ViewHolder {
-        private ImageView imageView;
-        private TextView titleTextView;
-        private TextView artistTextView;
-        private ImageButton playPauseButton;
+        private final ImageView imageView;
+        private final TextView titleTextView;
+        private final TextView artistTextView;
+        private final ImageButton playPauseButton;
 
         public MusicViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -187,7 +178,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
 
         public void bindArtist(Artist artist) {
             titleTextView.setText(artist.getName());
-            artistTextView.setText(""); // Les artistes n'ont peut-être pas besoin de sous-titre
+            artistTextView.setText("");
 
             if (artist.getImageUrl() != null) {
                 Glide.with(context)
@@ -234,7 +225,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     }
 
     public interface OnItemClickListener {
-        void onItemClick(Object item); // Gestion générique des clics
+        void onItemClick(Object item);
     }
 
     public void checkTracksData(List<Track> tracks) {
@@ -242,6 +233,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             Log.d("MusicAdapter", "Track: " + track.getTitle() + ", Preview URL: " + track.getPreviewUrl());
         }
     }
+    @SuppressLint("NotifyDataSetChanged")
     public void resetPlayer() {
         if (globalMediaPlayer != null) {
             globalMediaPlayer.stop();
@@ -249,7 +241,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             globalMediaPlayer = null;
         }
         currentlyPlayingPosition = RecyclerView.NO_POSITION;
-        notifyDataSetChanged(); // Met à jour tous les éléments pour réinitialiser les icônes
+        notifyDataSetChanged();
     }
 
 }

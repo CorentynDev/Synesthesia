@@ -33,9 +33,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_music_details); // Assurez-vous que ce layout existe
+        setContentView(R.layout.activity_music_details);
 
-        // Récupérer le morceau depuis l'Intent
         track = getIntent().getParcelableExtra("track");
         Log.d(TAG, "Track received: " + track);
 
@@ -46,7 +45,6 @@ public class MusicDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        // Initialiser les vues
         ImageView trackImage = findViewById(R.id.musicImage);
         TextView musicTitle = findViewById(R.id.musicTitle);
         TextView musicArtist = findViewById(R.id.musicArtist);
@@ -55,7 +53,6 @@ public class MusicDetailsActivity extends AppCompatActivity {
         Button recommendButton = findViewById(R.id.recommendButton);
         Button backButton = findViewById(R.id.backButton);
 
-        // Vérifier que les vues ne sont pas nulles
         if (trackImage == null || musicTitle == null || musicArtist == null || musicDuration == null || commentField == null || recommendButton == null || backButton == null) {
             Log.e(TAG, "Une ou plusieurs vues sont nulles");
             Toast.makeText(this, "Erreur d'initialisation des vues", Toast.LENGTH_SHORT).show();
@@ -63,39 +60,34 @@ public class MusicDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        // Définir les détails du morceau
         musicTitle.setText(track.getTitle());
         musicArtist.setText(track.getArtist().getName());
         musicDuration.setText(formatDuration(track.getDuration()));
 
-        // Déterminer l'URL de couverture appropriée
         String coverUrl = null;
         if (track.getAlbum() != null) {
             coverUrl = track.getAlbum().getCoverXl();
-        } else if (track.getArtist() != null) { // Utilisez getArtist() pour obtenir l'objet Artist
-            coverUrl = track.getArtist().getImageUrl(); // Utilisez la méthode appropriée pour obtenir l'URL de l'image de l'artiste
+        } else if (track.getArtist() != null) {
+            coverUrl = track.getArtist().getImageUrl();
         }
 
         Log.d(TAG, "Cover URL: " + coverUrl);
 
         if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(this)
-                    .load(coverUrl) // Utilisez l'URL d'image correcte
+                    .load(coverUrl)
                     .placeholder(R.drawable.placeholder_image)
                     .into(trackImage);
         } else {
             Log.w(TAG, "Cover URL est null ou vide");
-            trackImage.setImageResource(R.drawable.placeholder_image); // Image par défaut
+            trackImage.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Initialiser Firebase Firestore et FirebaseAuth
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Bouton retour
         backButton.setOnClickListener(v -> finish());
 
-        // Bouton recommander
         recommendButton.setOnClickListener(v -> {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(track, commentText.isEmpty() ? "" : commentText);
@@ -110,20 +102,16 @@ public class MusicDetailsActivity extends AppCompatActivity {
 
         String userId = mAuth.getCurrentUser().getUid();
 
-        // Récupérer le nom d'utilisateur de Firestore
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String username = documentSnapshot.getString("username");
 
-                        // Créer le premier commentaire (note de l'utilisateur)
                         Comment firstComment = new Comment(userId, commentText, new Timestamp(new Date()));
 
-                        // Créer une liste de commentaires avec le premier commentaire
                         List<Comment> commentsList = new ArrayList<>();
                         commentsList.add(firstComment);
 
-                        // Déterminer l'URL de couverture appropriée pour la recommandation
                         String recommendationCoverUrl = null;
                         if (track.getAlbum() != null) {
                             recommendationCoverUrl = track.getAlbum().getCoverXl();
@@ -133,10 +121,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
 
                         Log.d(TAG, "Recommendation Cover URL: " + recommendationCoverUrl);
 
-                        // Créer un timestamp pour la recommandation
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
 
-                        // Créer un objet Recommendation avec les détails de la musique
                         Recommendation recommendation = new Recommendation(
                                 track.getTitle(),
                                 null,
@@ -151,7 +137,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
                                     Toast.makeText(MusicDetailsActivity.this, "Recommandation enregistrée", Toast.LENGTH_SHORT).show();
-                                    finish(); // Fermer l'activité après l'enregistrement
+                                    finish();
                                 })
                                 .addOnFailureListener(e -> {
                                     Log.e(TAG, "Erreur lors de l'enregistrement de la recommandation", e);
@@ -168,7 +154,6 @@ public class MusicDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    // Fonction utilitaire pour formater la durée en minutes et secondes
     private String formatDuration(int durationInSeconds) {
         int minutes = durationInSeconds / 60;
         int seconds = durationInSeconds % 60;
