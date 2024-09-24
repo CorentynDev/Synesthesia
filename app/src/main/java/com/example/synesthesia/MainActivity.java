@@ -315,12 +315,30 @@ public class MainActivity extends AppCompatActivity {
                     assert queryDocumentSnapshots != null;
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Comment comment = doc.toObject(Comment.class);
-                        commentList.add(comment);
-                    }
+                        String userId = comment.getUserId(); // Récupérer l'ID de l'utilisateur
 
-                    adapter.notifyDataSetChanged();
+                        // Récupérer les informations de l'utilisateur
+                        db.collection("users").document(userId).get()
+                                .addOnSuccessListener(userDoc -> {
+                                    if (userDoc.exists()) {
+                                        String username = userDoc.getString("username");
+                                        String profileImageUrl = userDoc.getString("profileImageUrl");
+
+                                        // Créer un objet Comment avec les informations de l'utilisateur
+                                        comment.setUsername(username); // Assurez-vous que Comment a un champ pour le nom
+                                        comment.setProfileImageUrl(profileImageUrl); // Assurez-vous que Comment a un champ pour l'image
+
+                                        commentList.add(comment);
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                })
+                                .addOnFailureListener(e1 -> {
+                                    Log.e("UserProfile", "Error fetching user data", e1);
+                                });
+                    }
                 });
     }
+
 
     private void postComment(String recommendationId, String commentText) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();

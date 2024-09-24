@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.Timestamp;
 import com.squareup.picasso.Picasso;
@@ -115,4 +116,36 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
         }
     }
+
+    static class CommentViewHolder extends RecyclerView.ViewHolder {
+        TextView commentTextView;
+        TextView usernameTextView; // Pour afficher le nom d'utilisateur
+        ImageView profileImageView; // Pour afficher l'image de profil
+        TextView timestampTextView; // Pour afficher le temps écoulé
+
+        CommentViewHolder(View itemView) {
+            super(itemView);
+            commentTextView = itemView.findViewById(R.id.commentTextView);
+            usernameTextView = itemView.findViewById(R.id.usernameTextView);
+            profileImageView = itemView.findViewById(R.id.profileImageView);
+            timestampTextView = itemView.findViewById(R.id.timestampTextView);
+        }
+    }
+
+
+    private void bindComment(CommentViewHolder holder, Comment comment) {
+        holder.commentTextView.setText(comment.getCommentText());
+        holder.usernameTextView.setText(comment.getUsername());
+
+        // Chargez l'image de profil si disponible
+        if (comment.getProfileImageUrl() != null && !comment.getProfileImageUrl().isEmpty()) {
+            Picasso.get().load(comment.getProfileImageUrl()).into(holder.profileImageView);
+        } else {
+            holder.profileImageView.setImageResource(R.drawable.placeholder_image); // image par défaut
+        }
+
+        // Afficher le temps écoulé
+        holder.timestampTextView.setText(comment.getTimeAgo());
+    }
+
 }
