@@ -136,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
             dateTextView.setText("Date inconnue");
         }
 
-        // Récupérer et afficher le pseudo utilisateur
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
         db.collection("users").document(recommendation.getUserId()).get()
