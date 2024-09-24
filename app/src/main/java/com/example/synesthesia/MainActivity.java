@@ -13,14 +13,12 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
-import com.google.android.material.button.MaterialButton;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -32,6 +30,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.squareup.picasso.Picasso;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +40,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
             builder.create().show();
         });
 
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            getRecommendationData();
+        });
+
         getRecommendationData();
         getUserProfile();
     }
@@ -100,6 +105,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void getRecommendationData() {
         Log.d("MainActivity", "Starting to fetch recommendations");
+
+        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setRefreshing(true);
+
         db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
             Log.d("MainActivity", "Successfully fetched recommendations");
             LinearLayout recommendationList = findViewById(R.id.recommendationList);
@@ -119,8 +128,11 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("MainActivity", "Failed to parse recommendation");
                 }
             }
+
+            swipeRefreshLayout.setRefreshing(false);
         }).addOnFailureListener(e -> {
             Log.e("FirestoreData", "Error when fetching documents: ", e);
+            swipeRefreshLayout.setRefreshing(false);
         });
     }
 
