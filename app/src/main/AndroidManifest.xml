@@ -49,9 +49,6 @@
         <!-- SearchBookActivity -->
         <activity android:name=".SearchBookActivity" />
 
-        <!-- SearchGameActivity -->
-        <activity android:name=".SearchGameActivity" />
-
         <activity android:name=".SearchMusicActivity" />
 
         <activity android:name=".UserProfileActivity" />
