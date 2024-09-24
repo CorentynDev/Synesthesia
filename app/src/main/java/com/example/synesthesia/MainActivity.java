@@ -29,6 +29,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.Transaction;
 import com.squareup.picasso.Picasso;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -44,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = FirebaseFirestore.getInstance();
@@ -65,28 +65,24 @@ public class MainActivity extends AppCompatActivity {
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
                     case 0:
-                        Intent musicIntent = new Intent(MainActivity.this, SearchMusicActivity.class);
-                        startActivity(musicIntent);
+                        // Handle Musique
                         break;
                     case 1:
-                        // Lancer une activité pour la création de recommandation de films (si implémentée plus tard)
+                        // Handle Film
                         break;
                     case 2:
-                        // Lancer une activité pour la création de recommandation de jeux vidéo (si implémentée plus tard)
+                        // Handle Jeux Vidéo
                         break;
                     case 3:
-                        Intent bookIntent = new Intent(MainActivity.this, SearchBookActivity.class);
-                        startActivity(bookIntent);
+                        // Handle Livre
                         break;
                 }
             });
             builder.create().show();
         });
 
-        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            getRecommendationData();
-        });
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(this::getRecommendationData);
 
         getRecommendationData();
         getUserProfile();
@@ -106,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
     public void getRecommendationData() {
         Log.d("MainActivity", "Starting to fetch recommendations");
 
-        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setRefreshing(true);
 
         db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
@@ -115,17 +110,9 @@ public class MainActivity extends AppCompatActivity {
             recommendationList.removeAllViews();
 
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                Log.d("MainActivity", "Document ID: " + document.getId());
-
                 Recommendation recommendation = document.toObject(Recommendation.class);
-
                 if (recommendation != null) {
-                    String recommendationId = document.getId();
-                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendationId);
-
-                    addRecommendationCard(recommendationList, recommendation, recommendationId);
-                } else {
-                    Log.e("MainActivity", "Failed to parse recommendation");
+                    addRecommendationCard(recommendationList, recommendation, document.getId());
                 }
             }
 
@@ -156,11 +143,12 @@ public class MainActivity extends AppCompatActivity {
         db.collection("users").document(recommendation.getUserId()).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String username = documentSnapshot.getString("username");
-                        userTextView.setText(username);
+                        userTextView.setText(documentSnapshot.getString("username"));
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                        if (profileImageUrl != null) {
-                            Picasso.get().load(profileImageUrl).into(profileImageView);
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Glide.with(this).load(profileImageUrl).into(profileImageView);
+                        } else {
+                            profileImageView.setImageResource(R.drawable.placeholder_image);
                         }
                     } else {
                         userTextView.setText("Utilisateur inconnu");
@@ -172,43 +160,37 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
-            Glide.with(this)
-                    .load(recommendation.getCoverUrl())
-                    .placeholder(R.drawable.placeholder_image)
-                    .into(coverImageView);
+            Glide.with(this).load(recommendation.getCoverUrl()).placeholder(R.drawable.placeholder_image).into(coverImageView);
         } else {
             coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
-        TextView commentCounter = cardView.findViewById(R.id.commentCounter);  // Ajout du compteur de commentaires
+        TextView commentCounter = cardView.findViewById(R.id.commentCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
-        // Gestion des likes (comme déjà implémenté)
-        final List<String> likedBy;
-        if (recommendation.getLikedBy() == null) {
-            likedBy = new ArrayList<>();
-            recommendation.setLikedBy(likedBy);
-        } else {
-            likedBy = recommendation.getLikedBy();
-        }
-
+        List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
         likeCounter.setText(String.valueOf(likedBy.size()));
 
-        likeButton.setOnClickListener(v -> {
-            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-            if (currentUser != null) {
-                String userId = currentUser.getUid();
-                boolean isCurrentlyLiked = isLiked(userId, recommendation);
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            final boolean[] isCurrentlyLiked = {isLiked(userId, recommendation)};
 
-                updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, likedBy.size());
-                toggleLike(recommendationId, userId, !isCurrentlyLiked);
-                updateLikeList(userId, recommendation, !isCurrentlyLiked);
-            }
-        });
+            likeButton.setImageResource(isCurrentlyLiked[0] ? R.drawable.given_like : R.drawable.like);
 
-        // Ajouter le nombre de commentaires
+            likeButton.setOnClickListener(v -> {
+                boolean newLikeStatus = !isCurrentlyLiked[0];
+                updateLikeUI(likeButton, likeCounter, newLikeStatus, likedBy.size());
+                updateLikeList(userId, recommendation, newLikeStatus);
+                toggleLike(recommendationId, userId, newLikeStatus, () -> {
+                    // Callback après la mise à jour de la base de données
+                    isCurrentlyLiked[0] = newLikeStatus;
+                });
+            });
+        }
+
         db.collection("recommendations").document(recommendationId)
                 .collection("comments").get()
                 .addOnSuccessListener(querySnapshot -> {
@@ -244,11 +226,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateLikeUI(ImageView likeButton, TextView likeCounter, boolean isCurrentlyLiked, int currentLikesCount) {
         if (isCurrentlyLiked) {
-            likeButton.setImageResource(R.drawable.like);
-            likeCounter.setText(String.valueOf(currentLikesCount - 1));
-        } else {
             likeButton.setImageResource(R.drawable.given_like);
             likeCounter.setText(String.valueOf(currentLikesCount + 1));
+        } else {
+            likeButton.setImageResource(R.drawable.like);
+            likeCounter.setText(String.valueOf(currentLikesCount - 1));
         }
     }
 
@@ -257,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
         return likedBy != null && likedBy.contains(userId);
     }
 
-    private void toggleLike(String recommendationId, String userId, boolean isLiked) {
+    private void toggleLike(String recommendationId, String userId, boolean isLiked, Runnable onComplete) {
         if (recommendationId == null || userId == null) {
             Log.e("ToggleLike", "Recommendation ID or User ID is null");
             return;
@@ -265,14 +247,13 @@ public class MainActivity extends AppCompatActivity {
 
         DocumentReference recommendationRef = db.collection("recommendations").document(recommendationId);
 
-        db.runTransaction(transaction -> {
+        db.runTransaction((Transaction.Function<Void>) transaction -> {
             DocumentSnapshot snapshot = transaction.get(recommendationRef);
             if (!snapshot.exists()) {
                 throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
             List<String> likedBy = (List<String>) snapshot.get("likedBy");
-
             if (likedBy == null) {
                 likedBy = new ArrayList<>();
             }
@@ -286,12 +267,13 @@ public class MainActivity extends AppCompatActivity {
             }
 
             transaction.update(recommendationRef, "likedBy", likedBy);
-
             return null;
         }).addOnSuccessListener(aVoid -> {
             Log.d("ToggleLike", "Transaction success!");
+            onComplete.run();
         }).addOnFailureListener(e -> {
             Log.e("ToggleLike", "Transaction failure.", e);
+            onComplete.run();
         });
     }
 
@@ -341,30 +323,12 @@ public class MainActivity extends AppCompatActivity {
                     assert queryDocumentSnapshots != null;
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Comment comment = doc.toObject(Comment.class);
-                        String userId = comment.getUserId(); // Récupérer l'ID de l'utilisateur
-
-                        // Récupérer les informations de l'utilisateur
-                        db.collection("users").document(userId).get()
-                                .addOnSuccessListener(userDoc -> {
-                                    if (userDoc.exists()) {
-                                        String username = userDoc.getString("username");
-                                        String profileImageUrl = userDoc.getString("profileImageUrl");
-
-                                        // Créer un objet Comment avec les informations de l'utilisateur
-                                        comment.setUsername(username); // Assurez-vous que Comment a un champ pour le nom
-                                        comment.setProfileImageUrl(profileImageUrl); // Assurez-vous que Comment a un champ pour l'image
-
-                                        commentList.add(comment);
-                                        adapter.notifyDataSetChanged();
-                                    }
-                                })
-                                .addOnFailureListener(e1 -> {
-                                    Log.e("UserProfile", "Error fetching user data", e1);
-                                });
+                        commentList.add(comment);
                     }
+
+                    adapter.notifyDataSetChanged();
                 });
     }
-
 
     private void postComment(String recommendationId, String commentText) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -379,26 +343,10 @@ public class MainActivity extends AppCompatActivity {
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        Log.d("Comment", "Comment added successfully");
-
-                        // Charger les commentaires et mettre à jour le compteur
-                        updateCommentCounter(recommendationId);
+                        // Pas besoin de mettre à jour le nombre de commentaires
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
         }
-    }
-
-    private void updateCommentCounter(String recommendationId) {
-        TextView commentCounter = findViewById(R.id.commentCounter);
-        db.collection("recommendations").document(recommendationId)
-                .collection("comments").get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int commentCount = querySnapshot.size();
-                    commentCounter.setText(commentCount);
-                })
-                .addOnFailureListener(e -> {
-                    commentCounter.setText("0");
-                });
     }
 
     private void getUserProfile() {
@@ -412,21 +360,13 @@ public class MainActivity extends AppCompatActivity {
             db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
+                            profileSummary.setText(documentSnapshot.getString("summary"));
                             String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                            String username = documentSnapshot.getString("username");
-
-                            if (username != null && !username.isEmpty()) {
-                                profileSummary.setText(username);
-                            }
-
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                                Glide.with(this)
-                                        .load(profileImageUrl)
-                                        .placeholder(R.drawable.placeholder_image)
-                                        .into(profileImageView);
+                                Glide.with(this).load(profileImageUrl).into(profileImageView);
+                            } else {
+                                profileImageView.setImageResource(R.drawable.placeholder_image);
                             }
-                        } else {
-                            Log.d("UserProfile", "No such document");
                         }
                     })
                     .addOnFailureListener(e -> {
