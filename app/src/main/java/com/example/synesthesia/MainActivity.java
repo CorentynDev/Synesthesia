@@ -374,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
                             String username = documentSnapshot.getString("username");
 
                             if (username != null && !username.isEmpty()) {
-                                profileSummary.setText("Welcome, " + username + "!");
+                                profileSummary.setText(username);
                             }
 
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
