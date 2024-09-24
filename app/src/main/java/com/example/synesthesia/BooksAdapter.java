@@ -20,8 +20,8 @@ import java.util.List;
 
 public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHolder> {
 
-    private List<Book> books;
-    private Context context;
+    private final List<Book> books;
+    private final Context context;
 
     public BooksAdapter(List<Book> books, Context context) {
         this.books = books;
@@ -48,10 +48,10 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
 
     class BookViewHolder extends RecyclerView.ViewHolder {
 
-        private ImageView bookCoverImageView;
-        private TextView bookTitleTextView;
-        private TextView bookAuthorTextView;
-        private TextView bookPublishedDateTextView;
+        private final ImageView bookCoverImageView;
+        private final TextView bookTitleTextView;
+        private final TextView bookAuthorTextView;
+        private final TextView bookPublishedDateTextView;
 
         public BookViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -60,12 +60,10 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
             bookAuthorTextView = itemView.findViewById(R.id.bookAuthor);
             bookPublishedDateTextView = itemView.findViewById(R.id.bookDate);
 
-            // Quand l'utilisateur clique sur un livre
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Book selectedBook = books.get(position);
-                    // Ouvre BookDetailsActivity
                     Intent intent = new Intent(context, BookDetailsActivity.class);
                     intent.putExtra("book", selectedBook);
                     context.startActivity(intent);
@@ -79,24 +77,21 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
                 bookAuthorTextView.setText(book.getVolumeInfo().getAuthors() != null && !book.getVolumeInfo().getAuthors().isEmpty() ? book.getVolumeInfo().getAuthors().get(0) : "Auteur inconnu");
                 bookPublishedDateTextView.setText(book.getVolumeInfo().getPublishedDate() != null ? book.getVolumeInfo().getPublishedDate() : "Date inconnue");
 
-                // Check if image URL is available
                 if (book.getVolumeInfo().getImageLinks() != null && book.getVolumeInfo().getImageLinks().getThumbnail() != null) {
                     String thumbnailUrl = book.getVolumeInfo().getImageLinks().getThumbnail();
                     Log.d("BooksAdapter", "Thumbnail URL: " + thumbnailUrl);
 
                     Glide.with(bookCoverImageView.getContext())
                             .load(thumbnailUrl)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL) // Cache en disque pour réutilisation
-                            .skipMemoryCache(false) // Utiliser le cache en mémoire
-                            .placeholder(R.drawable.image_progress) // Image de chargement
-                            .error(R.drawable.placeholder_image) // Image en cas d'échec
+                            .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .skipMemoryCache(false)
+                            .placeholder(R.drawable.image_progress)
+                            .error(R.drawable.placeholder_image)
                             .into(bookCoverImageView);
                 } else {
-                    // Si aucune URL d'image n'est disponible, affichez une image par défaut
                     bookCoverImageView.setImageResource(R.drawable.placeholder_image);
                 }
             } else {
-                // Si VolumeInfo est null, définissez des valeurs par défaut
                 bookTitleTextView.setText("Titre inconnu");
                 bookAuthorTextView.setText("Auteur inconnu");
                 bookPublishedDateTextView.setText("Date inconnue");

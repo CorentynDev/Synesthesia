@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class BookDetailsActivity extends AppCompatActivity {
 
@@ -33,10 +34,8 @@ public class BookDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_details);
 
-        // Récupérer les informations du livre passé par Intent
         book = getIntent().getParcelableExtra("book");
 
-        // Initialiser et remplir les vues avec les données du livre
         TextView bookTitle = findViewById(R.id.bookTitle);
         TextView bookAuthor = findViewById(R.id.bookAuthor);
         TextView bookPublishedDate = findViewById(R.id.bookPublishedDate);
@@ -48,74 +47,62 @@ public class BookDetailsActivity extends AppCompatActivity {
         bookPublishedDate.setText(book.getVolumeInfo().getPublishedDate());
         bookDescription.setText(book.getVolumeInfo().getDescription() != null ? book.getVolumeInfo().getDescription() : "Pas de description");
 
-        // Charger l'image de couverture
         if (book.getVolumeInfo().getImageLinks() != null) {
             Glide.with(this).load(book.getVolumeInfo().getImageLinks().getThumbnail()).into(bookImage);
         }
 
-        // Initialisation de Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Bouton pour soumettre une recommandation
-        Button recommendButton = findViewById(R.id.recommendButton);  // Bouton renommé
+        Button recommendButton = findViewById(R.id.recommendButton);
         EditText commentField = findViewById(R.id.commentField);
 
         recommendButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
 
-            // Permettre la soumission de la recommandation même sans commentaire
             submitRecommendation(book, comment.isEmpty() ? "" : comment);
-            // Rediriger l'utilisateur à la page de la main activity
             Intent intent = new Intent(BookDetailsActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
         });
 
-        // Bouton de retour pour revenir à la page de résultats
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> {
-            finish(); // Ferme cette activité et revient à l'activité précédente
+            finish();
         });
     }
 
     private void submitRecommendation(Book book, String commentText) {
-        String userId = mAuth.getCurrentUser().getUid();
+        String userId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
-        // Récupérer le pseudo de l'utilisateur à partir de Firestore
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String username = documentSnapshot.getString("username");
 
-                        // Créer le premier commentaire (note de l'utilisateur)
                         Comment firstComment = new Comment(userId, commentText, new com.google.firebase.Timestamp(new Date()));
 
-                        // Créer une liste de commentaires avec le premier commentaire
                         List<Comment> commentsList = new ArrayList<>();
                         commentsList.add(firstComment);
 
-                        // Créer un timestamp pour la recommandation
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
 
-                        // Créer un objet Recommendation avec les informations nécessaires
                         Recommendation recommendation = new Recommendation(
-                                null,  // ID sera généré automatiquement par Firestore
                                 book.getVolumeInfo().getTitle(),
                                 book.getVolumeInfo().getPublishedDate(),
                                 book.getVolumeInfo().getImageLinks() != null ? book.getVolumeInfo().getImageLinks().getThumbnail() : null,
                                 userId,
                                 username,
-                                commentsList,  // Liste de commentaires, contenant la note
-                                recommendationTimestamp // Timestamp ajouté
+                                commentsList,
+                                recommendationTimestamp
                         );
 
-                        // Ajouter la recommandation à Firestore
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(BookDetailsActivity.this, "Recommendation saved", Toast.LENGTH_SHORT).show();
-                                    finish(); // Ferme l'activité après l'enregistrement
+                                    String recommendationId = documentReference.getId();
+                                    Toast.makeText(BookDetailsActivity.this, "Recommendation saved with ID: " + recommendationId, Toast.LENGTH_SHORT).show();
+                                    finish();
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error saving recommendation", Toast.LENGTH_SHORT).show());
                     } else {
@@ -124,5 +111,4 @@ public class BookDetailsActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Toast.makeText(BookDetailsActivity.this, "Error fetching user data", Toast.LENGTH_SHORT).show());
     }
-
 }

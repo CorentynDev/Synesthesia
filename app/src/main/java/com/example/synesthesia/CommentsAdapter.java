@@ -13,7 +13,7 @@ import com.example.synesthesia.models.Comment;
 import java.util.List;
 
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.CommentViewHolder> {
-    private List<Comment> commentList;
+    private final List<Comment> commentList;
 
     public CommentsAdapter(List<Comment> commentList) {
         this.commentList = commentList;

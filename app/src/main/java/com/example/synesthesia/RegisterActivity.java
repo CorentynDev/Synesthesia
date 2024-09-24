@@ -25,7 +25,6 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -39,11 +38,8 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText emailField;
     private EditText usernameField;
     private EditText passwordField;
-    private Button registerButton;
-    private TextView loginRedirect;
     private ImageView profileImageView;
     private EditText profileImageUrlEditText;
-    private Button pasteImageUrlButton;
 
     private Uri profileImageUri;
 
@@ -59,11 +55,11 @@ public class RegisterActivity extends AppCompatActivity {
         emailField = findViewById(R.id.registerEmail);
         usernameField = findViewById(R.id.registerUsername);
         passwordField = findViewById(R.id.registerPassword);
-        registerButton = findViewById(R.id.registerButton);
-        loginRedirect = findViewById(R.id.loginRedirect);
+        Button registerButton = findViewById(R.id.registerButton);
+        TextView loginRedirect = findViewById(R.id.loginRedirect);
         profileImageView = findViewById(R.id.profileImageView);
         profileImageUrlEditText = findViewById(R.id.profileImageUrl);
-        pasteImageUrlButton = findViewById(R.id.pasteImageUrlButton);
+        Button pasteImageUrlButton = findViewById(R.id.pasteImageUrlButton);
 
         profileImageView.setOnClickListener(v -> openImageChooser());
 
@@ -119,10 +115,8 @@ public class RegisterActivity extends AppCompatActivity {
                         if (user != null) {
                             String userId = user.getUid();
                             if (profileImageUri != null) {
-                                // Upload de l'image de profil si elle est disponible
                                 uploadProfileImage(userId, email, username, profileImageUri);
                             } else {
-                                // Pas d'image, donc juste enregistrer les autres données
                                 saveUserToFirestore(userId, email, username, null);
                             }
                         }
@@ -135,22 +129,17 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void uploadProfileImage(String userId, String email, String username, Uri imageUri) {
         if (imageUri == null) {
-            // Si aucune image n'est fournie, passe directement à l'enregistrement de l'utilisateur
             saveUserToFirestore(userId, email, username, null);
             return;
         }
 
-        // Référence vers Firebase Storage pour stocker l'image
         StorageReference storageRef = storage.getReference();
         StorageReference profileImageRef = storageRef.child("profile_images/" + userId + ".jpg");
 
-        // Upload de l'image
         profileImageRef.putFile(imageUri)
                 .addOnSuccessListener(taskSnapshot -> {
-                    // Une fois l'upload réussi, obtenir l'URL de téléchargement de l'image
                     profileImageRef.getDownloadUrl().addOnSuccessListener(uri -> {
                         String imageUrl = uri.toString();
-                        // Enregistrer les informations de l'utilisateur dans Firestore avec l'URL de l'image
                         saveUserToFirestore(userId, email, username, imageUrl);
                     }).addOnFailureListener(e -> {
                         Log.e("UploadProfileImage", "Failed to get download URL", e);
@@ -170,7 +159,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         db.collection("users").document(userId).set(newUser)
                 .addOnSuccessListener(aVoid -> {
-                    // Enregistrement réussi, redirection vers MainActivity
                     Toast.makeText(RegisterActivity.this, "User profile picture registered successfully", Toast.LENGTH_SHORT).show();
                     startActivity(new Intent(RegisterActivity.this, MainActivity.class));
                     finish();
@@ -202,8 +190,7 @@ public class RegisterActivity extends AppCompatActivity {
                 profileImageView.setImageBitmap(result);
                 Uri uri = getImageUri(result);
                 if (uri != null) {
-                    // Pas besoin de gérer l'utilisateur ici, juste mettre à jour l'image de profil
-                    profileImageUri = uri; // Assigner l'URI pour l'utiliser lors de l'enregistrement
+                    profileImageUri = uri;
                 } else {
                     Toast.makeText(RegisterActivity.this, "Failed to convert image", Toast.LENGTH_SHORT).show();
                 }
@@ -226,7 +213,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    public class User {
+    public static class User {
         public String email;
         public String username;
         public String profileImageUrl;

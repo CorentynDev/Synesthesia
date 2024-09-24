@@ -16,8 +16,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.synesthesia.models.Recommendation;
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.models.Comment;
+import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -28,8 +29,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
-import com.example.synesthesia.models.Comment;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -48,13 +47,9 @@ public class MainActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
 
         Button profileButton = findViewById(R.id.profileButton);
-        profileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Crée un Intent pour démarrer UserProfileActivity
-                Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
-                startActivity(intent);
-            }
+        profileButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, UserProfileActivity.class);
+            startActivity(intent);
         });
 
         Button createRecommendationButton = findViewById(R.id.createRecommendationButton);
@@ -66,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
-                    case 0: // Musique
+                    case 0:
                         Intent musicIntent = new Intent(MainActivity.this, SearchMusicActivity.class);
                         startActivity(musicIntent);
                         break;
@@ -75,13 +70,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case 2:
                         // Lancer une activité pour la création de recommandation de jeux vidéo (si implémentée plus tard)
-                        Intent game_intent = new Intent(MainActivity.this, SearchGameActivity.class);
-                        startActivity(game_intent);
                         break;
-                    case 3: // Livre
-                        // Lancer l'Activity pour la recherche de livres
-                        Intent book_intent = new Intent(MainActivity.this, SearchBookActivity.class);
-                        startActivity(book_intent);
+                    case 3:
+                        Intent bookIntent = new Intent(MainActivity.this, SearchBookActivity.class);
+                        startActivity(bookIntent);
                         break;
                 }
             });
@@ -116,10 +108,10 @@ public class MainActivity extends AppCompatActivity {
                 Recommendation recommendation = document.toObject(Recommendation.class);
 
                 if (recommendation != null) {
-                    recommendation.setId(document.getId());
-                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendation.getId());
+                    String recommendationId = document.getId();
+                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendationId);
 
-                    addRecommendationCard(recommendationList, recommendation);
+                    addRecommendationCard(recommendationList, recommendation, recommendationId);
                 } else {
                     Log.e("MainActivity", "Failed to parse recommendation");
                 }
@@ -129,17 +121,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void addRecommendationCard(LinearLayout container, Recommendation recommendation) {
+    public void addRecommendationCard(LinearLayout container, Recommendation recommendation, String recommendationId) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
 
-        // Récupérer et afficher le titre de la recommandation
         TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
         titleTextView.setText(recommendation.getTitle());
 
-        // Récupérer et afficher la date de la recommandation sous forme "il y a"
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
-        Timestamp timestamp = recommendation.getTimestamp(); // Assure-toi que Recommendation a un champ Timestamp
+        Timestamp timestamp = recommendation.getTimestamp();
         if (timestamp != null) {
             dateTextView.setText(getTimeAgo(timestamp));
         } else {
@@ -166,30 +156,29 @@ public class MainActivity extends AppCompatActivity {
                     userTextView.setText("Erreur de chargement");
                 });
 
-        // Récupérer et afficher l'image de couverture
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
             Glide.with(this)
-                    .load(recommendation.getCoverUrl()) // Utiliser coverUrl pour charger l'image
-                    .placeholder(R.drawable.placeholder_image) // Image de remplacement pendant le chargement
+                    .load(recommendation.getCoverUrl())
+                    .placeholder(R.drawable.placeholder_image)
                     .into(coverImageView);
         } else {
-            coverImageView.setImageResource(R.drawable.placeholder_image); // Image par défaut si l'URL est vide ou manquante
+            coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Gestion du bouton "like"
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
-        // Initialisation des likes
-        List<String> likedBy = recommendation.getLikedBy();
-        if (likedBy == null) {
+        final List<String> likedBy;
+        if (recommendation.getLikedBy() == null) {
             likedBy = new ArrayList<>();
             recommendation.setLikedBy(likedBy);
+        } else {
+            likedBy = recommendation.getLikedBy();
         }
 
-        likeCounter.setText(String.valueOf(recommendation.getLikesCount()));
+        likeCounter.setText(String.valueOf(likedBy.size()));
 
         likeButton.setOnClickListener(v -> {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -197,22 +186,18 @@ public class MainActivity extends AppCompatActivity {
                 String userId = currentUser.getUid();
                 boolean isCurrentlyLiked = isLiked(userId, recommendation);
 
-                updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, recommendation.getLikesCount());
+                updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, likedBy.size());
 
-                toggleLike(recommendation.getId(), userId, !isCurrentlyLiked);
+                toggleLike(recommendationId, userId, !isCurrentlyLiked);
 
-                // Utiliser updateLikeList pour gérer likedBy
                 updateLikeList(userId, recommendation, !isCurrentlyLiked);
-                recommendation.setLikesCount(isCurrentlyLiked ? recommendation.getLikesCount() - 1 : recommendation.getLikesCount() + 1);
             }
         });
 
-        // Gestion des commentaires
         commentButton.setOnClickListener(v -> {
-            showCommentModal(recommendation.getId());
+            showCommentModal(recommendationId);
         });
 
-        // Ajouter la carte à la vue conteneur
         container.addView(cardView);
     }
 
@@ -261,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
                 throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
-            int likesCount = snapshot.getLong("likesCount").intValue();
             List<String> likedBy = (List<String>) snapshot.get("likedBy");
 
             if (likedBy == null) {
@@ -271,16 +255,11 @@ public class MainActivity extends AppCompatActivity {
             if (isLiked) {
                 if (!likedBy.contains(userId)) {
                     likedBy.add(userId);
-                    likesCount++;
                 }
             } else {
-                if (likedBy.contains(userId)) {
-                    likedBy.remove(userId);
-                    likesCount--;
-                }
+                likedBy.remove(userId);
             }
 
-            transaction.update(recommendationRef, "likesCount", likesCount);
             transaction.update(recommendationRef, "likedBy", likedBy);
 
             return null;
@@ -334,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     commentList.clear();
+                    assert queryDocumentSnapshots != null;
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         Comment comment = doc.toObject(Comment.class);
                         commentList.add(comment);
@@ -356,17 +336,10 @@ public class MainActivity extends AppCompatActivity {
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        updateCommentCount(recommendationId, 1);
+                        // Pas besoin de mettre à jour le nombre de commentaires
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
         }
-    }
-
-    private void updateCommentCount(String recommendationId, int countChange) {
-        DocumentReference recommendationRef = db.collection("recommendations").document(recommendationId);
-        recommendationRef.update("commentsCount", FieldValue.increment(countChange))
-                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Comment count updated"))
-                .addOnFailureListener(e -> Log.e("Firestore", "Error updating comment count", e));
     }
 
     private void getUserProfile() {
@@ -404,7 +377,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String getTimeAgo(Timestamp timestamp) {
-        long time = timestamp.toDate().getTime(); // Convertir le Timestamp Firestore en millisecondes
+        long time = timestamp.toDate().getTime();
         long now = System.currentTimeMillis();
 
         if (time > now || time <= 0) {

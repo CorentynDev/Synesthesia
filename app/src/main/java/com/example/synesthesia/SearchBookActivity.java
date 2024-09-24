@@ -35,7 +35,6 @@ public class SearchBookActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_book);
 
-        // Initialisation de Retrofit pour Google Books API
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.googleapis.com")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -43,20 +42,17 @@ public class SearchBookActivity extends AppCompatActivity {
 
         googleBooksApi = retrofit.create(GoogleBooksApi.class);
 
-        // Configuration de la RecyclerView pour afficher les résultats
-        booksRecyclerView = findViewById(R.id.booksRecyclerView); // Doit être dans activity_search_book.xml
+        booksRecyclerView = findViewById(R.id.booksRecyclerView);
         booksRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         EditText searchField = findViewById(R.id.searchField);
         Button searchButton = findViewById(R.id.searchButton);
 
-        // Ajouter le OnScrollListener à RecyclerView ici
         booksRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                // Inform Glide that we are scrolling, so it can optimize memory use.
                 Glide.with(SearchBookActivity.this).resumeRequests();
             }
 
@@ -65,48 +61,37 @@ public class SearchBookActivity extends AppCompatActivity {
                 super.onScrollStateChanged(recyclerView, newState);
 
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    // Charger les images uniquement lorsque le scrolling est terminé
                     Glide.with(SearchBookActivity.this).resumeRequests();
                 } else {
-                    // Met en pause les requêtes Glide pendant le scrolling
                     Glide.with(SearchBookActivity.this).pauseRequests();
                 }
             }
         });
 
-        // Déclenche la recherche lorsque le bouton est cliqué
         searchButton.setOnClickListener(v -> {
             String query = searchField.getText().toString();
-            searchBooks(query); // Méthode pour effectuer la recherche via l'API
+            searchBooks(query);
         });
     }
 
-    // Méthode pour rechercher des livres via Google Books API
     private void searchBooks(String query) {
         String apiKey = "AIzaSyDQm9NR9F8AbZtrAqxWcSnUdC87Dci-hP8";
         Call<BooksResponse> call = googleBooksApi.searchBooks(query, apiKey);
         call.enqueue(new Callback<BooksResponse>() {
             @Override
-            public void onResponse(Call<BooksResponse> call, Response<BooksResponse> response) {
+            public void onResponse(@NonNull Call<BooksResponse> call, @NonNull Response<BooksResponse> response) {
                 if (response.isSuccessful()) {
+                    assert response.body() != null;
                     List<Book> books = response.body().getItems();
-                    // Initialisation de l'Adapter pour afficher les résultats
                     booksAdapter = new BooksAdapter(books, SearchBookActivity.this);
                     booksRecyclerView.setAdapter(booksAdapter);
                 }
             }
 
             @Override
-            public void onFailure(Call<BooksResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<BooksResponse> call, @NonNull Throwable t) {
                 Log.e("GoogleBooksAPI", "Error: " + t.getMessage());
             }
         });
     }
-
-    // Méthode pour ouvrir une modale ou une autre activité avec les détails du livre sélectionné
-    private void openBookDetails(Book book) {
-        BookRecommendationDialog dialog = BookRecommendationDialog.newInstance(book);
-        dialog.show(getSupportFragmentManager(), "BookRecommendationDialog");
-    }
-
 }

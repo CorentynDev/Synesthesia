@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.annotation.SuppressLint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,21 +35,15 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Recommendation recommendation = recommendations.get(position);
 
-        // Set title
         holder.titleTextView.setText(recommendation.getTitle());
 
-        // Set cover image
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
             Picasso.get().load(recommendation.getCoverUrl()).into(holder.coverImageView);
         } else {
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Set likes count
-        holder.likesCountTextView.setText(String.valueOf("Nombre de likes : " + recommendation.getLikesCount()));
-
-        // Set comments count
-        //holder.commentsTextView.setText(String.valueOf(recommendation.getCommentsCount()));
+        holder.likesCountTextView.setText("Likes number: " + recommendation.getLikesCount());
     }
 
     @Override
@@ -56,6 +51,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         return recommendations != null ? recommendations.size() : 0;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     public void setRecommendations(List<Recommendation> recommendations) {
         this.recommendations = recommendations;
         notifyDataSetChanged();

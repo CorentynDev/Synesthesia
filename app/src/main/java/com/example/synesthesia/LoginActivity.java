@@ -3,19 +3,18 @@ package com.example.synesthesia;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.Objects;
+
 public class LoginActivity extends AppCompatActivity {
     private EditText loginEmail, loginPassword;
-    private Button loginButton;
-    private TextView registerRedirect;
     private FirebaseAuth mAuth;
 
     @Override
@@ -27,8 +26,8 @@ public class LoginActivity extends AppCompatActivity {
 
         loginEmail = findViewById(R.id.loginEmail);
         loginPassword = findViewById(R.id.loginPassword);
-        loginButton = findViewById(R.id.loginButton);
-        registerRedirect = findViewById(R.id.registerRedirect);
+        Button loginButton = findViewById(R.id.loginButton);
+        TextView registerRedirect = findViewById(R.id.registerRedirect);
 
         loginButton.setOnClickListener(v -> loginUser());
 
@@ -55,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
                         startActivity(intent);
                         finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Login failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(LoginActivity.this, "Login failed: " + Objects.requireNonNull(task.getException()).getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }

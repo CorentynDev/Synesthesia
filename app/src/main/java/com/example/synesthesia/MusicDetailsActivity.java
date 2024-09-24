@@ -138,17 +138,15 @@ public class MusicDetailsActivity extends AppCompatActivity {
 
                         // Créer un objet Recommendation avec les détails de la musique
                         Recommendation recommendation = new Recommendation(
-                                null, // ID sera auto-généré par Firestore
                                 track.getTitle(),
-                                null, // Date sera définie automatiquement par Firestore
-                                recommendationCoverUrl, // Cover image URL correcte
+                                null,
+                                recommendationCoverUrl,
                                 userId,
                                 username,
-                                commentsList, // Liste des commentaires
-                                recommendationTimestamp // Timestamp ajouté
+                                commentsList,
+                                recommendationTimestamp
                         );
 
-                        // Ajouter la recommandation à Firestore
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {

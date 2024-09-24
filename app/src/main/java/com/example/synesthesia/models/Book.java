@@ -5,11 +5,7 @@ import android.os.Parcelable;
 import java.util.List;
 
 public class Book implements Parcelable {
-    private VolumeInfo volumeInfo;
-
-    public Book(VolumeInfo volumeInfo) {
-        this.volumeInfo = volumeInfo;
-    }
+    private final VolumeInfo volumeInfo;
 
     protected Book(Parcel in) {
         volumeInfo = in.readParcelable(VolumeInfo.class.getClassLoader());
@@ -41,24 +37,19 @@ public class Book implements Parcelable {
         return volumeInfo;
     }
 
-    public void setVolumeInfo(VolumeInfo volumeInfo) {
-        this.volumeInfo = volumeInfo;
-    }
-
-    // Classe VolumeInfo
     public static class VolumeInfo implements Parcelable {
-        private String title;
-        private List<String> authors;
-        private String publishedDate;
-        private ImageLinks imageLinks;
-        private String description;  // Ajouté pour la description du livre
+        private final String title;
+        private final List<String> authors;
+        private final String publishedDate;
+        private final ImageLinks imageLinks;
+        private final String description;
 
         protected VolumeInfo(Parcel in) {
             title = in.readString();
             authors = in.createStringArrayList();
             publishedDate = in.readString();
             imageLinks = in.readParcelable(ImageLinks.class.getClassLoader());
-            description = in.readString();  // Ajouté pour lire la description
+            description = in.readString();
         }
 
         public static final Creator<VolumeInfo> CREATOR = new Creator<VolumeInfo>() {
@@ -84,54 +75,33 @@ public class Book implements Parcelable {
             parcel.writeStringList(authors);
             parcel.writeString(publishedDate);
             parcel.writeParcelable(imageLinks, i);
-            parcel.writeString(description);  // Ajouté pour écrire la description
+            parcel.writeString(description);
         }
 
-        // Getters et Setters
         public String getTitle() {
             return title;
-        }
-
-        public void setTitle(String title) {
-            this.title = title;
         }
 
         public List<String> getAuthors() {
             return authors;
         }
 
-        public void setAuthors(List<String> authors) {
-            this.authors = authors;
-        }
-
         public String getPublishedDate() {
             return publishedDate;
-        }
-
-        public void setPublishedDate(String publishedDate) {
-            this.publishedDate = publishedDate;
         }
 
         public ImageLinks getImageLinks() {
             return imageLinks;
         }
 
-        public void setImageLinks(ImageLinks imageLinks) {
-            this.imageLinks = imageLinks;
-        }
-
         public String getDescription() {
             return description;
         }
 
-        public void setDescription(String description) {
-            this.description = description;
-        }
     }
 
-    // Classe ImageLinks
     public static class ImageLinks implements Parcelable {
-        private String thumbnail;
+        private final String thumbnail;
 
         protected ImageLinks(Parcel in) {
             thumbnail = in.readString();
@@ -159,13 +129,9 @@ public class Book implements Parcelable {
             parcel.writeString(thumbnail);
         }
 
-        // Getters et Setters
         public String getThumbnail() {
             return thumbnail;
         }
 
-        public void setThumbnail(String thumbnail) {
-            this.thumbnail = thumbnail;
-        }
     }
 }

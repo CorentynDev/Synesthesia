@@ -1,7 +1,6 @@
 package com.example.synesthesia;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,12 +15,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class UserProfileActivity extends AppCompatActivity {
 
     private ImageView userProfileImageView;
     private TextView userPseudoTextView, userEmailTextView;
-    private RecyclerView userRecommendationsRecyclerView;
     private RecommendationAdapter recommendationAdapter;
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firestore;
@@ -31,28 +30,23 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
-        // Initialize Firebase Auth and Firestore
         firebaseAuth = FirebaseAuth.getInstance();
         firestore = FirebaseFirestore.getInstance();
 
-        // Bind views
         userProfileImageView = findViewById(R.id.userProfileImageView);
         userPseudoTextView = findViewById(R.id.userPseudoTextView);
         userEmailTextView = findViewById(R.id.userEmailTextView);
-        userRecommendationsRecyclerView = findViewById(R.id.userRecommendationsRecyclerView);
+        RecyclerView userRecommendationsRecyclerView = findViewById(R.id.userRecommendationsRecyclerView);
 
-        // Setup RecyclerView
         userRecommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // Initialize adapter with an empty list
         recommendationAdapter = new RecommendationAdapter(new ArrayList<>());
         userRecommendationsRecyclerView.setAdapter(recommendationAdapter);
 
-        // Load user data
         loadUserData();
     }
 
     private void loadUserData() {
-        String userId = firebaseAuth.getCurrentUser().getUid();
+        String userId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
 
         firestore.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
@@ -65,7 +59,6 @@ public class UserProfileActivity extends AppCompatActivity {
                             Picasso.get().load(profileImageUrl).into(userProfileImageView);
                         }
 
-                        Log.d("PROFIL", "Pseudonyme de l'utilisateur : " + pseudo);
                         userPseudoTextView.setText(pseudo);
                         userEmailTextView.setText(email);
                     }
@@ -75,7 +68,7 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void loadUserRecommendations() {
-        String userId = firebaseAuth.getCurrentUser().getUid();
+        String userId = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
 
         firestore.collection("recommendations")
                 .whereEqualTo("userId", userId)
