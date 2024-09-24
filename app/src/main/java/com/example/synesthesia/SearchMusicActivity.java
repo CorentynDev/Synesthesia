@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,7 +21,6 @@ import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,10 +31,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SearchMusicActivity extends AppCompatActivity {
 
-    private RecyclerView resultsRecyclerView;
     private MusicAdapter musicAdapter;
     private EditText searchField;
-    private Button searchButton;
     private RadioGroup searchTypeGroup;
     private DeezerApi deezerApi;
 
@@ -50,9 +48,9 @@ public class SearchMusicActivity extends AppCompatActivity {
 
         deezerApi = retrofit.create(DeezerApi.class);
 
-        resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
+        RecyclerView resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
         searchField = findViewById(R.id.searchField);
-        searchButton = findViewById(R.id.searchButton);
+        Button searchButton = findViewById(R.id.searchButton);
         searchTypeGroup = findViewById(R.id.searchTypeGroup);
 
         resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -66,9 +64,8 @@ public class SearchMusicActivity extends AppCompatActivity {
             } else if (item instanceof Album) {
                 Album album = (Album) item;
                 Log.d("SearchMusic", "Clicked on album: " + album.getTitle());
-                // Démarrer l'activité AlbumDetailsActivity et passer l'album sélectionné
                 Intent intent = new Intent(SearchMusicActivity.this, AlbumDetailsActivity.class);
-                intent.putExtra("album", album); // Passer l'album via Intent
+                intent.putExtra("album", album);
                 startActivity(intent);
             } else if (item instanceof Track) {
                 Track track = (Track) item;
@@ -81,7 +78,6 @@ public class SearchMusicActivity extends AppCompatActivity {
     }
 
     private void performSearch() {
-        // Réinitialiser le player avant d'effectuer une nouvelle recherche
         musicAdapter.resetPlayer();
 
         String query = searchField.getText().toString().trim();
@@ -103,14 +99,14 @@ public class SearchMusicActivity extends AppCompatActivity {
         Call<ArtistResponse> call = deezerApi.searchArtists(query);
         call.enqueue(new Callback<ArtistResponse>() {
             @Override
-            public void onResponse(Call<ArtistResponse> call, Response<ArtistResponse> response) {
+            public void onResponse(@NonNull Call<ArtistResponse> call, @NonNull Response<ArtistResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     musicAdapter.updateArtists(response.body().getData());
                 }
             }
 
             @Override
-            public void onFailure(Call<ArtistResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<ArtistResponse> call, @NonNull Throwable t) {
                 Log.e("SearchMusic", "Failed to fetch artists", t);
             }
         });
@@ -120,14 +116,14 @@ public class SearchMusicActivity extends AppCompatActivity {
         Call<AlbumResponse> call = deezerApi.searchAlbums(query);
         call.enqueue(new Callback<AlbumResponse>() {
             @Override
-            public void onResponse(Call<AlbumResponse> call, Response<AlbumResponse> response) {
+            public void onResponse(@NonNull Call<AlbumResponse> call, @NonNull Response<AlbumResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     musicAdapter.updateAlbums(response.body().getData());
                 }
             }
 
             @Override
-            public void onFailure(Call<AlbumResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<AlbumResponse> call, @NonNull Throwable t) {
                 Log.e("SearchMusic", "Failed to fetch albums", t);
             }
         });
@@ -137,14 +133,14 @@ public class SearchMusicActivity extends AppCompatActivity {
         Call<TrackResponse> call = deezerApi.searchTracks(query);
         call.enqueue(new Callback<TrackResponse>() {
             @Override
-            public void onResponse(Call<TrackResponse> call, Response<TrackResponse> response) {
+            public void onResponse(@NonNull Call<TrackResponse> call, @NonNull Response<TrackResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     musicAdapter.updateTracks(response.body().getData());
                 }
             }
 
             @Override
-            public void onFailure(Call<TrackResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<TrackResponse> call, @NonNull Throwable t) {
                 Log.e("SearchMusic", "Failed to fetch tracks", t);
             }
         });

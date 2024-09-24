@@ -3,13 +3,14 @@ package com.example.synesthesia.models;
 import java.util.List;
 
 public class ArtistResponse {
-    private List<Artist> data;
+    private final List<Artist> data;
+
+    public ArtistResponse(List<Artist> data) {
+        this.data = data;
+    }
 
     public List<Artist> getData() {
         return data;
     }
 
-    public void setData(List<Artist> data) {
-        this.data = data;
-    }
 }

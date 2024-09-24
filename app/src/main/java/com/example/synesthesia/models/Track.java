@@ -25,10 +25,9 @@ public class Track implements Parcelable {
     @SerializedName("album")
     private Album album;
 
-    // Constructeur par défaut
+    // Empty constructor required for Firestore
     public Track() {}
 
-    // Constructeur pour Parcelable
     protected Track(Parcel in) {
         id = in.readString();
         title = in.readString();
@@ -50,7 +49,6 @@ public class Track implements Parcelable {
         }
     };
 
-    // Getters et Setters
     public String getId() { return id; }
     public String getTitle() { return title; }
     public String getPreviewUrl() { return previewUrl; }
@@ -59,11 +57,6 @@ public class Track implements Parcelable {
     public Album getAlbum() { return album; }
 
     public void setId(String id) { this.id = id; }
-    public void setTitle(String title) { this.title = title; }
-    public void setPreviewUrl(String previewUrl) { this.previewUrl = previewUrl; }
-    public void setDuration(int duration) { this.duration = duration; }
-    public void setArtist(Artist artist) { this.artist = artist; }
-    public void setAlbum(Album album) { this.album = album; }
 
     @Override
     public int describeContents() {
