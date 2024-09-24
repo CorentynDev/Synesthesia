@@ -1,43 +1,68 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
     android:padding="16dp">
 
-    <ImageView
-        android:id="@+id/userProfileImageView"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/placeholder_image" />
-
-    <TextView
-        android:id="@+id/userPseudoTextView"
-        android:layout_width="wrap_content"
+    <!-- Header Layout -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/userProfileImageView"
-        android:layout_centerHorizontal="true"
-        android:textSize="18sp"
-        android:textColor="@color/white"
-        android:text="Username" />
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/userEmailTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/userPseudoTextView"
-        android:layout_centerHorizontal="true"
-        android:textSize="16sp"
-        android:textColor="@color/white"
-        android:text="user@example.com" />
+        <!-- User Profile Image -->
+        <ImageView
+            android:id="@+id/userProfileImageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/placeholder_image"
+            android:clickable="true"
+            android:focusable="true" />
 
+        <!-- User Info Container -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <!-- User Pseudo -->
+            <TextView
+                android:id="@+id/userPseudoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:text="Username"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- User Email -->
+            <TextView
+                android:id="@+id/userEmailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:text="user@example.com"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Recommendations RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/userRecommendationsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/userEmailTextView"
-        android:layout_marginTop="8dp" />
+        android:layout_below="@id/headerLayout"
+        android:layout_marginTop="16dp" />
 
 </RelativeLayout>
