@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -21,9 +22,11 @@ import java.util.List;
 public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAdapter.ViewHolder> {
 
     private List<Recommendation> recommendations;
+    private final FirebaseFirestore db;
 
     public RecommendationAdapter(List<Recommendation> recommendations) {
         this.recommendations = recommendations;
+        this.db = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -46,6 +49,22 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
+        db.collection("users").document(recommendation.getUserId()).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                        String userName = documentSnapshot.getString("username");
+
+                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                            Picasso.get().load(profileImageUrl).into(holder.profileImageView);
+                        } else {
+                            holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+                        }
+
+                        holder.userNameTextView.setText(userName);
+                    }
+                });
+
         final List<String> likedBy;
         if (recommendation.getLikedBy() == null) {
             likedBy = new ArrayList<>();
@@ -55,7 +74,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         }
         holder.likesCountTextView.setText(String.valueOf(likedBy.size()));
 
-        // Date de publication
         if (recommendation.getTimestamp() != null) {
             String timeAgo = getTimeAgo(recommendation.getTimestamp());
             holder.dateTextView.setText(timeAgo);
@@ -78,14 +96,18 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     static class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView coverImageView;
+        ImageView profileImageView;
         TextView titleTextView;
+        TextView userNameTextView;
         TextView likesCountTextView;
         TextView dateTextView;
 
         ViewHolder(View itemView) {
             super(itemView);
             coverImageView = itemView.findViewById(R.id.recommendationCover);
+            profileImageView = itemView.findViewById(R.id.profileImageView);
             titleTextView = itemView.findViewById(R.id.recommendationTitle);
+            userNameTextView = itemView.findViewById(R.id.recommendationUser);
             likesCountTextView = itemView.findViewById(R.id.likeCounter);
             dateTextView = itemView.findViewById(R.id.recommendationDate);
         }
@@ -147,5 +169,4 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         // Afficher le temps écoulé
         holder.timestampTextView.setText(comment.getTimeAgo());
     }
-
 }
