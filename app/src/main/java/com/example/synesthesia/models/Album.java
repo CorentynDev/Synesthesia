@@ -37,10 +37,9 @@ public class Album implements Parcelable {
     @SerializedName("artist")
     private Artist artist;
 
-    // Constructeur par défaut
+    // Empty constructor required for Firebase
     public Album() {}
 
-    // Constructeur pour Parcelable
     protected Album(Parcel in) {
         id = in.readString();
         title = in.readString();
@@ -66,28 +65,15 @@ public class Album implements Parcelable {
         }
     };
 
-    // Getters et Setters
     public String getId() { return id; }
     public String getTitle() { return title; }
-    public String getCoverUrl() { return cover; }
-    public String getCoverSmall() { return coverSmall; }
-    public String getCoverMedium() { return coverMedium; }
-    public String getCoverBig() { return coverBig; }
+
     public String getCoverXl() { return coverXl; }
     public String getTracklist() { return tracklist; }
     public int getNbTracks() { return nbTracks; }
     public Artist getArtist() { return artist; }
 
     public void setId(String id) { this.id = id; }
-    public void setTitle(String title) { this.title = title; }
-    public void setCover(String cover) { this.cover = cover; }
-    public void setCoverSmall(String coverSmall) { this.coverSmall = coverSmall; }
-    public void setCoverMedium(String coverMedium) { this.coverMedium = coverMedium; }
-    public void setCoverBig(String coverBig) { this.coverBig = coverBig; }
-    public void setCoverXl(String coverXl) { this.coverXl = coverXl; }
-    public void setTracklist(String tracklist) { this.tracklist = tracklist; }
-    public void setNbTracks(int nbTracks) { this.nbTracks = nbTracks; }
-    public void setArtist(Artist artist) { this.artist = artist; }
 
     @Override
     public int describeContents() {

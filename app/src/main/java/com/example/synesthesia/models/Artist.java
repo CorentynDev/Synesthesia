@@ -3,8 +3,6 @@ package com.example.synesthesia.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import androidx.annotation.NonNull;
-
 import com.google.gson.annotations.SerializedName;
 
 public class Artist implements Parcelable {
@@ -15,10 +13,9 @@ public class Artist implements Parcelable {
     @SerializedName("picture")
     private String picture;
 
-    // Constructeur par défaut
+    // Empty constructor required for Firebase
     public Artist() {}
 
-    // Constructeur pour Parcelable
     protected Artist(Parcel in) {
         id = in.readString();
         name = in.readString();
@@ -37,15 +34,11 @@ public class Artist implements Parcelable {
         }
     };
 
-    // Getters
     public String getId() { return id; }
     public String getName() { return name; }
     public String getImageUrl() { return picture; }
 
-    // Setters
     public void setId(String id) { this.id = id; }
-    public void setName(String name) { this.name = name; }
-    public void setImageUrl(String picture) { this.picture = picture; }
 
     @Override
     public int describeContents() {
