@@ -48,10 +48,6 @@ public class Recommendation {
         return timestamp;
     }
 
-    public int getLikesCount() {
-        return likedBy != null ? likedBy.size() : 0;
-    }
-
     public String getType() {
         return type;
     }
