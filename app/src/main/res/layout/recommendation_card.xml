@@ -127,6 +127,14 @@
                     android:layout_height="24dp"
                     android:src="@drawable/comment"
                     app:tint="@color/white" />
+
+                <TextView
+                    android:id="@+id/commentCounter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:textColor="@color/white"
+                    android:textSize="14sp" />
             </LinearLayout>
 
             <!-- Bookmark button -->

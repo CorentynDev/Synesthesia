@@ -170,8 +170,10 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
+        TextView commentCounter = cardView.findViewById(R.id.commentCounter);  // Ajout du compteur de commentaires
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
 
+        // Gestion des likes (comme déjà implémenté)
         final List<String> likedBy;
         if (recommendation.getLikedBy() == null) {
             likedBy = new ArrayList<>();
@@ -189,12 +191,21 @@ public class MainActivity extends AppCompatActivity {
                 boolean isCurrentlyLiked = isLiked(userId, recommendation);
 
                 updateLikeUI(likeButton, likeCounter, isCurrentlyLiked, likedBy.size());
-
                 toggleLike(recommendationId, userId, !isCurrentlyLiked);
-
                 updateLikeList(userId, recommendation, !isCurrentlyLiked);
             }
         });
+
+        // Ajouter le nombre de commentaires
+        db.collection("recommendations").document(recommendationId)
+                .collection("comments").get()
+                .addOnSuccessListener(querySnapshot -> {
+                    int commentCount = querySnapshot.size();
+                    commentCounter.setText(commentCount + " commentaires");
+                })
+                .addOnFailureListener(e -> {
+                    commentCounter.setText("0 commentaires");
+                });
 
         commentButton.setOnClickListener(v -> {
             showCommentModal(recommendationId);
@@ -221,11 +232,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateLikeUI(ImageView likeButton, TextView likeCounter, boolean isCurrentlyLiked, int currentLikesCount) {
         if (isCurrentlyLiked) {
-            likeButton.setImageResource(R.drawable.like); // Icône "non liké"
-            likeCounter.setText(String.valueOf(currentLikesCount - 1)); // Diminue le compteur
+            likeButton.setImageResource(R.drawable.like);
+            likeCounter.setText(String.valueOf(currentLikesCount - 1));
         } else {
-            likeButton.setImageResource(R.drawable.given_like); // Icône "liké"
-            likeCounter.setText(String.valueOf(currentLikesCount + 1)); // Augmente le compteur
+            likeButton.setImageResource(R.drawable.given_like);
+            likeCounter.setText(String.valueOf(currentLikesCount + 1));
         }
     }
 
@@ -356,10 +367,26 @@ public class MainActivity extends AppCompatActivity {
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        // Pas besoin de mettre à jour le nombre de commentaires
+                        Log.d("Comment", "Comment added successfully");
+
+                        // Charger les commentaires et mettre à jour le compteur
+                        updateCommentCounter(recommendationId);
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
         }
+    }
+
+    private void updateCommentCounter(String recommendationId) {
+        TextView commentCounter = findViewById(R.id.commentCounter);
+        db.collection("recommendations").document(recommendationId)
+                .collection("comments").get()
+                .addOnSuccessListener(querySnapshot -> {
+                    int commentCount = querySnapshot.size();
+                    commentCounter.setText(commentCount);
+                })
+                .addOnFailureListener(e -> {
+                    commentCounter.setText("0");
+                });
     }
 
     private void getUserProfile() {
