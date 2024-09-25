@@ -34,6 +34,10 @@
         <!-- Déclaration de MainActivity -->
         <activity android:name=".MainActivity"
             android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
 
         <!-- Déclaration de MusicDetailsActivity -->
@@ -45,11 +49,12 @@
         <!-- SearchBookActivity -->
         <activity android:name=".SearchBookActivity" />
 
+        <!-- SearchGameActivity -->
+        <activity android:name=".SearchGameActivity" />
+
         <activity android:name=".SearchMusicActivity" />
 
         <activity android:name=".UserProfileActivity" />
-
-        <activity android:name=".BookmarksActivity" />
 
     </application>
 
