@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,6 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.synesthesia.models.Recommendation;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -41,7 +44,8 @@ public class UserProfileActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
 
     private ImageView userProfileImageView;
-    private TextView userPseudoTextView, userEmailTextView;
+    private TextView userPseudoTextView;
+    private TextView userEmailTextView;
     private RecommendationAdapter recommendationAdapter;
     private FirebaseAuth firebaseAuth;
     private FirebaseFirestore firestore;
@@ -57,6 +61,7 @@ public class UserProfileActivity extends AppCompatActivity {
         userProfileImageView = findViewById(R.id.userProfileImageView);
         userPseudoTextView = findViewById(R.id.userPseudoTextView);
         userEmailTextView = findViewById(R.id.userEmailTextView);
+        TextView userPasswordTextView = findViewById(R.id.userPasswordTextView);
         RecyclerView userRecommendationsRecyclerView = findViewById(R.id.userRecommendationsRecyclerView);
 
         userRecommendationsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -68,6 +73,8 @@ public class UserProfileActivity extends AppCompatActivity {
         userPseudoTextView.setOnClickListener(v -> showEditPseudoDialog());
         userEmailTextView.setOnClickListener(v -> showEditEmailDialog());
         userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
+        userPasswordTextView.setOnClickListener(v -> showChangePasswordDialog());
+
     }
 
     private void loadUserData() {
@@ -196,5 +203,58 @@ public class UserProfileActivity extends AppCompatActivity {
                 .update("profileImageUrl", imageUrl)
                 .addOnSuccessListener(aVoid -> Picasso.get().load(imageUrl).into(userProfileImageView))
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating profile image", e));
+    }
+
+    private void showChangePasswordDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_change_password, null);
+        builder.setView(dialogView);
+
+        EditText currentPassword = dialogView.findViewById(R.id.currentPassword);
+        EditText newPassword = dialogView.findViewById(R.id.newPassword);
+        EditText confirmNewPassword = dialogView.findViewById(R.id.confirmNewPassword);
+        Button confirmButton = dialogView.findViewById(R.id.confirmPasswordChangeButton);
+
+        AlertDialog dialog = builder.create();
+
+        confirmButton.setOnClickListener(v -> {
+            String currentPass = currentPassword.getText().toString();
+            String newPass = newPassword.getText().toString();
+            String confirmPass = confirmNewPassword.getText().toString();
+
+            if (newPass.equals(confirmPass)) {
+                // Appeler la méthode pour changer le mot de passe
+                updatePassword(currentPass, newPass);
+                dialog.dismiss();
+            } else {
+                Toast.makeText(UserProfileActivity.this, "Les mots de passe ne correspondent pas", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void updatePassword(String currentPassword, String newPassword) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        String email = Objects.requireNonNull(auth.getCurrentUser()).getEmail();
+
+        // Ré-authentifier l'utilisateur avant de changer le mot de passe
+        AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(email), currentPassword);
+
+        auth.getCurrentUser().reauthenticate(credential).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                // Ré-authentification réussie, changement de mot de passe
+                auth.getCurrentUser().updatePassword(newPassword).addOnCompleteListener(updateTask -> {
+                    if (updateTask.isSuccessful()) {
+                        Toast.makeText(UserProfileActivity.this, "Mot de passe changé avec succès", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(UserProfileActivity.this, "Erreur lors du changement de mot de passe", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                Toast.makeText(UserProfileActivity.this, "Échec de la ré-authentification. Vérifiez le mot de passe actuel.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
