@@ -1,6 +1,7 @@
 package com.example.synesthesia;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.squareup.picasso.Picasso;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,11 +42,27 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseFirestore db;
 
+    private List<Recommendation> recommendations; // Liste des recommandations
+    private List<Recommendation> bookmarkedRecommendations; // Liste des recommandations bookmarkées
+    private LinearLayout recommendationList; // Layout qui contiendra les recommandations
+    private Map<Integer, Boolean> bookmarkedStates = new HashMap<>(); // Pour suivre l'état des bookmarks
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         db = FirebaseFirestore.getInstance();
+
+        recommendationList = findViewById(R.id.recommendationList);
+        bookmarkedRecommendations = new ArrayList<>(); // Initialiser la liste des bookmarks
+
+        Button markButton = findViewById(R.id.bookmarkButton);
+        markButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, BookmarkedRecommendationsActivity.class);
+            intent.putExtra("bookmarkedRecommendations", (Serializable) bookmarkedRecommendations);
+            startActivity(intent);
+        });
 
         Button profileButton = findViewById(R.id.profileButton);
         profileButton.setOnClickListener(view -> {
@@ -79,7 +97,6 @@ public class MainActivity extends AppCompatActivity {
             });
             builder.create().show();
         });
-
         getRecommendationData();
         getUserProfile();
     }
@@ -102,26 +119,35 @@ public class MainActivity extends AppCompatActivity {
             LinearLayout recommendationList = findViewById(R.id.recommendationList);
             recommendationList.removeAllViews();
 
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                Log.d("MainActivity", "Document ID: " + document.getId());
+            for (int i = 0; i < queryDocumentSnapshots.size(); i++) {
+                DocumentSnapshot document = queryDocumentSnapshots.getDocuments().get(i); // Get the document using index
 
-                Recommendation recommendation = document.toObject(Recommendation.class);
+                if (document instanceof QueryDocumentSnapshot) { // Ensure the document is a QueryDocumentSnapshot
+                    QueryDocumentSnapshot queryDocument = (QueryDocumentSnapshot) document; // Cast to QueryDocumentSnapshot
 
-                if (recommendation != null) {
-                    String recommendationId = document.getId();
-                    Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendationId);
+                    Log.d("MainActivity", "Document ID: " + queryDocument.getId());
 
-                    addRecommendationCard(recommendationList, recommendation, recommendationId);
+                    Recommendation recommendation = queryDocument.toObject(Recommendation.class);
+
+                    if (recommendation != null) {
+                        String recommendationId = queryDocument.getId();
+                        Log.d("MainActivity", "Recommendation loaded: " + recommendation.getTitle() + " with ID: " + recommendationId);
+
+                        addRecommendationCard(recommendationList, recommendation, recommendationId, i); // Pass the index i as position
+                    } else {
+                        Log.e("MainActivity", "Failed to parse recommendation");
+                    }
                 } else {
-                    Log.e("MainActivity", "Failed to parse recommendation");
+                    Log.e("MainActivity", "Document is not a QueryDocumentSnapshot");
                 }
             }
+
         }).addOnFailureListener(e -> {
             Log.e("FirestoreData", "Error when fetching documents: ", e);
         });
     }
 
-    public void addRecommendationCard(LinearLayout container, Recommendation recommendation, String recommendationId) {
+    public void addRecommendationCard(LinearLayout container, Recommendation recommendation, String recommendationId, int position) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
 
@@ -130,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
         Timestamp timestamp = recommendation.getTimestamp();
+
         if (timestamp != null) {
             dateTextView.setText(getTimeAgo(timestamp));
         } else {
@@ -167,7 +194,11 @@ public class MainActivity extends AppCompatActivity {
 
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
+
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
+
+        ImageView markButton = cardView.findViewById(R.id.markButton);
+
 
         final List<String> likedBy;
         if (recommendation.getLikedBy() == null) {
@@ -195,6 +226,30 @@ public class MainActivity extends AppCompatActivity {
 
         commentButton.setOnClickListener(v -> {
             showCommentModal(recommendationId);
+        });
+
+        final List<String> markedBy;
+        if (recommendation.getMarkedBy() == null) {
+            markedBy = new ArrayList<>();
+            recommendation.setMarkedBy(markedBy);
+        } else {
+            markedBy = recommendation.getMarkedBy();
+        }
+
+        // Set the click listener for the mark button
+        markButton.setOnClickListener(v -> {
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                String userId = currentUser.getUid();
+                boolean isCurrentlyMarked = isMarked(userId, recommendation);
+
+                updateMarkUI(markButton, isCurrentlyMarked, markedBy.size());
+
+                toggleMark(recommendationId, userId, !isCurrentlyMarked);
+                toggleBookmark(recommendation, markButton, position); // Pass the position here
+
+                updateMarkList(userId, recommendation, !isCurrentlyMarked);
+            }
         });
 
         container.addView(cardView);
@@ -266,6 +321,73 @@ public class MainActivity extends AppCompatActivity {
             Log.d("ToggleLike", "Transaction success!");
         }).addOnFailureListener(e -> {
             Log.e("ToggleLike", "Transaction failure.", e);
+        });
+    }
+
+    private void updateMarkList(String userId, Recommendation recommendation, boolean addMark) {
+        List<String> markedBy = recommendation.getMarkedBy();
+        if (markedBy == null) {
+            markedBy = new ArrayList<>();
+            recommendation.setMarkedBy(markedBy);
+        }
+
+        if (addMark) {
+            if (!markedBy.contains(userId)) {
+                markedBy.add(userId);
+            }
+        } else {
+            markedBy.remove(userId);
+        }
+    }
+
+    private void updateMarkUI(ImageView markButton, boolean isCurrentlyMarked, int currentMarksCount) {
+        if (isCurrentlyMarked) {
+            markButton.setImageResource(R.drawable.bookmark); // Icône "non liké"
+         } else {
+            markButton.setImageResource(R.drawable.bookmark_active); // Icône "liké"
+         }
+    }
+
+    private boolean isMarked(String userId, Recommendation recommendation) {
+        List<String> markedBy = recommendation.getMarkedBy();
+        return markedBy != null && markedBy.contains(userId);
+    }
+
+    private void toggleMark(String recommendationId, String userId, boolean isMarked) {
+        if (recommendationId == null || userId == null) {
+            Log.e("ToggleMark", "Recommendation ID or User ID is null");
+            return;
+        }
+
+        DocumentReference recommendationRef = db.collection("recommendations").document(recommendationId);
+
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(recommendationRef);
+            if (!snapshot.exists()) {
+                throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
+            }
+
+            List<String> markedBy = (List<String>) snapshot.get("markedBy");
+
+            if (markedBy == null) {
+                markedBy = new ArrayList<>();
+            }
+
+            if (isMarked) {
+                if (!markedBy.contains(userId)) {
+                    markedBy.add(userId);
+                }
+            } else {
+                markedBy.remove(userId);
+            }
+
+            transaction.update(recommendationRef, "markedBy", markedBy);
+
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Log.d("ToggleMark", "Transaction success!");
+        }).addOnFailureListener(e -> {
+            Log.e("ToggleMark", "Transaction failure.", e);
         });
     }
 
@@ -359,6 +481,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void toggleBookmark(Recommendation recommendation, ImageView bookmarkButton, int position) {
+        boolean isBookmarked = bookmarkedStates.getOrDefault(position, false);
+
+        if (isBookmarked) {
+            // If already bookmarked, remove it
+            bookmarkedRecommendations.remove(recommendation);
+            bookmarkedStates.put(position, false);
+            bookmarkButton.setImageResource(R.drawable.bookmark); // Icon "bookmark"
+        } else {
+            // Otherwise, add it
+            bookmarkedRecommendations.add(recommendation);
+            bookmarkedStates.put(position, true);
+            bookmarkButton.setImageResource(R.drawable.bookmark_active); // Icon "active bookmark"
+        }
+    }
+
+    private void updateBookmarkButtonAppearance(ImageView bookmarkButton, boolean isBookmarked) {
+        if (isBookmarked) {
+            bookmarkButton.setImageResource(R.drawable.bookmark); // Icône bookmark actif
+        } else {
+            bookmarkButton.setImageResource(R.drawable.bookmark_active); // Icône bookmark normal
+        }
+    }
+
     private void getUserProfile() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         ImageView profileImageView = findViewById(R.id.profileImageView);
@@ -417,5 +563,12 @@ public class MainActivity extends AppCompatActivity {
         } else {
             return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
         }
+    }
+
+    // Méthode pour afficher les recommandations bookmarkées
+    private void showBookmarkedRecommendations() {
+        Intent intent = new Intent(this, BookmarkedRecommendationsActivity.class);
+        intent.putExtra("bookmarkedRecommendations", (Serializable) bookmarkedRecommendations);
+        startActivity(intent);
     }
 }

@@ -88,12 +88,12 @@ public class BookDetailsActivity extends AppCompatActivity {
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
 
                         Recommendation recommendation = new Recommendation(
+                                null, // ID (optionnel)
                                 book.getVolumeInfo().getTitle(),
-                                book.getVolumeInfo().getPublishedDate(),
                                 book.getVolumeInfo().getImageLinks() != null ? book.getVolumeInfo().getImageLinks().getThumbnail() : null,
                                 userId,
                                 username,
-                                commentsList,
+                                commentsList, // Vous pouvez le stocker ou le laisser vide si ce n'est pas nécessaire
                                 recommendationTimestamp
                         );
 
