@@ -360,7 +360,7 @@ public class MainActivity extends AppCompatActivity {
             db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            profileSummary.setText(documentSnapshot.getString("summary"));
+                            profileSummary.setText(documentSnapshot.getString("username"));
                             String profileImageUrl = documentSnapshot.getString("profileImageUrl");
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
                                 Glide.with(this).load(profileImageUrl).into(profileImageView);
