@@ -55,6 +55,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        ImageView bookmarkRecommendationButton = findViewById(R.id.bookmarkButton);
+        bookmarkRecommendationButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, BookmarksActivity.class);
+            startActivity(intent);
+        });
+
         ImageView createRecommendationButton = findViewById(R.id.createRecommendationButton);
         createRecommendationButton.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
@@ -169,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
         TextView commentCounter = cardView.findViewById(R.id.commentCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
+        ImageView markButton = cardView.findViewById(R.id.bookmarkRecommendationButton); // Assurez-vous d'ajouter ce bouton dans votre layout XML
 
         List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
         likeCounter.setText(String.valueOf(likedBy.size()));
@@ -177,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser != null) {
             String userId = currentUser.getUid();
             final boolean[] isCurrentlyLiked = {isLiked(userId, recommendation)};
+            final boolean[] isCurrentlyMarked = {isMarked(userId, recommendation)};
 
             likeButton.setImageResource(isCurrentlyLiked[0] ? R.drawable.given_like : R.drawable.like);
 
@@ -187,6 +195,17 @@ public class MainActivity extends AppCompatActivity {
                 toggleLike(recommendationId, userId, newLikeStatus, () -> {
                     // Callback après la mise à jour de la base de données
                     isCurrentlyLiked[0] = newLikeStatus;
+                });
+            });
+
+            markButton.setImageResource(isCurrentlyMarked[0] ? R.drawable.bookmark_active : R.drawable.bookmark);
+
+            markButton.setOnClickListener(v -> {
+                boolean newMarkStatus = !isCurrentlyMarked[0];
+                updateMarkUI(markButton, newMarkStatus);
+                updateMarkList(userId, recommendation, newMarkStatus);
+                toggleMark(recommendationId, userId, newMarkStatus, () -> {
+                    isCurrentlyMarked[0] = newMarkStatus;
                 });
             });
         }
@@ -273,6 +292,75 @@ public class MainActivity extends AppCompatActivity {
             onComplete.run();
         }).addOnFailureListener(e -> {
             Log.e("ToggleLike", "Transaction failure.", e);
+            onComplete.run();
+        });
+    }
+
+    private void updateMarkList(String userId, Recommendation recommendation, boolean addMark) {
+        List<String> markedBy = recommendation.getMarkedBy();
+        if (markedBy == null) {
+            markedBy = new ArrayList<>();
+            recommendation.setMarkedBy(markedBy);
+        }
+
+        if (addMark) {
+            if (!markedBy.contains(userId)) {
+                markedBy.add(userId);
+            }
+        } else {
+            markedBy.remove(userId);
+        }
+    }
+
+    private void updateMarkUI(ImageView markButton, boolean isCurrentlyMarked) {
+        if (isCurrentlyMarked) {
+            markButton.setImageResource(R.drawable.bookmark_active); // Icône active
+        } else {
+            markButton.setImageResource(R.drawable.bookmark); // Icône non active
+        }
+    }
+
+    private boolean isMarked(String userId, Recommendation recommendation) {
+        List<String> markedBy = recommendation.getMarkedBy();
+        return markedBy != null && markedBy.contains(userId);
+    }
+
+    private void toggleMark(String recommendationId, String userId, boolean isMarked, Runnable onComplete) {
+        if (recommendationId == null || userId == null) {
+            Log.e("ToggleMark", "Recommendation ID or User ID is null");
+            return;
+        }
+
+        DocumentReference recommendationRef = db.collection("recommendations").document(recommendationId);
+
+        db.runTransaction(transaction -> {
+            DocumentSnapshot snapshot = transaction.get(recommendationRef);
+            if (!snapshot.exists()) {
+                throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
+            }
+
+            List<String> markedBy = (List<String>) snapshot.get("markedBy");
+
+            if (markedBy == null) {
+                markedBy = new ArrayList<>();
+            }
+
+            if (isMarked) {
+                if (!markedBy.contains(userId)) {
+                    markedBy.add(userId);
+                }
+            } else {
+                markedBy.remove(userId);
+            }
+
+            transaction.update(recommendationRef, "markedBy", markedBy);
+
+            return null;
+        }).addOnSuccessListener(aVoid -> {
+            Log.d("ToggleMark", "Transaction success!");
+            onComplete.run();
+        }).addOnFailureListener(e -> {
+            Log.e("ToggleMark", "Transaction failure.", e);
             onComplete.run();
         });
     }
