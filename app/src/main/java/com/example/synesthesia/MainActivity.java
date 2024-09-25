@@ -370,6 +370,7 @@ public class MainActivity extends AppCompatActivity {
             db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
+                            profileSummary.setText(documentSnapshot.getString("username"));
                             String profileImageUrl = documentSnapshot.getString("profileImageUrl");
                             String username = documentSnapshot.getString("username");
 
