@@ -10,18 +10,16 @@ public class Recommendation {
     private String userId;
     private List<String> likedBy;
     private Timestamp timestamp;
-    private String type;
 
     // Empty constructor required for Firebase
     public Recommendation() {
     }
 
-    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type) {
+    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp) {
         this.title = title;
         this.coverUrl = coverUrl;
         this.userId = userId;
         this.timestamp = timestamp;
-        this.type = type;
     }
 
     public String getTitle() {
@@ -48,7 +46,7 @@ public class Recommendation {
         return timestamp;
     }
 
-    public String getType() {
-        return type;
+    public int getLikesCount() {
+        return likedBy != null ? likedBy.size() : 0;
     }
 }
