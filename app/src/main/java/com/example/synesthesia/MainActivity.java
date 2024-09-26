@@ -216,15 +216,11 @@ public class MainActivity extends AppCompatActivity {
                 .collection("comments").get()
                 .addOnSuccessListener(querySnapshot -> {
                     int commentCount = querySnapshot.size();
-                    TextView commentCounter = cardView.findViewById(R.id.commentCounter);
                     commentCounter.setText(String.valueOf(commentCount));
                 })
                 .addOnFailureListener(e -> {
-                    TextView commentCounter = cardView.findViewById(R.id.commentCounter);
                     commentCounter.setText("0");
                 });
-
-        ImageView commentButton = cardView.findViewById(R.id.commentButton);
         commentButton.setOnClickListener(v -> {
             showCommentModal(recommendationId);
         });

@@ -23,6 +23,9 @@ public class Comment {
     }
 
     public Comment(String userId, String commentText, Timestamp timestamp) {
+        this.userId = userId;
+        this.commentText = commentText;
+        this.timestamp = timestamp;
     }
 
     public String getUserId() {

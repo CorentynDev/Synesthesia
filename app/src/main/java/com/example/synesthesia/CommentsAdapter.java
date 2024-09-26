@@ -49,16 +49,33 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
     }
 
     private String getTimeAgo(Timestamp timestamp) {
-        if (timestamp == null) return "Juste maintenant";
+        if (timestamp == null) {
+            return "A l'instant";
+        }
 
         long time = timestamp.toDate().getTime();
         long now = System.currentTimeMillis();
-        final long diff = now - time;
 
-        if (diff < 60000) return "Juste maintenant"; // moins d'une minute
-        else if (diff < 3600000) return (diff / 60000) + " minutes ago"; // moins d'une heure
-        else if (diff < 86400000) return (diff / 3600000) + " heures ago"; // moins d'un jour
-        else return (diff / 86400000) + " jours ago"; // plus d'un jour
+        if (time > now || time <= 0) {
+            return "à l'instant";
+        }
+
+        final long diff = now - time;
+        if (diff < 60 * 1000) {
+            return "Il y a " + diff / 1000 + " secondes";
+        } else if (diff < 2 * 60 * 1000) {
+            return "Il y a une minute";
+        } else if (diff < 50 * 60 * 1000) {
+            return "Il y a " + diff / (60 * 1000) + " minutes";
+        } else if (diff < 90 * 60 * 1000) {
+            return "Il y a une heure";
+        } else if (diff < 24 * 60 * 60 * 1000) {
+            return "Il y a " + diff / (60 * 60 * 1000) + " heures";
+        } else if (diff < 48 * 60 * 60 * 1000) {
+            return "Hier";
+        } else {
+            return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
+        }
     }
 
 
