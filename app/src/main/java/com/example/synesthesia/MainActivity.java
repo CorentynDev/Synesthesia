@@ -76,10 +76,10 @@ public class MainActivity extends AppCompatActivity {
                         startActivity(musicIntent);
                         break;
                     case 1:
-                        // Handle Film
+                        // New filmIntent
                         break;
                     case 2:
-                        // Handle Jeux Vidéo
+                        // New videoGameIntent
                         break;
                     case 3:
                         Intent bookIntent = new Intent(MainActivity.this, SearchBookActivity.class);
@@ -202,17 +202,14 @@ public class MainActivity extends AppCompatActivity {
             imageView.setImageResource(R.drawable.placeholder_image);
         }
     }
-
-    /**
-     * Gère les boutons de like et de bookmark.
-     */
+  
     private void setupLikeAndMarkButtons(View cardView, Recommendation recommendation, String recommendationId) {
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
         ImageView markButton = cardView.findViewById(R.id.bookmarkRecommendationButton);
-
+        // Assurer que likedBy n'est pas null
         List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
-        likeCounter.setText(String.valueOf(likedBy.size()));
+        likeCounter.setText(String.valueOf(likedBy.size())); // Utiliser la taille correcte du tableau
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -250,16 +247,23 @@ public class MainActivity extends AppCompatActivity {
                 .collection("comments").get()
                 .addOnSuccessListener(querySnapshot -> {
                     int commentCount = querySnapshot.size();
-                    commentCounter.setText(commentCount + " commentaires");
+                    commentCounter.setText(String.valueOf(commentCount));
                 })
-                .addOnFailureListener(e -> commentCounter.setText("0 commentaires"));
+                .addOnFailureListener(e -> {
+                    commentCounter.setText("0");
+                });
+        commentButton.setOnClickListener(v -> {
+            showCommentModal(recommendationId);
+        });
+
+        container.addView(cardView);
     }
 
 
     private void updateLikeList(String userId, Recommendation recommendation, boolean addLike) {
         List<String> likedBy = recommendation.getLikedBy();
         if (likedBy == null) {
-            likedBy = new ArrayList<>();
+            likedBy = new ArrayList<>();  // Si likedBy est null, initialiser une nouvelle liste
             recommendation.setLikedBy(likedBy);
         }
 
@@ -278,7 +282,7 @@ public class MainActivity extends AppCompatActivity {
             likeCounter.setText(String.valueOf(currentLikesCount + 1));
         } else {
             likeButton.setImageResource(R.drawable.like);
-            likeCounter.setText(String.valueOf(currentLikesCount - 1));
+            likeCounter.setText(String.valueOf(Math.max(currentLikesCount - 1, 0))); // Eviter d'aller sous 0
         }
     }
 
@@ -499,7 +503,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         final long diff = now - time;
-        if (diff < 60 * 1000) { // moins d'une minute
+        if (diff < 60 * 1000) {
             return "Il y a " + diff / 1000 + " secondes";
         } else if (diff < 2 * 60 * 1000) {
             return "Il y a une minute";
