@@ -49,6 +49,8 @@
 
         <activity android:name=".UserProfileActivity" />
 
+        <activity android:name=".BookmarksActivity" />
+
     </application>
 
 </manifest>
