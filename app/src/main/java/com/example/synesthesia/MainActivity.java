@@ -120,9 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
             for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                 Recommendation recommendation = document.toObject(Recommendation.class);
-                if (recommendation != null) {
-                    addRecommendationCard(recommendationList, recommendation, document.getId());
-                }
+                addRecommendationCard(recommendationList, recommendation, document.getId());
             }
 
             swipeRefreshLayout.setRefreshing(false);
@@ -136,20 +134,44 @@ public class MainActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
 
+        // Titre
         TextView titleTextView = cardView.findViewById(R.id.recommendationTitle);
         titleTextView.setText(recommendation.getTitle());
 
+        // Date
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
         Timestamp timestamp = recommendation.getTimestamp();
-        if (timestamp != null) {
-            dateTextView.setText(getTimeAgo(timestamp));
-        } else {
-            dateTextView.setText("Date inconnue");
-        }
+        dateTextView.setText(timestamp != null ? getTimeAgo(timestamp) : "Date inconnue");
 
+        // Utilisateur et image de profil
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
-        db.collection("users").document(recommendation.getUserId()).get()
+        loadUserProfile(recommendation.getUserId(), userTextView, profileImageView);
+
+        // Image de couverture
+        ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
+        loadImage(recommendation.getCoverUrl(), coverImageView);
+
+        // Bouton de like et de bookmark
+        setupLikeAndMarkButtons(cardView, recommendation, recommendationId);
+
+        // Commentaires
+        TextView commentCounter = cardView.findViewById(R.id.commentCounter);
+        ImageView commentButton = cardView.findViewById(R.id.commentButton);
+        loadCommentCount(recommendationId, commentCounter);
+
+        // Gestion de l'ajout des commentaires
+        commentButton.setOnClickListener(v -> showCommentModal(recommendationId));
+
+        // Ajout de la vue dans le container
+        container.addView(cardView);
+    }
+
+    /**
+     * Charge les informations de l'utilisateur à partir de la base de données et met à jour l'UI.
+     */
+    private void loadUserProfile(String userId, TextView userTextView, ImageView profileImageView) {
+        db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         userTextView.setText(documentSnapshot.getString("username"));
@@ -161,24 +183,29 @@ public class MainActivity extends AppCompatActivity {
                         }
                     } else {
                         userTextView.setText("Utilisateur inconnu");
+                        profileImageView.setImageResource(R.drawable.placeholder_image);
                     }
                 })
                 .addOnFailureListener(e -> {
                     userTextView.setText("Erreur de chargement");
+                    profileImageView.setImageResource(R.drawable.placeholder_image);
                 });
+    }
 
-        ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
-        if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
-            Glide.with(this).load(recommendation.getCoverUrl()).placeholder(R.drawable.placeholder_image).into(coverImageView);
+    /**
+     * Charge l'image avec Glide, avec une image par défaut si l'URL est vide ou nulle.
+     */
+    private void loadImage(String imageUrl, ImageView imageView) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(this).load(imageUrl).placeholder(R.drawable.placeholder_image).into(imageView);
         } else {
-            coverImageView.setImageResource(R.drawable.placeholder_image);
+            imageView.setImageResource(R.drawable.placeholder_image);
         }
-
-        // Gestion des likes
+    }
+  
+    private void setupLikeAndMarkButtons(View cardView, Recommendation recommendation, String recommendationId) {
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
         TextView likeCounter = cardView.findViewById(R.id.likeCounter);
-        TextView commentCounter = cardView.findViewById(R.id.commentCounter);
-        ImageView commentButton = cardView.findViewById(R.id.commentButton);
         ImageView markButton = cardView.findViewById(R.id.bookmarkRecommendationButton);
         // Assurer que likedBy n'est pas null
         List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
@@ -190,28 +217,32 @@ public class MainActivity extends AppCompatActivity {
             final boolean[] isCurrentlyLiked = {isLiked(userId, recommendation)};
             final boolean[] isCurrentlyMarked = {isMarked(userId, recommendation)};
 
+            // Gestion de l'état initial des boutons
             likeButton.setImageResource(isCurrentlyLiked[0] ? R.drawable.given_like : R.drawable.like);
+            markButton.setImageResource(isCurrentlyMarked[0] ? R.drawable.bookmark_active : R.drawable.bookmark);
 
+            // Click sur le bouton like
             likeButton.setOnClickListener(v -> {
                 boolean newLikeStatus = !isCurrentlyLiked[0];
                 updateLikeUI(likeButton, likeCounter, newLikeStatus, likedBy.size());
                 updateLikeList(userId, recommendation, newLikeStatus);
-                toggleLike(recommendationId, userId, newLikeStatus, () -> {
-                    isCurrentlyLiked[0] = newLikeStatus;
-                });
+                toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
             });
 
-            markButton.setImageResource(isCurrentlyMarked[0] ? R.drawable.bookmark_active : R.drawable.bookmark);
+            // Click sur le bouton bookmark
             markButton.setOnClickListener(v -> {
                 boolean newMarkStatus = !isCurrentlyMarked[0];
                 updateMarkUI(markButton, newMarkStatus);
                 updateMarkList(userId, recommendation, newMarkStatus);
-                toggleMark(recommendationId, userId, newMarkStatus, () -> {
-                    isCurrentlyMarked[0] = newMarkStatus;
-                });
+                toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
             });
         }
+    }
 
+    /**
+     * Charge le nombre de commentaires à partir de Firestore.
+     */
+    private void loadCommentCount(String recommendationId, TextView commentCounter) {
         db.collection("recommendations").document(recommendationId)
                 .collection("comments").get()
                 .addOnSuccessListener(querySnapshot -> {
@@ -227,6 +258,7 @@ public class MainActivity extends AppCompatActivity {
 
         container.addView(cardView);
     }
+
 
     private void updateLikeList(String userId, Recommendation recommendation, boolean addLike) {
         List<String> likedBy = recommendation.getLikedBy();
@@ -327,30 +359,39 @@ public class MainActivity extends AppCompatActivity {
             Log.e("ToggleMark", "Recommendation ID or User ID is null");
             return;
         }
-        DocumentReference recommendationRef = db.collection("recommendations").document(recommendationId);
+
+        // Référence vers le document de l'utilisateur
+        DocumentReference userRef = db.collection("users").document(userId);
+
         db.runTransaction(transaction -> {
-            DocumentSnapshot snapshot = transaction.get(recommendationRef);
+            DocumentSnapshot snapshot = transaction.get(userRef);
             if (!snapshot.exists()) {
-                throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
+                throw new FirebaseFirestoreException("User document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
-            List<String> markedBy = (List<String>) snapshot.get("markedBy");
-            if (markedBy == null) {
-                markedBy = new ArrayList<>();
+
+            List<String> bookmarkedRecommendations = (List<String>) snapshot.get("bookmarkedRecommendations");
+            if (bookmarkedRecommendations == null) {
+                bookmarkedRecommendations = new ArrayList<>();
             }
+
             if (isMarked) {
-                if (!markedBy.contains(userId)) {
-                    markedBy.add(userId);
+                // Si la recommandation n'est pas encore bookmarkée, on l'ajoute
+                if (!bookmarkedRecommendations.contains(recommendationId)) {
+                    bookmarkedRecommendations.add(recommendationId);
                 }
             } else {
-                markedBy.remove(userId);
+                // Si la recommandation est bookmarkée, on la retire
+                bookmarkedRecommendations.remove(recommendationId);
             }
-            transaction.update(recommendationRef, "markedBy", markedBy);
+
+            // Mise à jour du document de l'utilisateur avec la liste modifiée
+            transaction.update(userRef, "bookmarkedRecommendations", bookmarkedRecommendations);
             return null;
         }).addOnSuccessListener(aVoid -> {
-            Log.d("ToggleMark", "Transaction success!");
+            Log.d("ToggleMark", "Bookmark transaction success!");
             onComplete.run();
         }).addOnFailureListener(e -> {
-            Log.e("ToggleMark", "Transaction failure.", e);
+            Log.e("ToggleMark", "Bookmark transaction failure.", e);
             onComplete.run();
         });
     }
