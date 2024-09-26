@@ -65,7 +65,8 @@ public class MainActivity extends AppCompatActivity {
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
                     case 0:
-                        // Handle Musique
+                        Intent musicIntent = new Intent(MainActivity.this, SearchMusicActivity.class);
+                        startActivity(musicIntent);
                         break;
                     case 1:
                         // Handle Film
@@ -74,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
                         // Handle Jeux Vidéo
                         break;
                     case 3:
-                        // Handle Livre
+                        Intent bookIntent = new Intent(MainActivity.this, SearchBookActivity.class);
+                        startActivity(bookIntent);
                         break;
                 }
             });
