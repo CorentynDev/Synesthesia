@@ -137,11 +137,16 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
+            <!-- Espace flexible pour pousser Bookmark à droite -->
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
             <!-- Bookmark button -->
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -152,6 +157,8 @@
                     android:src="@drawable/bookmark"
                     app:tint="@color/white" />
             </LinearLayout>
+
         </LinearLayout>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>
