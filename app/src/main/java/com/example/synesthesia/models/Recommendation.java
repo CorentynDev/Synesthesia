@@ -9,7 +9,6 @@ public class Recommendation {
     private String coverUrl;
     private String userId;
     private List<String> likedBy;
-    private List<String> markedBy;
     private Timestamp timestamp;
     private String type;
 
@@ -17,19 +16,13 @@ public class Recommendation {
     public Recommendation() {
     }
 
-    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type, List<String> likedBy, List<String> markedBy) {
+    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type) {
         this.title = title;
         this.coverUrl = coverUrl;
         this.userId = userId;
         this.timestamp = timestamp;
         this.type = type;
-        this.likedBy = likedBy;
-        this.markedBy = markedBy;
     }
-    public Recommendation(String title, String publishedDate, String s, String userId, String username, List<Comment> commentsList, Timestamp recommendationTimestamp, String type) {
-    }
-
-
 
     public String getTitle() {
         return title;
