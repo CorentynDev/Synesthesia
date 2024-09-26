@@ -19,14 +19,18 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.HashMap;
+
 public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAdapter.ViewHolder> {
 
     private List<Recommendation> recommendations;
     private final FirebaseFirestore db;
+    private final HashMap<String, User> userCache; // Cache pour les utilisateurs
 
     public RecommendationAdapter(List<Recommendation> recommendations) {
         this.recommendations = recommendations;
         this.db = FirebaseFirestore.getInstance();
+        this.userCache = new HashMap<>();
     }
 
     @NonNull
@@ -40,46 +44,62 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Recommendation recommendation = recommendations.get(position);
-
         holder.titleTextView.setText(recommendation.getTitle());
 
+        // Charger l'image de couverture
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
             Picasso.get().load(recommendation.getCoverUrl()).into(holder.coverImageView);
         } else {
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        db.collection("users").document(recommendation.getUserId()).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                        String userName = documentSnapshot.getString("username");
-
-                        if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
-                            Picasso.get().load(profileImageUrl).into(holder.profileImageView);
+        // Vérifier si l'utilisateur est dans le cache
+        String userId = recommendation.getUserId();
+        if (userCache.containsKey(userId)) {
+            User user = userCache.get(userId);
+            bindUserData(holder, user);
+        } else {
+            db.collection("users").document(userId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                            String userName = documentSnapshot.getString("username");
+                            User user = new User(profileImageUrl, userName); // Créez une classe User pour stocker ces informations
+                            userCache.put(userId, user);
+                            bindUserData(holder, user);
                         } else {
+                            // Gestion des cas où l'utilisateur n'existe pas
+                            holder.userNameTextView.setText("Utilisateur inconnu");
                             holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
                         }
-
-                        holder.userNameTextView.setText(userName);
-                    }
-                });
-
-        final List<String> likedBy;
-        if (recommendation.getLikedBy() == null) {
-            likedBy = new ArrayList<>();
-            recommendation.setLikedBy(likedBy);
-        } else {
-            likedBy = recommendation.getLikedBy();
+                    })
+                    .addOnFailureListener(e -> {
+                        holder.userNameTextView.setText("Erreur de chargement");
+                        holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+                    });
         }
+
+        // Affichage des likes
+        List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
         holder.likesCountTextView.setText(String.valueOf(likedBy.size()));
 
+        // Affichage de la date
         if (recommendation.getTimestamp() != null) {
             String timeAgo = getTimeAgo(recommendation.getTimestamp());
             holder.dateTextView.setText(timeAgo);
         } else {
             holder.dateTextView.setText("Date inconnue");
         }
+    }
+
+    private void bindUserData(ViewHolder holder, User user) {
+        // Méthode pour lier les données utilisateur
+        if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
+            Picasso.get().load(user.getProfileImageUrl()).into(holder.profileImageView);
+        } else {
+            holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+        }
+        holder.userNameTextView.setText(user.getUsername() != null ? user.getUsername() : "Utilisateur inconnu");
     }
 
     @Override
@@ -94,7 +114,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-
         ImageView coverImageView;
         ImageView profileImageView;
         TextView titleTextView;
@@ -139,34 +158,22 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         }
     }
 
-    static class CommentViewHolder extends RecyclerView.ViewHolder {
-        TextView commentTextView;
-        TextView usernameTextView; // Pour afficher le nom d'utilisateur
-        ImageView profileImageView; // Pour afficher l'image de profil
-        TextView timestampTextView; // Pour afficher le temps écoulé
+    // Classe pour stocker les données utilisateur
+    private static class User {
+        private final String profileImageUrl;
+        private final String username;
 
-        CommentViewHolder(View itemView) {
-            super(itemView);
-            commentTextView = itemView.findViewById(R.id.commentTextView);
-            usernameTextView = itemView.findViewById(R.id.usernameTextView);
-            profileImageView = itemView.findViewById(R.id.profileImageView);
-            timestampTextView = itemView.findViewById(R.id.timestampTextView);
-        }
-    }
-
-
-    private void bindComment(CommentViewHolder holder, Comment comment) {
-        holder.commentTextView.setText(comment.getCommentText());
-        holder.usernameTextView.setText(comment.getUsername());
-
-        // Chargez l'image de profil si disponible
-        if (comment.getProfileImageUrl() != null && !comment.getProfileImageUrl().isEmpty()) {
-            Picasso.get().load(comment.getProfileImageUrl()).into(holder.profileImageView);
-        } else {
-            holder.profileImageView.setImageResource(R.drawable.placeholder_image); // image par défaut
+        public User(String profileImageUrl, String username) {
+            this.profileImageUrl = profileImageUrl;
+            this.username = username;
         }
 
-        // Afficher le temps écoulé
-        holder.timestampTextView.setText(comment.getTimeAgo());
+        public String getProfileImageUrl() {
+            return profileImageUrl;
+        }
+
+        public String getUsername() {
+            return username;
+        }
     }
 }

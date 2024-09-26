@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp;
 
 public class Recommendation {
 
+    private String id;
     private String title;
     private String coverUrl;
     private String userId;
@@ -59,5 +60,13 @@ public class Recommendation {
 
     public void setMarkedBy(List<String> markedBy) {
         this.markedBy = markedBy;
+    }
+
+    public String getID() {
+        return id;
+    }
+
+    public void setID(String id) {
+        this.id = id;
     }
 }
