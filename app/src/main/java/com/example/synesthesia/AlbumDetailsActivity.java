@@ -1,9 +1,11 @@
 package com.example.synesthesia;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,9 +18,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Album;
+import com.example.synesthesia.models.Comment;
+import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import retrofit2.Call;
@@ -36,6 +45,8 @@ public class AlbumDetailsActivity extends AppCompatActivity {
     private TextView albumArtistTextView;
     private TextView albumTracksCountTextView;
     private RecyclerView tracksRecyclerView;
+    private EditText commentField;
+    private Button recommendButton;
     private Button backButton;
 
     private Album album;
@@ -43,10 +54,17 @@ public class AlbumDetailsActivity extends AppCompatActivity {
 
     private DeezerApi deezerApi;
 
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_album_details);
+        setContentView(R.layout.activity_album_details); // Appel à setContentView en premier
+
+        // Initialize FirebaseAuth and Firestore
+        mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         // Initialiser les vues
         albumCoverImageView = findViewById(R.id.albumCoverImageView);
@@ -55,6 +73,8 @@ public class AlbumDetailsActivity extends AppCompatActivity {
         albumTracksCountTextView = findViewById(R.id.albumTracksCountTextView);
         tracksRecyclerView = findViewById(R.id.tracksRecyclerView);
         backButton = findViewById(R.id.backButton);
+        commentField = findViewById(R.id.commentField);
+        recommendButton = findViewById(R.id.recommendButton);
 
         // Récupérer l'objet Album depuis l'intent
         album = getIntent().getParcelableExtra("album");
@@ -86,7 +106,74 @@ public class AlbumDetailsActivity extends AppCompatActivity {
 
         // Configurer le bouton de retour
         backButton.setOnClickListener(v -> finish());
+
+        recommendButton.setOnClickListener(v -> {
+            String commentText = commentField.getText().toString().trim();
+            submitRecommendation(album, commentText.isEmpty() ? "" : commentText);
+        });
     }
+
+
+    private void submitRecommendation(Album album, String commentText) {
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Utilisateur non authentifié", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = mAuth.getCurrentUser().getUid();
+
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String username = documentSnapshot.getString("username");
+
+                        Comment firstComment = new Comment(userId, commentText, new Timestamp(new Date()));
+
+                        List<Comment> commentsList = new ArrayList<>();
+                        commentsList.add(firstComment);
+
+                        // Récupérer l'URL de couverture de l'album
+                        String recommendationCoverUrl = album.getCoverXl(); // Utiliser la couverture XL de l'album
+
+                        Log.d(TAG, "Recommendation Cover URL: " + recommendationCoverUrl);
+
+                        Timestamp recommendationTimestamp = new Timestamp(new Date());
+                        String type = "album"; // Changer le type à "album"
+
+                        // Créer l'objet Recommendation pour l'album
+                        Recommendation recommendation = new Recommendation(
+                                album.getTitle(), // Utiliser le titre de l'album
+                                null, // Laissez null si aucune description supplémentaire n'est nécessaire
+                                recommendationCoverUrl,
+                                userId,
+                                username,
+                                commentsList,
+                                recommendationTimestamp,
+                                type
+                        );
+
+                        // Enregistrer la recommandation dans Firestore
+                        db.collection("recommendations")
+                                .add(recommendation)
+                                .addOnSuccessListener(documentReference -> {
+                                    Toast.makeText(AlbumDetailsActivity.this, "Recommandation enregistrée", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e(TAG, "Erreur lors de l'enregistrement de la recommandation", e);
+                                    Toast.makeText(AlbumDetailsActivity.this, "Erreur lors de l'enregistrement de la recommandation", Toast.LENGTH_SHORT).show();
+                                });
+                    } else {
+                        Log.e(TAG, "Utilisateur non trouvé");
+                        Toast.makeText(AlbumDetailsActivity.this, "Utilisateur non trouvé", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Erreur lors de la récupération des données de l'utilisateur", e);
+                    Toast.makeText(AlbumDetailsActivity.this, "Erreur lors de la récupération des données de l'utilisateur", Toast.LENGTH_SHORT).show();
+                });
+    }
+
 
     private void displayAlbumDetails() {
         albumTitleTextView.setText(album.getTitle());

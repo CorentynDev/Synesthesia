@@ -8,6 +8,13 @@
     android:padding="16dp"
     tools:context=".AlbumDetailsActivity">
 
+    <Button
+        android:id="@+id/backButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:text="Retour" />
+
     <!-- Image de couverture de l'album -->
     <ImageView
         android:id="@+id/albumCoverImageView"
@@ -51,11 +58,24 @@
         android:layout_weight="1"
         android:layout_marginTop="16dp" />
 
-    <!-- Bouton de retour -->
-    <Button
-        android:id="@+id/backButton"
+    <EditText
+        android:id="@+id/commentField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Retour" />
+        android:hint="Ajoutez une note ou un commentaire" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <Button
+            android:id="@+id/recommendButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recommander" />
+
+    </LinearLayout>
 
 </LinearLayout>

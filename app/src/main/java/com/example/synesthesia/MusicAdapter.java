@@ -98,8 +98,16 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 holder.bindArtist((Artist) item);
                 holder.playPauseButton.setVisibility(View.GONE);
             } else if (item instanceof Album) {
-                holder.bindAlbum((Album) item);
+                // Code pour les albums
+                Album album = (Album) item;
+                holder.bindAlbum(album);
                 holder.playPauseButton.setVisibility(View.GONE);
+
+                holder.itemView.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, AlbumDetailsActivity.class);
+                    intent.putExtra("album", album);  // Passer l'objet Album
+                    context.startActivity(intent);
+                });
             } else {
                 holder.playPauseButton.setVisibility(View.GONE);
             }

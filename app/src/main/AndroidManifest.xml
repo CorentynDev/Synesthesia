@@ -51,6 +51,8 @@
 
         <activity android:name=".BookmarksActivity" />
 
+        <activity android:name=".AlbumDetailsActivity" />
+
     </application>
 
 </manifest>
