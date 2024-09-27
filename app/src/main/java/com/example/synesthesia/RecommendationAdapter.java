@@ -53,30 +53,39 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Vérifier si l'utilisateur est dans le cache
+        // Récupérer l'ID utilisateur associé à la recommandation
         String userId = recommendation.getUserId();
-        if (userCache.containsKey(userId)) {
-            User user = userCache.get(userId);
-            bindUserData(holder, user);
-        } else {
-            db.collection("users").document(userId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                            String userName = documentSnapshot.getString("username");
-                            User user = new User(profileImageUrl, userName); // Créez une classe User pour stocker ces informations
-                            userCache.put(userId, user);
-                            bindUserData(holder, user);
-                        } else {
-                            // Gestion des cas où l'utilisateur n'existe pas
-                            holder.userNameTextView.setText("Utilisateur inconnu");
+
+        if (userId != null && !userId.isEmpty()) {
+            // Vérifier si l'utilisateur est dans le cache
+            if (userCache.containsKey(userId)) {
+                User user = userCache.get(userId);
+                bindUserData(holder, user);
+            } else {
+                // Récupérer les informations de l'utilisateur depuis Firestore
+                db.collection("users").document(userId).get()
+                        .addOnSuccessListener(documentSnapshot -> {
+                            if (documentSnapshot.exists()) {
+                                String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                                String userName = documentSnapshot.getString("username");
+                                User user = new User(profileImageUrl, userName); // Classe User définie plus bas
+                                userCache.put(userId, user); // Ajouter dans le cache
+                                bindUserData(holder, user);
+                            } else {
+                                // Gestion des cas où l'utilisateur n'existe pas
+                                holder.userNameTextView.setText("Utilisateur inconnu");
+                                holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            holder.userNameTextView.setText("Erreur de chargement");
                             holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        holder.userNameTextView.setText("Erreur de chargement");
-                        holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
-                    });
+                        });
+            }
+        } else {
+            // Si l'userId est null ou vide, afficher des informations par défaut
+            holder.userNameTextView.setText("Utilisateur inconnu");
+            holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
         }
 
         // Affichage des likes
@@ -91,6 +100,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.dateTextView.setText("Date inconnue");
         }
     }
+
 
     private void bindUserData(ViewHolder holder, User user) {
         // Méthode pour lier les données utilisateur
