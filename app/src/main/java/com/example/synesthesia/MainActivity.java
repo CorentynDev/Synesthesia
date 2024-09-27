@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         loadCommentCount(recommendationId, commentCounter);
 
         // Gestion de l'ajout des commentaires
-        commentButton.setOnClickListener(v -> showCommentModal(recommendationId));
+        commentButton.setOnClickListener(v -> showCommentModal(recommendationId, commentCounter));
 
         // Ajout de la vue dans le container
         container.addView(cardView);
@@ -390,7 +390,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void showCommentModal(String recommendationId) {
+    private void showCommentModal(String recommendationId, TextView commentCounter) {
         LayoutInflater inflater = LayoutInflater.from(this);
         View modalView = inflater.inflate(R.layout.comment_modal, null);
 
@@ -409,12 +409,14 @@ public class MainActivity extends AppCompatActivity {
         CommentsAdapter adapter = new CommentsAdapter(commentList);
         commentsRecyclerView.setAdapter(adapter);
 
+        // Charger les commentaires existants
         loadComments(recommendationId, commentList, adapter);
 
         postCommentButton.setOnClickListener(v -> {
             String commentText = commentInput.getText().toString().trim();
             if (!commentText.isEmpty()) {
-                postComment(recommendationId, commentText);
+                // Passer les paramètres supplémentaires pour mettre à jour dynamiquement
+                postComment(recommendationId, commentText, commentCounter, commentList, adapter, commentsRecyclerView);
                 commentInput.setText("");
             }
         });
@@ -426,24 +428,18 @@ public class MainActivity extends AppCompatActivity {
         db.collection("recommendations").document(recommendationId)
                 .collection("comments")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
-                .addSnapshotListener((queryDocumentSnapshots, e) -> {
-                    if (e != null) {
-                        Log.e("Firestore", "Error loading comments", e);
-                        return;
-                    }
-
-                    commentList.clear();
-                    assert queryDocumentSnapshots != null;
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Comment comment = doc.toObject(Comment.class);
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        Comment comment = document.toObject(Comment.class);
                         commentList.add(comment);
                     }
-
                     adapter.notifyDataSetChanged();
-                });
+               })
+                .addOnFailureListener(e -> Log.e("Firestore", "Error loading comments", e));
     }
 
-    private void postComment(String recommendationId, String commentText) {
+    private void postComment(String recommendationId, String commentText, TextView commentCounter, List<Comment> commentList, CommentsAdapter adapter, RecyclerView commentsRecyclerView) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
@@ -456,7 +452,19 @@ public class MainActivity extends AppCompatActivity {
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        // Pas besoin de mettre à jour le nombre de commentaires
+                        // Créer le nouvel objet commentaire avec Timestamp.now()
+                        Comment newComment = new Comment(userId, commentText, Timestamp.now());
+
+                        // Ajouter le nouveau commentaire en haut de la liste
+                        commentList.add(0, newComment);
+                        adapter.notifyItemInserted(0);  // Notifie l'adaptateur de l'insertion
+
+                        // Mettre à jour le compteur de commentaires
+                        int currentCount = Integer.parseInt(commentCounter.getText().toString());
+                        commentCounter.setText(String.valueOf(currentCount + 1));
+
+                        // Scroll automatique vers le bas pour voir le nouveau commentaire
+                        commentsRecyclerView.scrollToPosition(0);  // Fais défiler vers le haut pour voir le dernier commentaire ajouté
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
         }
@@ -498,7 +506,7 @@ public class MainActivity extends AppCompatActivity {
 
         final long diff = now - time;
         if (diff < 60 * 1000) {
-            return "Il y a " + diff / 1000 + " secondes";
+            return "Il y a " + diff / 1000 + " seconde(s)";
         } else if (diff < 2 * 60 * 1000) {
             return "Il y a une minute";
         } else if (diff < 50 * 60 * 1000) {

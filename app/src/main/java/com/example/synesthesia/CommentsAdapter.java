@@ -86,7 +86,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
 
         final long diff = now - time;
         if (diff < 60 * 1000) {
-            return "Il y a " + diff / 1000 + " secondes";
+            return "Il y a " + diff / 1000 + " seconde(s)";
         } else if (diff < 2 * 60 * 1000) {
             return "Il y a une minute";
         } else if (diff < 50 * 60 * 1000) {
