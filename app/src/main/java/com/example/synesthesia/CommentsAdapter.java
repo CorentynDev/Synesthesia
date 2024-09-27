@@ -18,12 +18,12 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.CommentViewHolder> {
-    private List<Comment> comments;
-    private FirebaseFirestore db; // Instance Firestore
+    private final List<Comment> comments;
+    private final FirebaseFirestore db;
 
     public CommentsAdapter(List<Comment> comments) {
         this.comments = comments;
-        this.db = FirebaseFirestore.getInstance(); // Initialiser Firestore
+        this.db = FirebaseFirestore.getInstance();
     }
 
     @NonNull
@@ -39,7 +39,6 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
 
         holder.commentTextView.setText(comment.getCommentText());
 
-        // Récupérer les informations de l'utilisateur à partir de Firestore en utilisant l'userId
         String userId = comment.getUserId();
         if (userId != null && !userId.isEmpty()) {
             db.collection("users").document(userId).get()
@@ -48,16 +47,14 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
                             String username = documentSnapshot.getString("username");
                             String profileImageUrl = documentSnapshot.getString("profileImageUrl");
 
-                            // Afficher le pseudo
                             if (username != null) {
                                 holder.usernameTextView.setText(username);
                             }
 
-                            // Afficher l'image de profil
                             if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
                                 Glide.with(holder.profileImageView.getContext())
                                         .load(profileImageUrl)
-                                        .placeholder(R.drawable.placeholder_image) // Image par défaut si aucune image n'est trouvée
+                                        .placeholder(R.drawable.placeholder_image)
                                         .into(holder.profileImageView);
                             } else {
                                 holder.profileImageView.setImageResource(R.drawable.placeholder_image);
@@ -68,25 +65,23 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
                         Log.e("CommentsAdapter", "Error fetching user data", e);
                     });
         } else {
-            // Si l'ID utilisateur est manquant ou vide, utiliser une valeur par défaut
             holder.usernameTextView.setText("Utilisateur inconnu");
             holder.profileImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Afficher la date ou l'heure du commentaire
         holder.timestampTextView.setText(getTimeAgo(comment.getTimestamp()));
     }
 
     private String getTimeAgo(Timestamp timestamp) {
         if (timestamp == null) {
-            return "A l'instant";
+            return "Maintenant";
         }
 
         long time = timestamp.toDate().getTime();
         long now = System.currentTimeMillis();
 
         if (time > now || time <= 0) {
-            return "à l'instant";
+            return "Maintenant";
         }
 
         final long diff = now - time;
@@ -114,16 +109,16 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
 
     public static class CommentViewHolder extends RecyclerView.ViewHolder {
         TextView commentTextView;
-        TextView usernameTextView; // Pour afficher le nom de l'utilisateur
-        ImageView profileImageView; // Pour afficher l'image de profil
-        TextView timestampTextView; // Pour afficher le timestamp du commentaire
+        TextView usernameTextView;
+        ImageView profileImageView;
+        TextView timestampTextView;
 
         public CommentViewHolder(View itemView) {
             super(itemView);
             commentTextView = itemView.findViewById(R.id.commentTextView);
-            usernameTextView = itemView.findViewById(R.id.usernameTextView); // Assurez-vous que cela existe dans votre layout
-            profileImageView = itemView.findViewById(R.id.profileImageView); // Assurez-vous que cela existe dans votre layout
-            timestampTextView = itemView.findViewById(R.id.timestampTextView); // Ajoutez cette ligne
+            usernameTextView = itemView.findViewById(R.id.usernameTextView);
+            profileImageView = itemView.findViewById(R.id.profileImageView);
+            timestampTextView = itemView.findViewById(R.id.timestampTextView);
         }
     }
 }
