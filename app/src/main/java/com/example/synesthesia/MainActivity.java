@@ -109,6 +109,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //TODO: Il faut faire un fichier qui regroupe toutes les fonctions utilitaires concernant les recommandations
+    /**
+     * Les fonctions concernées sont les suivantes : 
+     * getRecommendationData()
+     * addRecommendationCard()
+     */
     public void getRecommendationData() {
         Log.d("MainActivity", "Starting to fetch recommendations");
 
