@@ -1,7 +1,9 @@
 package com.example.synesthesia.utilities;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.text.InputType;
 import android.util.Log;
@@ -14,6 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.LoginActivity;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.RecommendationAdapter;
 import com.example.synesthesia.models.Recommendation;
@@ -32,23 +36,23 @@ import java.util.Objects;
 public class UserUtils {
 
     private final FirebaseAuth firebaseAuth;
-    private final FirebaseFirestore firestore;
+    private static FirebaseFirestore db;
     private final FirebaseStorage firebaseStorage;
 
     public UserUtils() {
         this.firebaseAuth = FirebaseAuth.getInstance();
-        this.firestore = FirebaseFirestore.getInstance();
+        this.db = FirebaseFirestore.getInstance();
         this.firebaseStorage = FirebaseStorage.getInstance();
     }
 
-    public String getUserId() {
+    public String getCurrentUserId() {
         return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
     }
 
     public void loadUserData(ImageView profileImageView, TextView pseudoTextView, TextView emailTextView) {
-        String userId = getUserId();
+        String userId = getCurrentUserId();
 
-        firestore.collection("users").document(userId).get()
+        db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
@@ -66,18 +70,18 @@ public class UserUtils {
     }
 
     public void updateUserPseudo(Context context, String newPseudo, TextView pseudoTextView) {
-        String userId = getUserId();
+        String userId = getCurrentUserId();
 
-        firestore.collection("users").document(userId)
+        db.collection("users").document(userId)
                 .update("username", newPseudo)
                 .addOnSuccessListener(aVoid -> pseudoTextView.setText(newPseudo))
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating username", e));
     }
 
     public void updateUserEmail(Context context, String newEmail, TextView emailTextView) {
-        String userId = getUserId();
+        String userId = getCurrentUserId();
 
-        firestore.collection("users").document(userId)
+        db.collection("users").document(userId)
                 .update("email", newEmail)
                 .addOnSuccessListener(aVoid -> emailTextView.setText(newEmail))
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating email", e));
@@ -85,7 +89,7 @@ public class UserUtils {
 
     public void uploadProfileImage(Context context, Uri imageUri, ImageView profileImageView) {
         if (imageUri != null) {
-            String userId = getUserId();
+            String userId = getCurrentUserId();
             StorageReference fileReference = firebaseStorage.getReference()
                     .child("profile_images").child(userId + ".jpg");
 
@@ -97,18 +101,18 @@ public class UserUtils {
     }
 
     public void updateUserProfileImage(Context context, String imageUrl, ImageView profileImageView) {
-        String userId = getUserId();
+        String userId = getCurrentUserId();
 
-        firestore.collection("users").document(userId)
+        db.collection("users").document(userId)
                 .update("profileImageUrl", imageUrl)
                 .addOnSuccessListener(aVoid -> Picasso.get().load(imageUrl).into(profileImageView))
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating profile image", e));
     }
 
     public void loadUserRecommendations(RecommendationAdapter recommendationAdapter) {
-        String userId = getUserId();
+        String userId = getCurrentUserId();
 
-        firestore.collection("recommendations")
+        db.collection("recommendations")
                 .whereEqualTo("userId", userId)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -212,7 +216,7 @@ public class UserUtils {
         if (currentUser != null) {
             String userId = currentUser.getUid();
 
-            firestore.collection("users").document(userId).get()
+            db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
                             profileSummary.setText(documentSnapshot.getString("username"));
@@ -231,5 +235,41 @@ public class UserUtils {
                         Log.e("UserProfile", "Erreur lors de la récupération des données utilisateur", e);
                     });
         }
+    }
+
+    /**
+     * Vérifie si un utilisateur est connecté à Firebase.
+     *
+     * @return true si l'utilisateur est connecté, false sinon.
+     */
+    public boolean isUserLoggedIn() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        return currentUser != null;
+    }
+
+    /**
+     * Charge le profil de l'utilisateur et met à jour les TextView et ImageView correspondants.
+     *
+     * @param context le contexte de l'application
+     * @param userId l'ID de l'utilisateur
+     * @param userTextView le TextView pour afficher le nom d'utilisateur
+     * @param profileImageView l'ImageView pour afficher l'image de profil
+     */
+    @SuppressLint("SetTextI18n")
+    public static void loadUserProfile(Context context, String userId, TextView userTextView, ImageView profileImageView) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String username = documentSnapshot.getString("username");
+                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+
+                        userTextView.setText(username);
+                        ImagesUtils.loadImage(context, profileImageUrl, profileImageView);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    userTextView.setText("Utilisateur inconnu");
+                    profileImageView.setImageResource(R.drawable.placeholder_image);
+                });
     }
 }

@@ -7,7 +7,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Recommendation;
@@ -23,19 +25,18 @@ import java.util.List;
 public class RecommendationsUtils {
 
     private FirebaseFirestore db;
-    private LikeUtils likeUtils;
-    private BookmarkUtils bookmarkUtils;
+    private final LikeUtils likeUtils;
+    private final BookmarkUtils bookmarkUtils;
+    private final CommentUtils commentUtils;  // Correction: Initialisation finale
 
+    // Le constructeur reçoit une instance de FirebaseFirestore
     public RecommendationsUtils(FirebaseFirestore db) {
-        this.db = db;  // Initialisation de la base de données Firestore
-        this.likeUtils = new LikeUtils(db);  // Initialisation de LikeUtils
-        this.bookmarkUtils = new BookmarkUtils(db);  // Initialisation de BookmarkUtils
+        this.db = db;
+        this.likeUtils = new LikeUtils(db);
+        this.bookmarkUtils = new BookmarkUtils(db);
+        this.commentUtils = new CommentUtils(db);  // Correction : passez 'db' ici
     }
 
-    /**
-     * Fonction pour obtenir les données de recommandations depuis Firestore
-     * et ajouter les cartes dans la liste.
-     */
     public void getRecommendationData(Context context, LinearLayout recommendationList, SwipeRefreshLayout swipeRefreshLayout) {
         Log.d("RecommendationsUtils", "Starting to fetch recommendations");
 
@@ -57,9 +58,6 @@ public class RecommendationsUtils {
         });
     }
 
-    /**
-     * Fonction pour ajouter une carte de recommandation à la vue
-     */
     public void addRecommendationCard(Context context, LinearLayout container, Recommendation recommendation, String recommendationId) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View cardView = inflater.inflate(R.layout.recommendation_card, container, false);
@@ -78,11 +76,11 @@ public class RecommendationsUtils {
         // Utilisateur et image de profil
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
-        loadUserProfile(context, recommendation.getUserId(), userTextView, profileImageView);
+        UserUtils.loadUserProfile(context, recommendation.getUserId(), userTextView, profileImageView);
 
         // Image de couverture
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
-        loadImage(context, recommendation.getCoverUrl(), coverImageView);
+        ImagesUtils.loadImage(context, recommendation.getCoverUrl(), coverImageView);
 
         // Boutons de like et de bookmark
         setupLikeAndMarkButtons(cardView, recommendation, recommendationId);
@@ -90,10 +88,10 @@ public class RecommendationsUtils {
         // Commentaires
         TextView commentCounter = cardView.findViewById(R.id.commentCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
-        loadCommentCount(recommendationId, commentCounter);
+        commentUtils.loadCommentCount(recommendationId, commentCounter);  // Utilisation de commentUtils avec db initialisé
 
         // Gestion des commentaires
-        commentButton.setOnClickListener(v -> showCommentModal(context, recommendationId, commentCounter));
+        commentButton.setOnClickListener(v -> commentUtils.showCommentModal(context, recommendationId, commentCounter));
 
         // Ajout de la vue dans le container
         container.addView(cardView);
