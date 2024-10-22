@@ -9,10 +9,10 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,7 +24,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:text="Retour" />
+                android:backgroundTint="@color/gray_medium"
+                android:text="Retour"
+                android:textColor="@color/white"/>
 
             <ImageView
                 android:id="@+id/musicImage"
@@ -37,120 +39,52 @@
                 android:id="@+id/musicTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Nom de la musique"
-                android:textStyle="bold"
                 android:textSize="20sp"
-                android:layout_marginTop="16dp" />
+                android:textStyle="bold"
+                android:textColor="@color/white"/>
 
             <TextView
                 android:id="@+id/musicArtist"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Artiste"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
 
             <TextView
                 android:id="@+id/musicDuration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Durée"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="@color/white"/>
 
             <EditText
                 android:id="@+id/commentField"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Ajoutez une note ou un commentaire" />
+                android:hint="Ajoutez une note ou un commentaire"
+                android:textColor="@color/white"
+                android:textColorHint="@color/white"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
 
                 <Button
                     android:id="@+id/recommendButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Recommander" />
+                    android:backgroundTint="@color/gray_medium"
+                    android:text="Recommander"
+                    android:textColor="@color/white"/>
 
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
-
-    <!-- Footer (copié de la page principale) -->
-    <LinearLayout
-        android:id="@+id/footer"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/gray_dark"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintHeight_percent="0.1">
-
-        <Button
-            android:id="@+id/homeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/home"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/friendsButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/friends"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/createRecommendationButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/add"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/bookmarkButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/bookmark_menu"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/profileButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/user"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

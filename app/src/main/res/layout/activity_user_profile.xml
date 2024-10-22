@@ -60,7 +60,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="16sp"
                 android:textColor="@color/white"
-                android:text="••••••••••••"
+                android:text="Changer de mot de passe"
                 android:clickable="true"
                 android:focusable="true"
                 android:layout_marginTop="4dp" />
