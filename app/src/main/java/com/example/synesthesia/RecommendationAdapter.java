@@ -25,7 +25,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
 
     private List<Recommendation> recommendations;
     private final FirebaseFirestore db;
-    private final HashMap<String, User> userCache; // Cache pour les utilisateurs
+    private final HashMap<String, User> userCache;
 
     public RecommendationAdapter(List<Recommendation> recommendations) {
         this.recommendations = recommendations;

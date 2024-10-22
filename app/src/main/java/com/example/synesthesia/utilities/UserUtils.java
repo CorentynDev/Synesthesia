@@ -2,7 +2,6 @@ package com.example.synesthesia.utilities;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.text.InputType;
 import android.util.Log;
@@ -14,14 +13,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-
+import com.bumptech.glide.Glide;
 import com.example.synesthesia.R;
 import com.example.synesthesia.RecommendationAdapter;
 import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -32,9 +31,9 @@ import java.util.Objects;
 
 public class UserUtils {
 
-    private FirebaseAuth firebaseAuth;
-    private FirebaseFirestore firestore;
-    private FirebaseStorage firebaseStorage;
+    private final FirebaseAuth firebaseAuth;
+    private final FirebaseFirestore firestore;
+    private final FirebaseStorage firebaseStorage;
 
     public UserUtils() {
         this.firebaseAuth = FirebaseAuth.getInstance();
@@ -46,7 +45,6 @@ public class UserUtils {
         return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
     }
 
-    // Méthode pour charger les données de l'utilisateur
     public void loadUserData(ImageView profileImageView, TextView pseudoTextView, TextView emailTextView) {
         String userId = getUserId();
 
@@ -67,7 +65,6 @@ public class UserUtils {
                 });
     }
 
-    // Mise à jour du pseudo de l'utilisateur
     public void updateUserPseudo(Context context, String newPseudo, TextView pseudoTextView) {
         String userId = getUserId();
 
@@ -77,7 +74,6 @@ public class UserUtils {
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating username", e));
     }
 
-    // Mise à jour de l'email de l'utilisateur
     public void updateUserEmail(Context context, String newEmail, TextView emailTextView) {
         String userId = getUserId();
 
@@ -87,7 +83,6 @@ public class UserUtils {
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating email", e));
     }
 
-    // Méthode pour uploader une nouvelle image de profil
     public void uploadProfileImage(Context context, Uri imageUri, ImageView profileImageView) {
         if (imageUri != null) {
             String userId = getUserId();
@@ -101,7 +96,6 @@ public class UserUtils {
         }
     }
 
-    // Mise à jour de l'URL de l'image de profil dans Firestore
     public void updateUserProfileImage(Context context, String imageUrl, ImageView profileImageView) {
         String userId = getUserId();
 
@@ -111,7 +105,6 @@ public class UserUtils {
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating profile image", e));
     }
 
-    // Méthode pour charger les recommandations de l'utilisateur
     public void loadUserRecommendations(RecommendationAdapter recommendationAdapter) {
         String userId = getUserId();
 
@@ -124,7 +117,6 @@ public class UserUtils {
                 });
     }
 
-    // Méthode pour afficher le dialogue de changement de pseudo
     public void showEditPseudoDialog(Context context, TextView pseudoTextView) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Edit Username");
@@ -144,7 +136,6 @@ public class UserUtils {
         builder.show();
     }
 
-    // Méthode pour afficher le dialogue de changement d'email
     public void showEditEmailDialog(Context context, TextView emailTextView) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Edit Email");
@@ -164,7 +155,6 @@ public class UserUtils {
         builder.show();
     }
 
-    // Méthode pour afficher le dialogue de changement de mot de passe
     public void showChangePasswordDialog(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -194,7 +184,6 @@ public class UserUtils {
         dialog.show();
     }
 
-    // Méthode pour changer le mot de passe de l'utilisateur
     public void updatePassword(Context context, String currentPassword, String newPassword) {
         String email = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getEmail();
         AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(email), currentPassword);
@@ -212,5 +201,35 @@ public class UserUtils {
                 Toast.makeText(context, "Échec de la ré-authentification. Vérifiez le mot de passe actuel.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * Récupère et affiche le profil utilisateur (image et résumé) dans les vues données.
+     */
+    public void getUserProfile(ImageView profileImageView, TextView profileSummary) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+
+            firestore.collection("users").document(userId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            profileSummary.setText(documentSnapshot.getString("username"));
+                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+
+                            if (profileImageUrl != null && !profileImageUrl.isEmpty()) {
+                                Glide.with(profileImageView.getContext())
+                                        .load(profileImageUrl)
+                                        .into(profileImageView);
+                            } else {
+                                profileImageView.setImageResource(R.drawable.placeholder_image);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("UserProfile", "Erreur lors de la récupération des données utilisateur", e);
+                    });
+        }
     }
 }
