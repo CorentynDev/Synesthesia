@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -31,7 +30,6 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.Transaction;
-import com.squareup.picasso.Picasso;
 
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -39,6 +37,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.example.synesthesia.utilities.TimeUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //TODO: Il faut faire un fichier qui regroupe toutes les fonctions utilitaires concernant les recommandations
     /**
      * Les fonctions concernées sont les suivantes : 
      * getRecommendationData()
@@ -146,9 +145,13 @@ public class MainActivity extends AppCompatActivity {
         titleTextView.setText(recommendation.getTitle());
 
         // Date
+        //TODO: Change the root of getTimeAgo()
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
         Timestamp timestamp = recommendation.getTimestamp();
-        dateTextView.setText(timestamp != null ? getTimeAgo(timestamp) : "Date inconnue");
+        TimeUtils timeUtils = new TimeUtils();
+        String timeAgo = timeUtils.getTimeAgo(timestamp);
+        dateTextView.setText(timeAgo != null ? timeAgo : "Date inconnue");
+
 
         // Utilisateur et image de profil
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
@@ -199,9 +202,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Charge l'image avec Glide, avec une image par défaut si l'URL est vide ou nulle.
-     */
+    //TODO: Supprimer pour intégrer la fonction utilitaire afin de charger les images
     private void loadImage(String imageUrl, ImageView imageView) {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this).load(imageUrl).placeholder(R.drawable.placeholder_image).into(imageView);
@@ -216,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView markButton = cardView.findViewById(R.id.bookmarkRecommendationButton);
         // Assurer que likedBy n'est pas null
         List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
-        likeCounter.setText(String.valueOf(likedBy.size())); // Utiliser la taille correcte du tableau
+        likeCounter.setText(String.valueOf(likedBy.size()));
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
@@ -477,8 +478,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getUserProfile() {
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        ImageView profileImageView = findViewById(R.id.profileImageView);
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            ImageView profileImageView = findViewById(R.id.profileImageView);
         TextView profileSummary = findViewById(R.id.profileSummary);
 
         if (currentUser != null) {
@@ -499,32 +500,6 @@ public class MainActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> {
                         Log.e("UserProfile", "Error fetching user data", e);
                     });
-        }
-    }
-
-    private String getTimeAgo(Timestamp timestamp) {
-        long time = timestamp.toDate().getTime();
-        long now = System.currentTimeMillis();
-
-        if (time > now || time <= 0) {
-            return "à l'instant";
-        }
-
-        final long diff = now - time;
-        if (diff < 60 * 1000) {
-            return "Il y a " + diff / 1000 + " seconde(s)";
-        } else if (diff < 2 * 60 * 1000) {
-            return "Il y a une minute";
-        } else if (diff < 50 * 60 * 1000) {
-            return "Il y a " + diff / (60 * 1000) + " minutes";
-        } else if (diff < 90 * 60 * 1000) {
-            return "Il y a une heure";
-        } else if (diff < 24 * 60 * 60 * 1000) {
-            return "Il y a " + diff / (60 * 60 * 1000) + " heures";
-        } else if (diff < 48 * 60 * 60 * 1000) {
-            return "Hier";
-        } else {
-            return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
         }
     }
 }
