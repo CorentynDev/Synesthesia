@@ -14,7 +14,7 @@ public class TimeUtils {
      * @return           A formatted string that indicates the time since the post has been done.
      */
     @SuppressLint("SimpleDateFormat")
-    public String getTimeAgo(Timestamp timestamp) {
+    public static String getTimeAgo(Timestamp timestamp) {
         long time = timestamp.toDate().getTime();
         long now = System.currentTimeMillis();
 
