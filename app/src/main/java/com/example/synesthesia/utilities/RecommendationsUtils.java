@@ -93,6 +93,9 @@ public class RecommendationsUtils {
 
         setupLikeAndMarkButtons(cardView, recommendation, recommendationId);
 
+        TextView userNote = cardView.findViewById(R.id.userRating);
+        userNote.setText(recommendation.getUserNote());
+
         TextView commentCounter = cardView.findViewById(R.id.commentCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
         commentUtils.loadCommentCount(recommendationId, commentCounter);
