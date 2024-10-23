@@ -73,6 +73,7 @@ public class RecommendationsUtils {
         String timeAgo = timeUtils.getTimeAgo(timestamp);
         dateTextView.setText(timeAgo != null ? timeAgo : "Date inconnue");
 
+
         // Utilisateur et image de profil
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
@@ -81,6 +82,10 @@ public class RecommendationsUtils {
         // Image de couverture
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
         ImagesUtils.loadImage(context, recommendation.getCoverUrl(), coverImageView);
+
+        //User note
+        TextView userNote = cardView.findViewById(R.id.userRating);
+        userNote.setText(recommendation.getUserNote());
 
         // Boutons de like et de bookmark
         setupLikeAndMarkButtons(cardView, recommendation, recommendationId);

@@ -28,6 +28,7 @@ public class BookDetailsActivity extends AppCompatActivity {
     private Book book;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private EditText commentField;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         Button recommendButton = findViewById(R.id.recommendButton);
-        EditText commentField = findViewById(R.id.commentField);
+        commentField = findViewById(R.id.commentField);
 
         recommendButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
@@ -88,6 +89,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
                         String type = "book";
 
+                        String userNote = commentField.getText().toString().trim();
+
                         Recommendation recommendation = new Recommendation(
                                 book.getVolumeInfo().getTitle(),
                                 book.getVolumeInfo().getPublishedDate(),
@@ -96,7 +99,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 username,
                                 commentsList,
                                 recommendationTimestamp,
-                                type
+                                type,
+                                userNote
                         );
 
                         db.collection("recommendations")

@@ -48,10 +48,8 @@ public class AlbumDetailsActivity extends AppCompatActivity {
     private EditText commentField;
     private Button recommendButton;
     private Button backButton;
-
     private Album album;
     private TracksAdapter tracksAdapter;
-
     private DeezerApi deezerApi;
 
     private FirebaseFirestore db;
@@ -140,6 +138,8 @@ public class AlbumDetailsActivity extends AppCompatActivity {
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
                         String type = "album"; // Changer le type à "album"
 
+                        String userNote = commentField.getText().toString().trim();
+
                         // Créer l'objet Recommendation pour l'album
                         Recommendation recommendation = new Recommendation(
                                 album.getTitle(), // Utiliser le titre de l'album
@@ -149,7 +149,8 @@ public class AlbumDetailsActivity extends AppCompatActivity {
                                 username,
                                 commentsList,
                                 recommendationTimestamp,
-                                type
+                                type,
+                                userNote
                         );
 
                         // Enregistrer la recommandation dans Firestore
