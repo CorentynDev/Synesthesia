@@ -7,6 +7,12 @@ import java.text.SimpleDateFormat;
 
 public class TimeUtils {
 
+    /**
+     * Return a string that represents the time since the post (comments or recommendation).
+     *
+     * @param timestamp  Timestamp from which the past time is calculated.
+     * @return           A formatted string that indicates the time since the post has been done.
+     */
     @SuppressLint("SimpleDateFormat")
     public String getTimeAgo(Timestamp timestamp) {
         long time = timestamp.toDate().getTime();

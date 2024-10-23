@@ -15,6 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.LoginActivity;
 import com.example.synesthesia.MainActivity;
@@ -36,19 +38,33 @@ import java.util.Objects;
 public class UserUtils {
 
     private final FirebaseAuth firebaseAuth;
+    @SuppressLint("StaticFieldLeak")
     private static FirebaseFirestore db;
     private final FirebaseStorage firebaseStorage;
 
     public UserUtils() {
         this.firebaseAuth = FirebaseAuth.getInstance();
-        this.db = FirebaseFirestore.getInstance();
+        db = FirebaseFirestore.getInstance();
         this.firebaseStorage = FirebaseStorage.getInstance();
     }
 
+    /**
+     * Get the current connected user ID.
+     *
+     * @return User ID of the connected user as a String.
+     * @throws NullPointerException If no user is currently connected.
+     */
     public String getCurrentUserId() {
         return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
     }
 
+    /**
+     * Load the current user data and displays it inside the right views.
+     *
+     * @param profileImageView  ImageView where to display the user profile picture.
+     * @param pseudoTextView    TextView where to display the user nickname.
+     * @param emailTextView     TextView where to display the user email.
+     */
     public void loadUserData(ImageView profileImageView, TextView pseudoTextView, TextView emailTextView) {
         String userId = getCurrentUserId();
 
@@ -69,6 +85,13 @@ public class UserUtils {
                 });
     }
 
+    /**
+     * Update the current user nickname in Firestore and update the user interface in consequences.
+     *
+     * @param context         Context in which the update is done.
+     * @param newPseudo       The new nickname to give to the user.
+     * @param pseudoTextView  TextView where to display the new nickname after the update.
+     */
     public void updateUserPseudo(Context context, String newPseudo, TextView pseudoTextView) {
         String userId = getCurrentUserId();
 
@@ -78,6 +101,13 @@ public class UserUtils {
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating username", e));
     }
 
+    /**
+     * Update the current user email in Firestore and update the user interface in consequences.
+     *
+     * @param context         Context in which the update is done.
+     * @param newEmail        The new email to give to the user.
+     * @param emailTextView   TextView where to display rhe new email after the update.
+     */
     public void updateUserEmail(Context context, String newEmail, TextView emailTextView) {
         String userId = getCurrentUserId();
 
@@ -87,6 +117,13 @@ public class UserUtils {
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating email", e));
     }
 
+    /**
+     * Download a profile picture to Firebase Storage and update the profile picture on the user interface.
+     *
+     * @param context             Context in which the method is called.
+     * @param imageUri            Image URI to download.
+     * @param profileImageView    ImageView where to display the new profile picture after the download.
+     */
     public void uploadProfileImage(Context context, Uri imageUri, ImageView profileImageView) {
         if (imageUri != null) {
             String userId = getCurrentUserId();
@@ -100,6 +137,13 @@ public class UserUtils {
         }
     }
 
+    /**
+     * Update the image URL of the current connected user in Firestore, and display the new profile picture on the user interface.
+     *
+     * @param context              Context in which the method is called.
+     * @param imageUrl             The new image URL of the user profile picture.
+     * @param profileImageView     ImageView where to display the new user profile picture after the update.
+     */
     public void updateUserProfileImage(Context context, String imageUrl, ImageView profileImageView) {
         String userId = getCurrentUserId();
 
@@ -109,6 +153,11 @@ public class UserUtils {
                 .addOnFailureListener(e -> Log.e("UpdateProfile", "Error updating profile image", e));
     }
 
+    /**
+     * Load the recommendations created by the connected user from Firestore, and give it to the Recommendation adapter.
+     *
+     * @param recommendationAdapter The adapter used so as to display the recommendations on the user interface.
+     */
     public void loadUserRecommendations(RecommendationAdapter recommendationAdapter) {
         String userId = getCurrentUserId();
 
@@ -121,7 +170,13 @@ public class UserUtils {
                 });
     }
 
-    public void showEditPseudoDialog(Context context, TextView pseudoTextView) {
+    /**
+     * Display a modal dialog which allows the user to update his nickname.
+     *
+     * @param context        Context in which the modal dialog is displayed.
+     * @param pseudoTextView TextView currently displaying the user nickname.
+     */
+    public void showEditPseudoDialog(Context context, @NonNull TextView pseudoTextView) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Edit Username");
 
@@ -140,7 +195,13 @@ public class UserUtils {
         builder.show();
     }
 
-    public void showEditEmailDialog(Context context, TextView emailTextView) {
+    /**
+     * Display a modal dialog which allows the user to modify his email
+     *
+     * @param context       Context in which the modal dialog is displayed.
+     * @param emailTextView TextView displaying the current user email.
+     */
+    public void showEditEmailDialog(Context context, @NonNull TextView emailTextView) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Edit Email");
 
@@ -159,6 +220,11 @@ public class UserUtils {
         builder.show();
     }
 
+    /**
+     * Display a modal dialog that allows the user to change his password.
+     *
+     * @param context Context in which the modal dialog is displayed.
+     */
     public void showChangePasswordDialog(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -188,6 +254,13 @@ public class UserUtils {
         dialog.show();
     }
 
+    /**
+     * Update the user password after authenticates again.
+     *
+     * @param context         Context in which the Toast is displayed.
+     * @param currentPassword The current user password, used for authentication.
+     * @param newPassword     The new password the user wants.
+     */
     public void updatePassword(Context context, String currentPassword, String newPassword) {
         String email = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getEmail();
         AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(email), currentPassword);
@@ -208,7 +281,10 @@ public class UserUtils {
     }
 
     /**
-     * Récupère et affiche le profil utilisateur (image et résumé) dans les vues données.
+     * Get tue current user profile and update the user interface.
+     *
+     * @param profileImageView The default profile picture to update with the user profile picture.
+     * @param profileSummary   TextView to update with the user nickname.
      */
     public void getUserProfile(ImageView profileImageView, TextView profileSummary) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -238,9 +314,9 @@ public class UserUtils {
     }
 
     /**
-     * Vérifie si un utilisateur est connecté à Firebase.
+     * Check if a user is connected to Firebase.
      *
-     * @return true si l'utilisateur est connecté, false sinon.
+     * @return True if the user is connected, else false.
      */
     public boolean isUserLoggedIn() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
