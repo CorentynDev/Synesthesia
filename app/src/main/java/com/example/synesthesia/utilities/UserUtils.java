@@ -220,6 +220,11 @@ public class UserUtils {
         builder.show();
     }
 
+    /**
+     * Display a modal dialog that allows the user to change his password.
+     *
+     * @param context Context in which the modal dialog is displayed.
+     */
     public void showChangePasswordDialog(Context context) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -249,6 +254,13 @@ public class UserUtils {
         dialog.show();
     }
 
+    /**
+     * Update the user password after authenticates again.
+     *
+     * @param context         Context in which the Toast is displayed.
+     * @param currentPassword The current user password, used for authentication.
+     * @param newPassword     The new password the user wants.
+     */
     public void updatePassword(Context context, String currentPassword, String newPassword) {
         String email = Objects.requireNonNull(firebaseAuth.getCurrentUser()).getEmail();
         AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(email), currentPassword);
@@ -269,7 +281,10 @@ public class UserUtils {
     }
 
     /**
-     * Récupère et affiche le profil utilisateur (image et résumé) dans les vues données.
+     * Get tue current user profile and update the user interface.
+     *
+     * @param profileImageView The default profile picture to update with the user profile picture.
+     * @param profileSummary   TextView to update with the user nickname.
      */
     public void getUserProfile(ImageView profileImageView, TextView profileSummary) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -299,9 +314,9 @@ public class UserUtils {
     }
 
     /**
-     * Vérifie si un utilisateur est connecté à Firebase.
+     * Check if a user is connected to Firebase.
      *
-     * @return true si l'utilisateur est connecté, false sinon.
+     * @return True if the user is connected, else false.
      */
     public boolean isUserLoggedIn() {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
