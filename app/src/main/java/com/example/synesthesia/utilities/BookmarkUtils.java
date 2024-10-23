@@ -24,32 +24,37 @@ public class BookmarkUtils {
     }
 
     /**
-     * Update the users list who have marked a recommendation.
+     * Met à jour la liste des utilisateurs qui ont marqué une recommandation.
      *
-     * @param userId          User ID who marks or unmarks the recommendation.
-     * @param recommendation  Recommendation object that contains the users list who have marked this recommendation.
-     * @param addMark         Boolean that indicates if the user marks or unmarks the recommendation.
+     * @param userId          ID de l'utilisateur qui marque ou retire la marque de la recommandation.
+     * @param recommendation  Objet Recommendation contenant les informations de la recommandation.
+     * @param addMark         Booléen indiquant si l'utilisateur marque ou retire la recommandation.
      */
     public void updateMarkList(String userId, @NonNull Recommendation recommendation, boolean addMark) {
-        List<String> markedBy = recommendation.getMarkedBy();
-        if (markedBy == null) {
-            markedBy = new ArrayList<>();
-            recommendation.setMarkedBy(markedBy);
-        }
-        if (addMark) {
-            if (!markedBy.contains(userId)) {
-                markedBy.add(userId);
-            }
-        } else {
-            markedBy.remove(userId);
-        }
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<String> markedBy = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
+                        if (markedBy == null) {
+                            markedBy = new ArrayList<>();
+                        }
+                        if (addMark) {
+                            if (!markedBy.contains(userId)) {
+                                markedBy.add(userId);
+                            }
+                        } else {
+                            markedBy.remove(userId);
+                        }
+                        // On peut sauvegarder la liste mise à jour dans Firebase ici si besoin
+                    }
+                });
     }
 
     /**
-     * Update the user interface so as to display the state of the bookmark.
+     * Met à jour l'interface utilisateur pour afficher l'état de la marque.
      *
-     * @param markButton        ImageView representing the bookmark button.
-     * @param isCurrentlyMarked Boolean indicating if the recommendation is currently marked.
+     * @param markButton        ImageView représentant le bouton de marque.
+     * @param isCurrentlyMarked Booléen indiquant si la recommandation est actuellement marquée.
      */
     public void updateMarkUI(ImageView markButton, boolean isCurrentlyMarked) {
         if (isCurrentlyMarked) {
@@ -60,28 +65,39 @@ public class BookmarkUtils {
     }
 
     /**
-     * Check if a user has marked a recommendation.
+     * Vérifie si un utilisateur a marqué une recommandation.
      *
-     * @param userId          User ID to check.
-     * @param recommendation  Recommendation object that contains the users list who have marked the recommendation.
-     * @return                True if the user has marked the recommendation, else false.
+     * @param userId          ID de l'utilisateur à vérifier.
+     * @param recommendation  Objet Recommendation contenant les informations de la recommandation.
+     * @return                True si l'utilisateur a marqué la recommandation, sinon false.
      */
     public boolean isMarked(String userId, @NonNull Recommendation recommendation) {
-        List<String> markedBy = recommendation.getMarkedBy();
-        return markedBy != null && markedBy.contains(userId);
+        // Manipulation directe de Firebase ou des structures locales pour vérifier la présence de l'utilisateur
+        DocumentReference userRef = db.collection("users").document(userId);
+        // On peut récupérer l'information directement depuis la base de données si nécessaire.
+        final boolean[] isMarked = {false};
+
+        userRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                List<String> markedBy = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
+                isMarked[0] = markedBy != null && markedBy.contains(userId);
+            }
+        }).addOnFailureListener(e -> Log.e("isMarked", "Erreur lors de la récupération des données de l'utilisateur", e));
+
+        return isMarked[0];
     }
 
     /**
-     * Able or disable a recommendation bookmark for a specific user.
+     * Activer ou désactiver la marque d'une recommandation pour un utilisateur spécifique.
      *
-     * @param recommendationId  Recommendation ID to mark or unmark.
-     * @param userId            User ID for who the bookmark is modified.
-     * @param isMarked          Boolean indicating if the recommendation is currently marked.
-     * @param onComplete        Runnable to execute after the transaction, in success or not.
+     * @param recommendationId  ID de la recommandation à marquer ou démarquer.
+     * @param userId            ID de l'utilisateur pour lequel la marque est modifiée.
+     * @param isMarked          Booléen indiquant si la recommandation est actuellement marquée.
+     * @param onComplete        Runnable à exécuter après la transaction, succès ou non.
      */
     public void toggleMark(String recommendationId, String userId, boolean isMarked, Runnable onComplete) {
         if (recommendationId == null || userId == null) {
-            Log.e("ToggleMark", "Recommendation ID or User ID is null");
+            Log.e("ToggleMark", "Recommendation ID ou User ID est nul");
             return;
         }
 
@@ -90,10 +106,9 @@ public class BookmarkUtils {
         db.runTransaction(transaction -> {
             DocumentSnapshot snapshot = transaction.get(userRef);
             if (!snapshot.exists()) {
-                throw new FirebaseFirestoreException("User document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
+                throw new FirebaseFirestoreException("Le document utilisateur n'existe pas", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
-            //noinspection unchecked
             List<String> bookmarkedRecommendations = (List<String>) snapshot.get("bookmarkedRecommendations");
             if (bookmarkedRecommendations == null) {
                 bookmarkedRecommendations = new ArrayList<>();
@@ -110,10 +125,10 @@ public class BookmarkUtils {
             transaction.update(userRef, "bookmarkedRecommendations", bookmarkedRecommendations);
             return null;
         }).addOnSuccessListener(aVoid -> {
-            Log.d("ToggleMark", "Bookmark transaction success!");
+            Log.d("ToggleMark", "Transaction de marque réussie!");
             onComplete.run();
         }).addOnFailureListener(e -> {
-            Log.e("ToggleMark", "Bookmark transaction failure.", e);
+            Log.e("ToggleMark", "Échec de la transaction de marque.", e);
             onComplete.run();
         });
     }

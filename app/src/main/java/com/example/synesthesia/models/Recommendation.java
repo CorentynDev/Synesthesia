@@ -11,7 +11,6 @@ public class Recommendation {
     private List<String> likedBy;
     private Timestamp timestamp;
     private String type;
-    private List<String> markedBy;
     private String userNote;
 
     // Empty constructor required for Firebase
@@ -55,13 +54,13 @@ public class Recommendation {
         return type;
     }
 
-    public List<String> getMarkedBy() {
+    /*public List<String> getMarkedBy() {
         return markedBy;
     }
 
     public void setMarkedBy(List<String> markedBy) {
         this.markedBy = markedBy;
-    }
+    }*/
 
     public String getUserNote() {
         return userNote;
