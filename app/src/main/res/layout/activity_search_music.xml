@@ -3,13 +3,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="0dp">
+    android:padding="0dp"
+    android:background="@color/black">
 
     <EditText
         android:id="@+id/searchField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Search..." />
+        android:hint="Rechercher..."
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"/>
 
     <RadioGroup
         android:id="@+id/searchTypeGroup"
@@ -21,26 +24,34 @@
             android:id="@+id/searchArtistRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Artists" />
+            android:text="Artistes"
+            android:buttonTint="@color/white"
+            android:textColor="@color/white"/>
 
         <RadioButton
             android:id="@+id/searchAlbumRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Albums" />
+            android:text="Albums"
+            android:buttonTint="@color/white"
+            android:textColor="@color/white"/>
 
         <RadioButton
             android:id="@+id/searchTrackRadioButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Chansons" />
+            android:text="Chansons"
+            android:buttonTint="@color/white"
+            android:textColor="@color/white"/>
     </RadioGroup>
 
     <Button
         android:id="@+id/searchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rechercher" />
+        android:text="Rechercher"
+        android:backgroundTint="@color/gray_medium"
+        android:textColor="@color/white"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/resultsRecyclerView"
@@ -48,75 +59,5 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
 
-    <!-- Footer (copié de la page principale) -->
-    <LinearLayout
-        android:id="@+id/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/gray_dark"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="16dp">
-
-        <Button
-            android:id="@+id/homeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/home"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/friendsButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/friends"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/createRecommendationButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/add"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/bookmarkButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/bookmark_menu"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/profileButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/user"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-    </LinearLayout>
 
 </LinearLayout>

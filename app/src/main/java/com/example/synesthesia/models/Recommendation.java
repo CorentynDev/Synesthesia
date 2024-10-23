@@ -12,17 +12,19 @@ public class Recommendation {
     private Timestamp timestamp;
     private String type;
     private List<String> markedBy;
+    private String userNote;
 
     // Empty constructor required for Firebase
     public Recommendation() {
     }
 
-    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type) {
+    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type, String userNote) {
         this.title = title;
         this.coverUrl = coverUrl;
         this.userId = userId;
         this.timestamp = timestamp;
         this.type = type;
+        this.userNote = userNote;
     }
 
     public String getTitle() {
@@ -59,5 +61,12 @@ public class Recommendation {
 
     public void setMarkedBy(List<String> markedBy) {
         this.markedBy = markedBy;
+    }
+
+    public String getUserNote() {
+        return userNote;
+    }
+    public void setUserNote(String userNote) {
+        this.userNote = userNote;
     }
 }

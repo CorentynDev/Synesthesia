@@ -23,7 +23,8 @@
             android:layout_height="wrap_content"
             android:text="Titre du livre"
             android:textStyle="bold"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="@color/white"/>
 
         <TextView
             android:id="@+id/bookAuthor"
@@ -31,7 +32,8 @@
             android:layout_height="wrap_content"
             android:text="Auteur"
             android:textSize="14sp"
-            android:paddingTop="4dp" />
+            android:paddingTop="4dp"
+            android:textColor="@color/white"/>
 
         <TextView
             android:id="@+id/bookDate"
@@ -39,7 +41,8 @@
             android:layout_height="wrap_content"
             android:text="Date"
             android:textSize="14sp"
-            android:paddingTop="4dp" />
+            android:paddingTop="4dp"
+            android:textColor="@color/white"/>
 
     </LinearLayout>
 </LinearLayout>
