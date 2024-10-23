@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Book;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,6 +35,8 @@ public class BookDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_details);
+
+        FooterUtils.setupFooter(this);
 
         book = getIntent().getParcelableExtra("book");
 

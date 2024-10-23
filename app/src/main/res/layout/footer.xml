@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/footer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp"
+    android:gravity="center"
+    android:background="@color/black"
+    android:layout_gravity="bottom">
+
+    <!-- Boutons de navigation -->
+    <ImageView
+        android:id="@+id/homeButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/home"
+        app:tint="@color/white" />
+
+    <ImageView
+        android:id="@+id/createRecommendationButton"
+        android:layout_width="0dp"
+        android:layout_height="54dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/add"
+        app:tint="@color/white" />
+
+    <ImageView
+        android:id="@+id/bookmarkButton"
+        android:layout_width="0dp"
+        android:layout_height="54dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/bookmark"
+        app:tint="@color/white" />
+
+    <ImageView
+        android:id="@+id/profileButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="10dp"
+        android:src="@drawable/user"
+        app:tint="@color/white" />
+
+</LinearLayout>

@@ -22,6 +22,7 @@ import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -58,7 +59,9 @@ public class AlbumDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_album_details); // Appel à setContentView en premier
+        setContentView(R.layout.activity_album_details);
+
+        FooterUtils.setupFooter(this);
 
         // Initialize FirebaseAuth and Firestore
         mAuth = FirebaseAuth.getInstance();
