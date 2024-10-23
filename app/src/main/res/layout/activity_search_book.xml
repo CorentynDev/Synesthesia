@@ -29,7 +29,8 @@
         android:text="Rechercher"
         android:backgroundTint="@color/gray_medium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchField" />
+        app:layout_constraintTop_toBottomOf="@id/searchField"
+        android:textColor="@color/white"/>
 
     <!-- Liste des résultats de la recherche -->
     <androidx.recyclerview.widget.RecyclerView
@@ -38,84 +39,10 @@
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toTopOf="@id/footer"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/searchButton" />
 
-    <!-- Footer (copié de la page principale) -->
-    <LinearLayout
-        android:id="@+id/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/gray_dark"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.1"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <Button
-            android:id="@+id/homeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/home"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/friendsButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/friends"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/createRecommendationButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/add"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/bookmarkButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/bookmark_menu"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-
-        <Button
-            android:id="@+id/profileButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/black"
-            android:gravity="center"
-            android:padding="10dp"
-            app:icon="@drawable/user"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

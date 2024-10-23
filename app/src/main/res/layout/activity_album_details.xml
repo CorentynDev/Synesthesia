@@ -6,14 +6,16 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context=".AlbumDetailsActivity">
+    tools:context=".AlbumDetailsActivity"
+    android:background="@color/black">
 
     <Button
         android:id="@+id/backButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:text="Retour" />
+        android:text="Retour"
+        android:backgroundTint="@color/gray_medium" />
 
     <!-- Image de couverture de l'album -->
     <ImageView
@@ -32,7 +34,8 @@
         android:layout_marginTop="16dp"
         android:text="Titre de l'Album"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:textColor="@color/white"/>
 
     <!-- Nom de l'artiste -->
     <TextView
@@ -40,7 +43,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Nom de l'Artiste"
-        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@color/white"/>
 
     <!-- Nombre de pistes -->
     <TextView
@@ -48,7 +52,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="17 pistes"
-        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textColor="@color/white"/>
 
     <!-- RecyclerView pour afficher les pistes de l'album -->
     <androidx.recyclerview.widget.RecyclerView
@@ -56,13 +61,14 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginTop="16dp" />
+        android:layout_marginTop="16dp"/>
 
     <EditText
         android:id="@+id/commentField"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ajoutez une note ou un commentaire" />
+        android:hint="Ajoutez une note ou un commentaire"
+        android:textColor="@color/white"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -74,7 +80,8 @@
             android:id="@+id/recommendButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Recommander" />
+            android:text="Recommander"
+            android:backgroundTint="@color/gray_medium"/>
 
     </LinearLayout>
 

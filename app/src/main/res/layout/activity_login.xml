@@ -69,7 +69,8 @@
         android:text="Login"
         app:layout_constraintBottom_toTopOf="@+id/registerRedirect"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        android:textColor="@color/white"/>
 
     <!-- Lien vers l'activité d'inscription -->
     <TextView
