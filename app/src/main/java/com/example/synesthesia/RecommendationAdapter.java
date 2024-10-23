@@ -1,6 +1,9 @@
 package com.example.synesthesia;
 
+import static android.content.ContentValues.TAG;
+
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +56,17 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
+        String userNote = recommendation.getUserNote();
+        Log.d(TAG, "User note: " + userNote);
+        if (userNote != null && !userNote.isEmpty()) {
+            holder.userRating.setText(userNote);
+            Log.d(TAG, "User note set to: " + userNote);
+        } else {
+            holder.userRating.setText("Pas de note");
+            Log.d(TAG, "User note is null or empty, setting to default message.");
+        }
+
+
         // Récupérer l'ID utilisateur associé à la recommandation
         String userId = recommendation.getUserId();
 
@@ -101,7 +115,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         }
     }
 
-
     private void bindUserData(ViewHolder holder, User user) {
         // Méthode pour lier les données utilisateur
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
@@ -130,6 +143,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         TextView userNameTextView;
         TextView likesCountTextView;
         TextView dateTextView;
+        TextView userRating;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -139,6 +153,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             userNameTextView = itemView.findViewById(R.id.recommendationUser);
             likesCountTextView = itemView.findViewById(R.id.likeCounter);
             dateTextView = itemView.findViewById(R.id.recommendationDate);
+            userRating = itemView.findViewById(R.id.userRating);
         }
     }
 

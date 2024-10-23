@@ -29,6 +29,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
     private Track track;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private EditText commentField;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
         TextView musicTitle = findViewById(R.id.musicTitle);
         TextView musicArtist = findViewById(R.id.musicArtist);
         TextView musicDuration = findViewById(R.id.musicDuration);
-        EditText commentField = findViewById(R.id.commentField);
+        commentField = findViewById(R.id.commentField);
         Button recommendButton = findViewById(R.id.recommendButton);
         Button backButton = findViewById(R.id.backButton);
 
@@ -124,6 +125,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
                         String type = "music";
 
+                        String userNote = commentField.getText().toString().trim();
+
                         Recommendation recommendation = new Recommendation(
                                 track.getTitle(),
                                 null,
@@ -132,7 +135,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 username,
                                 commentsList,
                                 recommendationTimestamp,
-                                type
+                                type,
+                                userNote
                         );
 
                         db.collection("recommendations")
