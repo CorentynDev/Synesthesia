@@ -1,5 +1,6 @@
 package com.example.synesthesia.utilities;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,7 +39,10 @@ public class CommentUtils {
     }
 
     /**
-     * Charge le nombre de commentaires à partir de Firestore.
+     * Load the number of comments associated to a specific recommendation and update a TextView with this number.
+     *
+     * @param recommendationId  Unique ID of the recommendation we want to have the number of comments associated.
+     * @param commentCounter    TextView to display the number of comments.
      */
     public void loadCommentCount(String recommendationId, TextView commentCounter) {
         db.collection("recommendations").document(recommendationId)
@@ -51,7 +55,11 @@ public class CommentUtils {
     }
 
     /**
-     * Affiche une modal pour ajouter un commentaire.
+     * Display a modal which allows to see comments of a specific recommendation
+     *
+     * @param context           Context in which the modal is displayed (the activity).
+     * @param recommendationId  ID of the recommendation for which we want to see comments.
+     * @param commentCounter    TextView which displays the number of comments.
      */
     public void showCommentModal(Context context, String recommendationId, TextView commentCounter) {
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -87,8 +95,13 @@ public class CommentUtils {
     }
 
     /**
-     * Charge les commentaires d'une recommandation.
+     * Load the associated comments to a specific recommendation from Firestore, add them to a list, and update the adapter link to a RecyclerView.
+     *
+     * @param recommendationId  ID of the recommendation where comments have to be loaded.
+     * @param commentList       The list which contains the several comments.
+     * @param adapter           The adapter of RecyclerView which will be notified of data update to display the new comments.
      */
+    @SuppressLint("NotifyDataSetChanged")
     public void loadComments(String recommendationId, List<Comment> commentList, CommentsAdapter adapter) {
         db.collection("recommendations").document(recommendationId)
                 .collection("comments")
@@ -105,7 +118,14 @@ public class CommentUtils {
     }
 
     /**
-     * Ajoute un nouveau commentaire à Firestore.
+     * Post a new comment on a recommendation in Firestore and update the interface in consequence.
+     *
+     * @param recommendationId      ID of recommendation for which a comment is added.
+     * @param commentText           The comment text the user would like to post.
+     * @param commentCounter        TextView which displays the number of comments.
+     * @param commentList           The list which stocks the displayed comments in the RecyclerView.
+     * @param adapter               The adapter of RecyclerView which will be notified of data update to display the new comments.
+     * @param commentsRecyclerView  RecyclerView where the comments will be displayed, used to scroll to new comments.
      */
     public void postComment(String recommendationId, String commentText, TextView commentCounter, List<Comment> commentList, CommentsAdapter adapter, RecyclerView commentsRecyclerView) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -120,18 +140,14 @@ public class CommentUtils {
             db.collection("recommendations").document(recommendationId)
                     .collection("comments").add(comment)
                     .addOnSuccessListener(documentReference -> {
-                        // Créer le nouvel objet commentaire avec Timestamp.now()
                         Comment newComment = new Comment(userId, commentText, Timestamp.now());
 
-                        // Ajouter le nouveau commentaire en haut de la liste
                         commentList.add(0, newComment);
                         adapter.notifyItemInserted(0);
 
-                        // Mettre à jour le compteur de commentaires
                         int currentCount = Integer.parseInt(commentCounter.getText().toString());
                         commentCounter.setText(String.valueOf(currentCount + 1));
 
-                        // Scroll automatique vers le haut pour voir le nouveau commentaire ajouté
                         commentsRecyclerView.scrollToPosition(0);
                     })
                     .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));

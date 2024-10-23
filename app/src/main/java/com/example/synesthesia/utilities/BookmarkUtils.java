@@ -3,6 +3,8 @@ package com.example.synesthesia.utilities;
 import android.util.Log;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
+
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.firestore.DocumentReference;
@@ -18,13 +20,17 @@ public class BookmarkUtils {
     private final FirebaseFirestore db;
 
     public BookmarkUtils(FirebaseFirestore db) {
-        this.db = db; // Initialisation de Firestore
+        this.db = db;
     }
 
     /**
-     * Met à jour la liste des bookmarks (favoris) en fonction de l'utilisateur et de l'état du bookmark.
+     * Update the users list who have marked a recommendation.
+     *
+     * @param userId          User ID who marks or unmarks the recommendation.
+     * @param recommendation  Recommendation object that contains the users list who have marked this recommendation.
+     * @param addMark         Boolean that indicates if the user marks or unmarks the recommendation.
      */
-    public void updateMarkList(String userId, Recommendation recommendation, boolean addMark) {
+    public void updateMarkList(String userId, @NonNull Recommendation recommendation, boolean addMark) {
         List<String> markedBy = recommendation.getMarkedBy();
         if (markedBy == null) {
             markedBy = new ArrayList<>();
@@ -40,7 +46,10 @@ public class BookmarkUtils {
     }
 
     /**
-     * Met à jour l'interface utilisateur pour les bookmarks.
+     * Update the user interface so as to display the state of the bookmark.
+     *
+     * @param markButton        ImageView representing the bookmark button.
+     * @param isCurrentlyMarked Boolean indicating if the recommendation is currently marked.
      */
     public void updateMarkUI(ImageView markButton, boolean isCurrentlyMarked) {
         if (isCurrentlyMarked) {
@@ -51,15 +60,24 @@ public class BookmarkUtils {
     }
 
     /**
-     * Vérifie si un utilisateur a bookmarké une recommandation.
+     * Check if a user has marked a recommendation.
+     *
+     * @param userId          User ID to check.
+     * @param recommendation  Recommendation object that contains the users list who have marked the recommendation.
+     * @return                True if the user has marked the recommendation, else false.
      */
-    public boolean isMarked(String userId, Recommendation recommendation) {
+    public boolean isMarked(String userId, @NonNull Recommendation recommendation) {
         List<String> markedBy = recommendation.getMarkedBy();
         return markedBy != null && markedBy.contains(userId);
     }
 
     /**
-     * Basculer l'état du bookmark dans la base de données Firestore.
+     * Able or disable a recommendation bookmark for a specific user.
+     *
+     * @param recommendationId  Recommendation ID to mark or unmark.
+     * @param userId            User ID for who the bookmark is modified.
+     * @param isMarked          Boolean indicating if the recommendation is currently marked.
+     * @param onComplete        Runnable to execute after the transaction, in success or not.
      */
     public void toggleMark(String recommendationId, String userId, boolean isMarked, Runnable onComplete) {
         if (recommendationId == null || userId == null) {
@@ -67,7 +85,6 @@ public class BookmarkUtils {
             return;
         }
 
-        // Référence vers le document de l'utilisateur
         DocumentReference userRef = db.collection("users").document(userId);
 
         db.runTransaction(transaction -> {
@@ -76,22 +93,20 @@ public class BookmarkUtils {
                 throw new FirebaseFirestoreException("User document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
+            //noinspection unchecked
             List<String> bookmarkedRecommendations = (List<String>) snapshot.get("bookmarkedRecommendations");
             if (bookmarkedRecommendations == null) {
                 bookmarkedRecommendations = new ArrayList<>();
             }
 
             if (isMarked) {
-                // Si la recommandation n'est pas encore bookmarkée, on l'ajoute
                 if (!bookmarkedRecommendations.contains(recommendationId)) {
                     bookmarkedRecommendations.add(recommendationId);
                 }
             } else {
-                // Si la recommandation est bookmarkée, on la retire
                 bookmarkedRecommendations.remove(recommendationId);
             }
 
-            // Mise à jour du document de l'utilisateur avec la liste modifiée
             transaction.update(userRef, "bookmarkedRecommendations", bookmarkedRecommendations);
             return null;
         }).addOnSuccessListener(aVoid -> {

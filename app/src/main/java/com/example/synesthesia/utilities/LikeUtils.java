@@ -4,6 +4,8 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.firestore.DocumentReference;
@@ -20,16 +22,20 @@ public class LikeUtils {
     private final FirebaseFirestore db;
 
     public LikeUtils(FirebaseFirestore db) {
-        this.db = db; // Initialisation de Firestore
+        this.db = db;
     }
 
     /**
-     * Met à jour la liste des likes en fonction de l'utilisateur et de l'état du like.
+     * Update the users list whose liked a recommendation.
+     *
+     * @param userId              User ID who likes or don't like the recommendation.
+     * @param recommendation      The Recommendation object where the like list has to be updated.
+     * @param addLike             Specify if the user has to be added or removed from the list.
      */
-    public void updateLikeList(String userId, Recommendation recommendation, boolean addLike) {
+    public void updateLikeList(String userId, @NonNull Recommendation recommendation, boolean addLike) {
         List<String> likedBy = recommendation.getLikedBy();
         if (likedBy == null) {
-            likedBy = new ArrayList<>();  // Si likedBy est null, initialiser une nouvelle liste
+            likedBy = new ArrayList<>();
             recommendation.setLikedBy(likedBy);
         }
 
@@ -43,7 +49,12 @@ public class LikeUtils {
     }
 
     /**
-     * Met à jour l'interface utilisateur pour les likes.
+     * Update the user interface concerning the like button and the likes count.
+     *
+     * @param likeButton         ImageView representing the like button.
+     * @param likeCounter        TextView displaying the current number of likes.
+     * @param isCurrentlyLiked   Boolean indicating if the user currently likes the recommendation.
+     * @param currentLikesCount  The current number of likes before the interaction of the user.
      */
     public void updateLikeUI(ImageView likeButton, TextView likeCounter, boolean isCurrentlyLiked, int currentLikesCount) {
         if (isCurrentlyLiked) {
@@ -51,20 +62,29 @@ public class LikeUtils {
             likeCounter.setText(String.valueOf(currentLikesCount + 1));
         } else {
             likeButton.setImageResource(R.drawable.like);
-            likeCounter.setText(String.valueOf(Math.max(currentLikesCount - 1, 0))); // Eviter d'aller sous 0
+            likeCounter.setText(String.valueOf(Math.max(currentLikesCount - 1, 0)));
         }
     }
 
     /**
-     * Vérifie si un utilisateur a aimé une recommandation.
+     * Verify if a user has already liked the recommendation.
+     *
+     * @param userId          User ID to verify.
+     * @param recommendation  Recommendation object that contains the users list who loved the recommendation.
+     * @return                True is the user has liked the recommendation, else false.
      */
-    public boolean isLiked(String userId, Recommendation recommendation) {
+    public boolean isLiked(String userId, @NonNull Recommendation recommendation) {
         List<String> likedBy = recommendation.getLikedBy();
         return likedBy != null && likedBy.contains(userId);
     }
 
     /**
-     * Basculer l'état du like dans la base de données Firestore.
+     * Change the state "like" of a recommendation for a specific user using a transaction.
+     *
+     * @param recommendationId   Recommendation ID to update.
+     * @param userId             User ID who likes or not the recommendation.
+     * @param isLiked            Boolean that indicates if the user currently likes the recommendation.
+     * @param onComplete         Runnable to execute when the operation is finished, in success or not.
      */
     public void toggleLike(String recommendationId, String userId, boolean isLiked, Runnable onComplete) {
         if (recommendationId == null || userId == null) {
@@ -80,6 +100,7 @@ public class LikeUtils {
                 throw new FirebaseFirestoreException("Document does not exist", FirebaseFirestoreException.Code.NOT_FOUND);
             }
 
+            //noinspection unchecked
             List<String> likedBy = (List<String>) snapshot.get("likedBy");
             if (likedBy == null) {
                 likedBy = new ArrayList<>();
