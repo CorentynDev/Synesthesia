@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,8 @@ import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Comment;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import com.example.synesthesia.utilities.TimeUtils;
 
 import java.util.List;
 
@@ -33,6 +36,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
         return new CommentViewHolder(view);
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = comments.get(position);
@@ -69,37 +73,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.Commen
             holder.profileImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        holder.timestampTextView.setText(getTimeAgo(comment.getTimestamp()));
-    }
-
-    private String getTimeAgo(Timestamp timestamp) {
-        if (timestamp == null) {
-            return "Maintenant";
-        }
-
-        long time = timestamp.toDate().getTime();
-        long now = System.currentTimeMillis();
-
-        if (time > now || time <= 0) {
-            return "Maintenant";
-        }
-
-        final long diff = now - time;
-        if (diff < 60 * 1000) {
-            return "Il y a " + diff / 1000 + " seconde(s)";
-        } else if (diff < 2 * 60 * 1000) {
-            return "Il y a une minute";
-        } else if (diff < 50 * 60 * 1000) {
-            return "Il y a " + diff / (60 * 1000) + " minutes";
-        } else if (diff < 90 * 60 * 1000) {
-            return "Il y a une heure";
-        } else if (diff < 24 * 60 * 60 * 1000) {
-            return "Il y a " + diff / (60 * 60 * 1000) + " heures";
-        } else if (diff < 48 * 60 * 60 * 1000) {
-            return "Hier";
-        } else {
-            return "Il y a " + diff / (24 * 60 * 60 * 1000) + " jours";
-        }
+        holder.timestampTextView.setText(TimeUtils.getTimeAgo(comment.getTimestamp()));
     }
 
     @Override

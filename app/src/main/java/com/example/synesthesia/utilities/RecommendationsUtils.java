@@ -81,9 +81,8 @@ public class RecommendationsUtils {
 
         TextView dateTextView = cardView.findViewById(R.id.recommendationDate);
         Timestamp timestamp = recommendation.getTimestamp();
-        TimeUtils timeUtils = new TimeUtils();
-        String timeAgo = timeUtils.getTimeAgo(timestamp);
-        dateTextView.setText(timeAgo != null ? timeAgo : "Date inconnue");
+        String timeAgo = TimeUtils.getTimeAgo(timestamp);
+        dateTextView.setText(timeAgo);
 
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
