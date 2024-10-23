@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -35,6 +36,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_details);
+
+        FooterUtils.setupFooter(this);
 
         track = getIntent().getParcelableExtra("track");
         Log.d(TAG, "Track received: " + track);

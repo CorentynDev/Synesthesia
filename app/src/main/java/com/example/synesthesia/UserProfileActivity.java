@@ -1,37 +1,20 @@
 package com.example.synesthesia;
 
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.InputType;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.UserUtils;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.EmailAuthProvider;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 public class UserProfileActivity extends AppCompatActivity {
 
@@ -47,6 +30,8 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
+        FooterUtils.setupFooter(this);
+
         userProfileImageView = findViewById(R.id.userProfileImageView);
         userPseudoTextView = findViewById(R.id.userPseudoTextView);
         userEmailTextView = findViewById(R.id.userEmailTextView);
@@ -57,10 +42,8 @@ public class UserProfileActivity extends AppCompatActivity {
         RecommendationAdapter recommendationAdapter = new RecommendationAdapter(new ArrayList<>());
         userRecommendationsRecyclerView.setAdapter(recommendationAdapter);
 
-        // Initialisation de l'objet utilitaire
         userUtils = new UserUtils();
 
-        // Chargement des données utilisateur
         userUtils.loadUserData(userProfileImageView, userPseudoTextView, userEmailTextView);
 
         userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));

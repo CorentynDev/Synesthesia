@@ -8,6 +8,7 @@
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="90dp"
         android:background="@color/black"
         android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -27,7 +28,7 @@
                 android:layout_gravity="start"
                 android:backgroundTint="@color/gray_medium"
                 android:text="Retour"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white" />
 
             <ImageView
                 android:id="@+id/bookImage"
@@ -91,12 +92,19 @@
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/gray_medium"
                     android:text="Recommander"
-                    android:textColor="@color/white"/>
+                    android:textColor="@color/white" />
 
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
-
+    <include
+        android:id="@+id/footer"
+        layout="@layout/footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

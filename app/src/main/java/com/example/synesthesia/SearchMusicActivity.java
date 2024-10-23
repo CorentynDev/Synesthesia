@@ -19,6 +19,7 @@ import com.example.synesthesia.models.Artist;
 import com.example.synesthesia.models.ArtistResponse;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
+import com.example.synesthesia.utilities.FooterUtils;
 
 import java.util.ArrayList;
 
@@ -40,6 +41,8 @@ public class SearchMusicActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_music);
+
+        FooterUtils.setupFooter(this);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.deezer.com/")

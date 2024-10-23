@@ -15,6 +15,7 @@ import com.example.synesthesia.api.GoogleBooksApi;
 import com.example.synesthesia.dialogs.BookRecommendationDialog;
 import com.example.synesthesia.models.Book;
 import com.example.synesthesia.models.BooksResponse;
+import com.example.synesthesia.utilities.FooterUtils;
 
 import java.util.List;
 
@@ -34,6 +35,8 @@ public class SearchBookActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_book);
+
+        FooterUtils.setupFooter(this);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.googleapis.com")

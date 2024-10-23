@@ -80,59 +80,13 @@
         </ScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Footer (Menu de navigation) -->
-    <LinearLayout
+    <include
         android:id="@+id/footer"
-        android:layout_width="0dp"
+        layout="@layout/footer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintHeight_percent="0.1">
-
-        <!-- Boutons de navigation -->
-        <ImageView
-            android:id="@+id/homeButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:padding="10dp"
-            android:src="@drawable/home_active"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/createRecommendationButton"
-            android:layout_width="2dp"
-            android:layout_height="52dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:padding="7dp"
-            android:src="@drawable/add"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/bookmarkButton"
-            android:layout_width="0dp"
-            android:layout_height="55dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:padding="10dp"
-            android:src="@drawable/bookmark"
-            app:tint="@color/white" />
-
-        <ImageView
-            android:id="@+id/profileButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:padding="10dp"
-            android:src="@drawable/user"
-            app:tint="@color/white" />
-    </LinearLayout>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
