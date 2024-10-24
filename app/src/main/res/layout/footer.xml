@@ -29,8 +29,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:padding="10dp"
-        android:src="@drawable/add"
-        app:tint="@color/white" />
+        android:src="@drawable/add"/>
 
     <ImageView
         android:id="@+id/bookmarkButton"
