@@ -16,6 +16,7 @@ import com.example.synesthesia.models.Recommendation;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.Timestamp;
 
@@ -48,7 +49,8 @@ public class RecommendationsUtils {
 
         swipeRefreshLayout.setRefreshing(true);
 
-        db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
+        db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING)
+                .get().addOnSuccessListener(queryDocumentSnapshots -> {
             Log.d("RecommendationsUtils", "Successfully fetched recommendations");
             recommendationList.removeAllViews();
 
