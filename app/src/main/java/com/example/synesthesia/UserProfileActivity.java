@@ -50,6 +50,8 @@ public class UserProfileActivity extends AppCompatActivity {
         userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
         userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
         userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
+
+        userUtils.loadUserRecommendations(recommendationAdapter);
     }
 
     private void showEditProfileImageDialog() {

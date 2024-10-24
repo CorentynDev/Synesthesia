@@ -28,6 +28,7 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -163,12 +164,15 @@ public class UserUtils {
 
         db.collection("recommendations")
                 .whereEqualTo("userId", userId)
+                .orderBy("timestamp", Query.Direction.DESCENDING) // Trier par timestamp en ordre décroissant
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Recommendation> recommendations = queryDocumentSnapshots.toObjects(Recommendation.class);
                     recommendationAdapter.setRecommendations(recommendations);
-                });
+                })
+                .addOnFailureListener(e -> Log.e("LoadRecommendations", "Erreur lors du chargement des recommandations", e));
     }
+
 
     /**
      * Display a modal dialog which allows the user to update his nickname.
