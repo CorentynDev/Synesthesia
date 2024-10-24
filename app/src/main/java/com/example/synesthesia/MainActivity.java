@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         profileImageView = findViewById(R.id.profileImageView);
         profileSummary = findViewById(R.id.profileSummary);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.homeButton);
 
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         LinearLayout recommendationList = findViewById(R.id.recommendationList);

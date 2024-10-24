@@ -37,7 +37,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_music_details);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.createRecommendationButton);
 
         track = getIntent().getParcelableExtra("track");
         Log.d(TAG, "Track received: " + track);

@@ -61,7 +61,7 @@ public class AlbumDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_details);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.createRecommendationButton);
 
         // Initialize FirebaseAuth and Firestore
         mAuth = FirebaseAuth.getInstance();
