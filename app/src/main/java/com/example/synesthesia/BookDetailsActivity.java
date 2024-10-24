@@ -36,7 +36,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_book_details);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.createRecommendationButton);
 
         book = getIntent().getParcelableExtra("book");
 

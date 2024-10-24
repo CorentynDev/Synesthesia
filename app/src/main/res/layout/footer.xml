@@ -19,7 +19,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:padding="10dp"
-        android:src="@drawable/home"
+        android:src="@drawable/home_active"
         app:tint="@color/white" />
 
     <ImageView

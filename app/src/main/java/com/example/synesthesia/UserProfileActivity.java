@@ -30,7 +30,7 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.profileButton);
 
         userProfileImageView = findViewById(R.id.userProfileImageView);
         userPseudoTextView = findViewById(R.id.userPseudoTextView);

@@ -24,7 +24,7 @@ public class BookmarksActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bookmarks);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.bookmarkButton);
 
         // Initialisation de Firebase Firestore et l'utilisateur actuel
         db = FirebaseFirestore.getInstance();

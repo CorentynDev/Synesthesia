@@ -36,7 +36,7 @@ public class SearchBookActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_book);
 
-        FooterUtils.setupFooter(this);
+        FooterUtils.setupFooter(this, R.id.createRecommendationButton);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.googleapis.com")
