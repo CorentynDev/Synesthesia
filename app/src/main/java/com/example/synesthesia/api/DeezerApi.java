@@ -28,5 +28,7 @@ public interface DeezerApi {
     @GET
     Call<TrackResponse> getAlbumTracks(@Url String url);
 
-    // Autres méthodes API si nécessaire
+    // Méthode pour obtenir une piste par ID
+    @GET("track/{id}")
+    Call<TrackResponse> getTrackById(@Path("id") String id);
 }
