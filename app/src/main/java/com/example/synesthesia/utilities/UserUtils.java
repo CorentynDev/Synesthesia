@@ -164,13 +164,15 @@ public class UserUtils {
 
         db.collection("recommendations")
                 .whereEqualTo("userId", userId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .orderBy("timestamp", Query.Direction.DESCENDING) // Trier par timestamp en ordre décroissant
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<Recommendation> recommendations = queryDocumentSnapshots.toObjects(Recommendation.class);
                     recommendationAdapter.setRecommendations(recommendations);
-                });
+                })
+                .addOnFailureListener(e -> Log.e("LoadRecommendations", "Erreur lors du chargement des recommandations", e));
     }
+
 
     /**
      * Display a modal dialog which allows the user to update his nickname.
