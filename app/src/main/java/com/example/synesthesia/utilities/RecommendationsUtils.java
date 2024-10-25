@@ -125,24 +125,37 @@ public class RecommendationsUtils {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
-            final boolean[] isCurrentlyLiked = {likeUtils.isLiked(userId, recommendation)};
-            final boolean[] isCurrentlyMarked = {bookmarkUtils.isMarked(userId, recommendation)};
 
+            // Initialize the like button
+            final boolean[] isCurrentlyLiked = {likeUtils.isLiked(userId, recommendation)};
             likeButton.setImageResource(isCurrentlyLiked[0] ? R.drawable.given_like : R.drawable.like);
-            markButton.setImageResource(isCurrentlyMarked[0] ? R.drawable.bookmark_active : R.drawable.bookmark);
+
+            // Récupérer les bookmarks de l'utilisateur et initialiser l'état du bouton
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("users").document(userId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
+                            boolean isBookmarked = bookmarkedRecommendations != null && bookmarkedRecommendations.contains(recommendationId);
+
+                            markButton.setImageResource(isBookmarked ? R.drawable.bookmark_active : R.drawable.bookmark);
+
+                            final boolean[] isCurrentlyMarked = {isBookmarked};
+                            markButton.setOnClickListener(v -> {
+                                boolean newMarkStatus = !isCurrentlyMarked[0];
+                                bookmarkUtils.updateMarkUI(markButton, newMarkStatus);
+                                bookmarkUtils.updateMarkList(userId, recommendation, newMarkStatus);
+                                bookmarkUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
+                            });
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("setupLikeAndMarkButtons", "Error fetching user bookmarks", e));
 
             likeButton.setOnClickListener(v -> {
                 boolean newLikeStatus = !isCurrentlyLiked[0];
                 likeUtils.updateLikeUI(likeButton, likeCounter, newLikeStatus, likedBy.size());
                 likeUtils.updateLikeList(userId, recommendation, newLikeStatus);
                 likeUtils.toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
-            });
-
-            markButton.setOnClickListener(v -> {
-                boolean newMarkStatus = !isCurrentlyMarked[0];
-                bookmarkUtils.updateMarkUI(markButton, newMarkStatus);
-                bookmarkUtils.updateMarkList(userId, recommendation, newMarkStatus);
-                bookmarkUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
             });
         }
     }
