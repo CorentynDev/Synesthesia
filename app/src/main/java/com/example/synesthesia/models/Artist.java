@@ -10,7 +10,7 @@ public class Artist implements Parcelable {
     private String id;
     @SerializedName("name")
     private String name;
-    @SerializedName("picture")
+    @SerializedName("picture_xl")
     private String picture;
 
     // Empty constructor required for Firebase

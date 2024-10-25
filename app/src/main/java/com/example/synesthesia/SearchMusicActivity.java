@@ -68,8 +68,13 @@ public class SearchMusicActivity extends AppCompatActivity {
 
         musicAdapter.setOnItemClickListener(item -> {
             if (item instanceof Artist) {
-                Artist artist = (Artist) item;
-                Log.d("SearchMusic", "Clicked on artist: " + artist.getName());
+                if (item instanceof Artist) {
+                    Artist artist = (Artist) item;
+                    Log.d("SearchMusic", "Clic sur l'artiste : " + artist.getName());
+                    Intent intent = new Intent(SearchMusicActivity.this, ArtistDetailsActivity.class);
+                    intent.putExtra("artist", artist);
+                    startActivity(intent);
+                }
             } else if (item instanceof Album) {
                 Album album = (Album) item;
                 Log.d("SearchMusic", "Clicked on album: " + album.getTitle());
