@@ -22,19 +22,20 @@
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginBottom="90dp"
         android:background="@color/black"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent">
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <LinearLayout
             android:id="@+id/linearLayoutBookmarks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/black"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="@color/black">
+            android:padding="16dp">
             <!-- Ici, les éléments de favoris seront ajoutés dynamiquement -->
         </LinearLayout>
     </ScrollView>
