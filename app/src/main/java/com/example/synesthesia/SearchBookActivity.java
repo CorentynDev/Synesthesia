@@ -2,6 +2,7 @@ package com.example.synesthesia;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -50,6 +51,10 @@ public class SearchBookActivity extends AppCompatActivity {
 
         EditText searchField = findViewById(R.id.searchField);
         Button searchButton = findViewById(R.id.searchButton);
+
+        // Mise en focus automatique et affichage du clavier
+        searchField.requestFocus();
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
         booksRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override

@@ -2,6 +2,7 @@ package com.example.synesthesia.api;
 
 import com.example.synesthesia.models.AlbumResponse;
 import com.example.synesthesia.models.ArtistResponse;
+import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
 
 import retrofit2.Call;
@@ -28,5 +29,7 @@ public interface DeezerApi {
     @GET
     Call<TrackResponse> getAlbumTracks(@Url String url);
 
-    // Autres méthodes API si nécessaire
+    // Méthode pour obtenir une piste par ID
+    @GET("track/{id}")
+    Call<Track> getTrackById(@Path("id") String id);
 }

@@ -1,6 +1,8 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,9 +13,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.example.synesthesia.models.Track;
+import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.models.TrackResponse;
+import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -23,14 +27,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MusicDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = "MusicDetailsActivity";
 
-    private Track track;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private EditText commentField;
+    private DeezerApi deezerApi;
+    private String coverImageUrl; // Variable pour stocker l'URL de l'image de couverture
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,16 +51,18 @@ public class MusicDetailsActivity extends AppCompatActivity {
 
         FooterUtils.setupFooter(this, R.id.createRecommendationButton);
 
-        track = getIntent().getParcelableExtra("track");
-        Log.d(TAG, "Track received: " + track);
+        // Récupération des objets passés par Intent
+        Track track = getIntent().getParcelableExtra("track");
 
+        // Vérification de l'objet track
         if (track == null) {
-            Log.e(TAG, "Track object is null");
+            Log.e(TAG, "L'objet Track est nul");
             Toast.makeText(this, "Erreur: Aucun morceau sélectionné", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        // Initialisation des vues
         ImageView trackImage = findViewById(R.id.musicImage);
         TextView musicTitle = findViewById(R.id.musicTitle);
         TextView musicArtist = findViewById(R.id.musicArtist);
@@ -57,45 +71,71 @@ public class MusicDetailsActivity extends AppCompatActivity {
         Button recommendButton = findViewById(R.id.recommendButton);
         Button backButton = findViewById(R.id.backButton);
 
-        if (trackImage == null || musicTitle == null || musicArtist == null || musicDuration == null || commentField == null || recommendButton == null || backButton == null) {
-            Log.e(TAG, "Une ou plusieurs vues sont nulles");
-            Toast.makeText(this, "Erreur d'initialisation des vues", Toast.LENGTH_SHORT).show();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.deezer.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        deezerApi = retrofit.create(DeezerApi.class);
+
+        // Récupération de l'ID de la musique et appel à l'API pour récupérer les détails
+        String idMusic = track.getId();
+        fetchTrackDetails(idMusic, trackImage);
+
+        // Initialisation de Firebase
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+
+        // Actions des boutons
+        backButton.setOnClickListener(v -> finish());
+
+        recommendButton.setOnClickListener(v -> {
+            String commentText = commentField.getText().toString().trim();
+            submitRecommendation(track, commentText.isEmpty() ? "" : commentText);
+
+            Intent intent = new Intent(MusicDetailsActivity.this, MainActivity.class);
+            startActivity(intent);
             finish();
-            return;
-        }
+        });
+    }
 
-        musicTitle.setText(track.getTitle());
-        musicArtist.setText(track.getArtist().getName());
-        musicDuration.setText(formatDuration(track.getDuration()));
+    private void fetchTrackDetails(String idMusic, ImageView trackImage) {
+        Call<Track> call = deezerApi.getTrackById(idMusic);
+        call.enqueue(new Callback<Track>() {
+            @Override
+            public void onResponse(@NonNull Call<Track> call, @NonNull Response<Track> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Récupération des détails de la piste directement depuis le corps de la réponse
+                    Track trackDetails = response.body();
 
-        String coverUrl = null;
-        if (track.getAlbum() != null) {
-            coverUrl = track.getAlbum().getCoverXl();
-        } else if (track.getArtist() != null) {
-            coverUrl = track.getArtist().getImageUrl();
-        }
+                    // Chargement de l'image de couverture
+                    coverImageUrl = trackDetails.getAlbum().getCoverXl(); // Assigner à coverImageUrl
+                    loadCoverImage(coverImageUrl, trackImage);
+                } else {
+                    // Afficher un message d'erreur si la réponse ne contient pas les détails attendus
+                    Log.e(TAG, "Erreur lors de la réponse : " + response.code() + " - " + response.message());
+                    Toast.makeText(MusicDetailsActivity.this, "Erreur lors de la récupération des détails de la musique : " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
 
-        Log.d(TAG, "Cover URL: " + coverUrl);
+            @Override
+            public void onFailure(Call<Track> call, Throwable t) {
+                Log.e(TAG, "Échec de la récupération des détails de la musique", t);
+                Toast.makeText(MusicDetailsActivity.this, "Échec de la connexion à l'API", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
+    private void loadCoverImage(String coverUrl, ImageView trackImage) {
         if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(this)
                     .load(coverUrl)
                     .placeholder(R.drawable.placeholder_image)
                     .into(trackImage);
         } else {
-            Log.w(TAG, "Cover URL est null ou vide");
+            Log.w(TAG, "URL de couverture est null ou vide");
             trackImage.setImageResource(R.drawable.placeholder_image);
         }
-
-        db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
-
-        backButton.setOnClickListener(v -> finish());
-
-        recommendButton.setOnClickListener(v -> {
-            String commentText = commentField.getText().toString().trim();
-            submitRecommendation(track, commentText.isEmpty() ? "" : commentText);
-        });
     }
 
     private void submitRecommendation(Track track, String commentText) {
@@ -116,19 +156,13 @@ public class MusicDetailsActivity extends AppCompatActivity {
                         List<Comment> commentsList = new ArrayList<>();
                         commentsList.add(firstComment);
 
-                        String recommendationCoverUrl = null;
-                        if (track.getAlbum() != null) {
-                            recommendationCoverUrl = track.getAlbum().getCoverXl();
-                        } else if (track.getArtist() != null) {
-                            recommendationCoverUrl = track.getArtist().getImageUrl();
-                        }
+                        // Utiliser coverImageUrl récupéré dans fetchTrackDetails
+                        String recommendationCoverUrl = coverImageUrl;
 
-                        Log.d(TAG, "Recommendation Cover URL: " + recommendationCoverUrl);
+                        Log.d(TAG, "URL de couverture de recommandation: " + recommendationCoverUrl);
 
                         Timestamp recommendationTimestamp = new Timestamp(new Date());
                         String type = "music";
-
-                        String userNote = commentField.getText().toString().trim();
 
                         Recommendation recommendation = new Recommendation(
                                 track.getTitle(),
@@ -139,7 +173,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                userNote
+                                commentText
                         );
 
                         db.collection("recommendations")
