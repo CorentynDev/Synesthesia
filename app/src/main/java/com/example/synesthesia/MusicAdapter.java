@@ -33,6 +33,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     private int currentlyPlayingPosition = RecyclerView.NO_POSITION;
 
     private MediaPlayer globalMediaPlayer;
+    private OnItemClickListener onItemClickListener;
 
 
     public MusicAdapter(List<Object> items, Context context) {
@@ -41,10 +42,11 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void updateArtists(List<Artist> artists) {
+    public void  updateArtists(List<Artist> artists) {
         items.clear();
         items.addAll(artists);
         notifyDataSetChanged();
@@ -95,7 +97,13 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                     context.startActivity(intent);
                 });
             } else if (item instanceof Artist) {
-                holder.bindArtist((Artist) item);
+                Artist artist = (Artist) item;
+                holder.bindArtist(artist);
+                holder.itemView.setOnClickListener(v -> {
+                    if (onItemClickListener != null) {
+                        onItemClickListener.onItemClick(artist);
+                    }
+                });
                 holder.playPauseButton.setVisibility(View.GONE);
             } else if (item instanceof Album) {
                 // Code pour les albums

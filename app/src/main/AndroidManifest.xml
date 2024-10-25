@@ -53,6 +53,9 @@
 
         <activity android:name=".AlbumDetailsActivity" />
 
+        <activity android:name=".ArtistDetailsActivity" />
+
+
     </application>
 
 </manifest>

@@ -1,6 +1,7 @@
 package com.example.synesthesia.api;
 
 import com.example.synesthesia.models.AlbumResponse;
+import com.example.synesthesia.models.Artist;
 import com.example.synesthesia.models.ArtistResponse;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
@@ -32,4 +33,8 @@ public interface DeezerApi {
     // Méthode pour obtenir une piste par ID
     @GET("track/{id}")
     Call<Track> getTrackById(@Path("id") String id);
+
+    @GET("artist/{id}")
+    Call<Artist> getArtistById(@Path("id") String artistId);
+
 }
