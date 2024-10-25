@@ -6,14 +6,6 @@
     android:padding="0dp"
     android:background="@color/black">
 
-    <EditText
-        android:id="@+id/searchField"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Rechercher..."
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"/>
-
     <RadioGroup
         android:id="@+id/searchTypeGroup"
         android:layout_width="match_parent"
@@ -44,6 +36,14 @@
             android:buttonTint="@color/white"
             android:textColor="@color/white"/>
     </RadioGroup>
+
+    <EditText
+        android:id="@+id/searchField"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Rechercher..."
+        android:textColor="@color/white"
+        android:textColorHint="@color/white"/>
 
     <Button
         android:id="@+id/searchButton"
