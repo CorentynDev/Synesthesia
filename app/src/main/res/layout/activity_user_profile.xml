@@ -1,0 +1,94 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/black"
+    android:padding="16dp">
+
+    <!-- Header Layout -->
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- User Profile Image -->
+        <ImageView
+            android:id="@+id/userProfileImageView"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/placeholder_image"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <!-- User Info Container -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <!-- User Pseudo -->
+            <TextView
+                android:id="@+id/userPseudoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:text="Username"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- User Email -->
+            <TextView
+                android:id="@+id/userEmailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:text="user@example.com"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginTop="4dp" />
+
+            <!-- User Password (hidden for security reasons) -->
+            <TextView
+                android:id="@+id/userPasswordTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:text="Changer de mot de passe"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Recommendations RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/userRecommendationsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/headerLayout"
+        android:layout_above="@id/footer"
+        android:layout_marginTop="16dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignStart="@id/headerLayout"
+        android:layout_alignEnd="@id/headerLayout" />
+
+    <!-- Footer -->
+    <include
+        android:id="@+id/footer"
+        layout="@layout/footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"/>
+
+</RelativeLayout>

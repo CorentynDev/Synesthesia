@@ -1,0 +1,28 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/black">
+
+    <EditText
+        android:id="@+id/searchFieldGame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Rechercher un jeu vidéo"
+        android:textColorHint="@color/white"
+        android:textColor="@color/white"/>
+
+    <Button
+        android:id="@+id/searchButtonGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rechercher"
+        android:backgroundTint="@color/gray_medium"
+        android:textColor="@color/white"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/gamesRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

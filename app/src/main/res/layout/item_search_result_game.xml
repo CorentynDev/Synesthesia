@@ -1,0 +1,47 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/gameThumbnail"
+        android:layout_width="100dp"
+        android:layout_height="150dp"
+        android:contentDescription="Image du jeu" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="16dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/gameTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Titre du jeu"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:id="@+id/gameDeveloper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Développeur"
+            android:textSize="14sp"
+            android:paddingTop="4dp"
+            android:textColor="@color/white"/>
+
+        <TextView
+            android:id="@+id/gameReleaseDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Date de sortie"
+            android:textSize="14sp"
+            android:paddingTop="4dp"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+</LinearLayout>
