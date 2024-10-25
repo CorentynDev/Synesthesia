@@ -40,7 +40,7 @@ public class UserUtils {
 
     private final FirebaseAuth firebaseAuth;
     @SuppressLint("StaticFieldLeak")
-    private static FirebaseFirestore db;
+    public static FirebaseFirestore db;
     private final FirebaseStorage firebaseStorage;
 
     public UserUtils() {
