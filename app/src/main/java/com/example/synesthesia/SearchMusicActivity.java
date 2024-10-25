@@ -3,6 +3,7 @@ package com.example.synesthesia;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -60,10 +61,20 @@ public class SearchMusicActivity extends AppCompatActivity {
         musicAdapter = new MusicAdapter(new ArrayList<>(), this);
         resultsRecyclerView.setAdapter(musicAdapter);
 
+        // Mise en focus automatique et affichage du clavier
+        searchField.requestFocus();
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+
+
         musicAdapter.setOnItemClickListener(item -> {
             if (item instanceof Artist) {
-                Artist artist = (Artist) item;
-                Log.d("SearchMusic", "Clicked on artist: " + artist.getName());
+                if (item instanceof Artist) {
+                    Artist artist = (Artist) item;
+                    Log.d("SearchMusic", "Clic sur l'artiste : " + artist.getName());
+                    Intent intent = new Intent(SearchMusicActivity.this, ArtistDetailsActivity.class);
+                    intent.putExtra("artist", artist);
+                    startActivity(intent);
+                }
             } else if (item instanceof Album) {
                 Album album = (Album) item;
                 Log.d("SearchMusic", "Clicked on album: " + album.getTitle());

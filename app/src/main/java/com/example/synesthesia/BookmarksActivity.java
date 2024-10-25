@@ -3,21 +3,27 @@ package com.example.synesthesia;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.FooterUtils;
+import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class BookmarksActivity extends AppCompatActivity {
     private FirebaseFirestore db;
+    private RecommendationsUtils recommendationsUtils;
+    private LinearLayout linearLayoutBookmarks;
+    private TextView emptyView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,82 +32,74 @@ public class BookmarksActivity extends AppCompatActivity {
 
         FooterUtils.setupFooter(this, R.id.bookmarkButton);
 
-        // Initialisation de Firebase Firestore et l'utilisateur actuel
         db = FirebaseFirestore.getInstance();
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        recommendationsUtils = new RecommendationsUtils(db);
 
+        linearLayoutBookmarks = findViewById(R.id.linearLayoutBookmarks);
+        emptyView = findViewById(R.id.emptyView);
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
-
-            // On récupère le document utilisateur
-            db.collection("users").document(userId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            // Récupère le tableau bookmarkedRecommendations du document utilisateur
-                            List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
-
-                            // Vérifie si le tableau n'est pas null et contient des éléments
-                            if (bookmarkedRecommendations != null && !bookmarkedRecommendations.isEmpty()) {
-                                // Parcourir tous les IDs dans bookmarkedRecommendations
-                                List<Recommendation> recommendations = new ArrayList<>();
-                                for (String recommendationID : bookmarkedRecommendations) {
-                                    Log.d("BookmarksActivity", "Bookmarked Recommendation ID: " + recommendationID);
-
-                                    // Appelle la méthode pour obtenir les informations de chaque recommandation
-                                    getBookmarkedRecommendations(recommendationID, recommendations);
-                                }
-                            } else {
-                                // Affiche un message si le tableau est vide ou nul
-                                Log.d("BookmarksActivity", "Aucun enregistrement effectué");
-                            }
-                        } else {
-                            Log.d("BookmarksActivity", "User document does not exist");
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("BookmarksActivity", "Error fetching user document", e);
-                    });
+            loadBookmarkedRecommendations(userId);
+        } else {
+            Log.e("BookmarksActivity", "User not logged in");
+            showEmptyMessage();
         }
     }
 
-    // Méthode pour récupérer les recommandations à partir de la collection 'recommendations'
-    private void getBookmarkedRecommendations(String recommendationID, List<Recommendation> recommendations) {
-        // Récupérer les informations de la recommandation dans la collection 'recommendations'
-        db.collection("recommendations").document(recommendationID).get()
+    private void loadBookmarkedRecommendations(String userId) {
+        db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Convertir le document en objet Recommendation
-                        Recommendation recommendation = documentSnapshot.toObject(Recommendation.class);
-                        if (recommendation != null) {
-                            recommendations.add(recommendation);
-                        }
+                        List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
 
-                        // Mettre à jour l'interface après avoir récupéré les recommandations
-                        updateRecyclerView(recommendations);
+                        if (bookmarkedRecommendations != null && !bookmarkedRecommendations.isEmpty()) {
+                            loadRecommendations(bookmarkedRecommendations);
+                        } else {
+                            showEmptyMessage();
+                        }
                     } else {
-                        Log.d("BookmarksActivity", "Recommendation document does not exist");
+                        Log.d("BookmarksActivity", "User document does not exist");
+                        showEmptyMessage();
                     }
                 })
-                .addOnFailureListener(e -> Log.e("BookmarksActivity", "Error fetching recommendation", e));
+                .addOnFailureListener(e -> {
+                    Log.e("BookmarksActivity", "Error fetching user document", e);
+                    showEmptyMessage();
+                });
     }
 
-    // Méthode pour mettre à jour la RecyclerView avec les recommandations
-    private void updateRecyclerView(List<Recommendation> recommendations) {
-        // Configuration de la RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.recyclerViewBookmarks);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        // Définir l'adaptateur avec la liste de recommandations
-        RecommendationAdapter adapter = new RecommendationAdapter(recommendations);
-        recyclerView.setAdapter(adapter);
+    private void loadRecommendations(@NonNull List<String> recommendationIds) {
+        linearLayoutBookmarks.removeAllViews();
+        List<Recommendation> recommendations = new ArrayList<>();
 
-        // Gérer l'affichage si aucune recommandation n'est trouvée
-        TextView emptyView = findViewById(R.id.emptyView);
-        if (recommendations.isEmpty()) {
-            recyclerView.setVisibility(View.GONE);
-            emptyView.setVisibility(View.VISIBLE);
-        } else {
-            recyclerView.setVisibility(View.VISIBLE);
-            emptyView.setVisibility(View.GONE);
+        for (String recommendationId : recommendationIds) {
+            db.collection("recommendations").document(recommendationId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Recommendation recommendation = documentSnapshot.toObject(Recommendation.class);
+                            if (recommendation != null) {
+                                recommendations.add(recommendation);
+                            }
+                        } else {
+                            Log.d("BookmarksActivity", "Recommendation document does not exist");
+                        }
+
+                        if (recommendations.size() == recommendationIds.size()) {
+                            recommendations.sort((r1, r2) -> r2.getTimestamp().compareTo(r1.getTimestamp()));
+
+                            for (Recommendation recommendation : recommendations) {
+                                recommendationsUtils.addRecommendationCard(this, linearLayoutBookmarks, recommendation, recommendationId);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("BookmarksActivity", "Error fetching recommendation", e));
         }
+    }
+
+    private void showEmptyMessage() {
+        linearLayoutBookmarks.setVisibility(View.GONE);
+        emptyView.setVisibility(View.VISIBLE);
     }
 }

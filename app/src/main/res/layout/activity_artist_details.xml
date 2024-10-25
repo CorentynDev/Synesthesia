@@ -1,9 +1,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="0dp">
+    android:background="@color/black">
 
     <ScrollView
         android:layout_width="0dp"
@@ -31,37 +30,21 @@
                 android:textColor="@color/white" />
 
             <ImageView
-                android:id="@+id/musicImage"
+                android:id="@+id/artistImage"
                 android:layout_width="150dp"
                 android:layout_height="200dp"
                 android:layout_gravity="center"
-                android:contentDescription="Image du livre" />
+                android:contentDescription="Image de l'artiste" />
 
             <TextView
-                android:id="@+id/musicTitle"
+                android:id="@+id/artistName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Nom de la musique"
+                android:text="Nom de l'artiste"
                 android:textColor="@color/white"
                 android:textSize="20sp"
                 android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/musicArtist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Artiste"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/musicDuration"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Durée"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
 
             <EditText
                 android:id="@+id/commentField"
@@ -86,16 +69,8 @@
                     android:textColor="@color/white" />
 
             </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
-
-    <include
-        android:id="@+id/footer"
-        layout="@layout/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

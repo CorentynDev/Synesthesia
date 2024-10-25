@@ -2,6 +2,8 @@ package com.example.synesthesia.utilities;
 
 import android.annotation.SuppressLint;
 
+import androidx.annotation.NonNull;
+
 import com.google.firebase.Timestamp;
 import java.text.SimpleDateFormat;
 
@@ -13,6 +15,7 @@ public class TimeUtils {
      * @param timestamp  Timestamp from which the past time is calculated.
      * @return           A formatted string that indicates the time since the post has been done.
      */
+    @NonNull
     @SuppressLint("SimpleDateFormat")
     public static String getTimeAgo(Timestamp timestamp) {
         long time = timestamp.toDate().getTime();
@@ -32,7 +35,7 @@ public class TimeUtils {
         long years = days / 365;
 
         if (seconds < 60) {
-            return seconds == 1 ? "Il y a 1 seconde" : "Il y a " + seconds + " secondes";
+            return seconds == 0 ? "À l'instant" : (seconds == 1 ? "Il y a 1 seconde" : "Il y a " + seconds + " secondes");
         } else if (minutes < 2) {
             return "Il y a une minute";
         } else if (minutes < 50) {

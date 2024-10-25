@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -70,6 +71,25 @@ public class MusicDetailsActivity extends AppCompatActivity {
         Button recommendButton = findViewById(R.id.recommendButton);
         Button backButton = findViewById(R.id.backButton);
 
+        // Vérification de l'initialisation des vues
+        if (trackImage == null || musicTitle == null || musicArtist == null || musicDuration == null || commentField == null || recommendButton == null || backButton == null) {
+            Log.e(TAG, "Une ou plusieurs vues sont nulles");
+            Toast.makeText(this, "Erreur d'initialisation des vues", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+        // Remplissage des données de la musique
+        musicTitle.setText(track.getTitle());
+        musicArtist.setText(track.getArtist().getName());
+        musicDuration.setText(formatDuration(track.getDuration()));
+        // Chargement de l'image de couverture
+        final String[] coverUrl = {null};
+        if (track.getAlbum() != null) {
+            coverUrl[0] = track.getAlbum().getCoverXl();
+        } else if (track.getArtist() != null) {
+            coverUrl[0] = track.getArtist().getImageUrl();
+        }
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.deezer.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -91,6 +111,10 @@ public class MusicDetailsActivity extends AppCompatActivity {
         recommendButton.setOnClickListener(v -> {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(track, commentText.isEmpty() ? "" : commentText);
+
+            Intent intent = new Intent(MusicDetailsActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
         });
     }
 
