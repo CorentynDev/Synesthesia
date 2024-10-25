@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -91,6 +92,10 @@ public class MusicDetailsActivity extends AppCompatActivity {
         recommendButton.setOnClickListener(v -> {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(track, commentText.isEmpty() ? "" : commentText);
+
+            Intent intent = new Intent(MusicDetailsActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
         });
     }
 
