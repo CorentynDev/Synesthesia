@@ -7,24 +7,21 @@ import android.widget.LinearLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-public class MainActivity extends AppCompatActivity {
+public class HomeActivity extends AppCompatActivity {
 
     RecommendationsUtils recommendationsUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_home);
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         recommendationsUtils = new RecommendationsUtils(db);
-
-        FooterUtils.setupFooter(this, R.id.homeButton);
 
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         LinearLayout recommendationList = findViewById(R.id.recommendationList);
@@ -39,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         UserUtils userUtils = new UserUtils();
         if (!userUtils.isUserLoggedIn()) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            Intent intent = new Intent(HomeActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
         }
