@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioGroup;
@@ -87,6 +88,13 @@ public class SearchMusicActivity extends AppCompatActivity {
             }
         });
 
+        searchField.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) { // Vérifie si l'action est "Done" (OK)
+                performSearch(); // Appelle la recherche
+                return true; // Action gérée
+            }
+            return false;
+        });
 
         searchButton.setOnClickListener(v -> performSearch());
     }
