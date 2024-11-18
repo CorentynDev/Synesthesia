@@ -91,6 +91,7 @@ public class RecommendationsUtils {
         UserUtils.loadUserProfile(context, recommendation.getUserId(), userTextView, profileImageView);
 
         ImageView typeIconImageView = cardView.findViewById(R.id.recommendationTypeIcon);
+        ImageView playPauseButton = cardView.findViewById(R.id.playPauseButton);
 
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
         ImagesUtils.loadImage(context, recommendation.getCoverUrl(), coverImageView);
@@ -112,6 +113,7 @@ public class RecommendationsUtils {
             typeIconImageView.setImageResource(R.drawable.book);
         } else if ("music".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.musical_note);
+            playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
         } else if ("artist".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.artist);
         } else if ("album".equals(recommendationType)) {

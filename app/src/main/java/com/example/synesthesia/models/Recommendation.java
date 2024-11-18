@@ -54,14 +54,6 @@ public class Recommendation {
         return type;
     }
 
-    /*public List<String> getMarkedBy() {
-        return markedBy;
-    }
-
-    public void setMarkedBy(List<String> markedBy) {
-        this.markedBy = markedBy;
-    }*/
-
     public String getUserNote() {
         return userNote;
     }
