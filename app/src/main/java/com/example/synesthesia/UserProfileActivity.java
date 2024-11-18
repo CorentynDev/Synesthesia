@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -19,6 +20,7 @@ import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -60,6 +62,10 @@ public class UserProfileActivity extends AppCompatActivity {
         userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
 
         loadUserRecommendations(linearLayoutUserRecommendations);
+
+        Button logoutButton = findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(v -> logoutUser());
+
     }
 
     private void loadUserRecommendations(LinearLayout linearLayoutUserRecommendations) {
@@ -96,4 +102,17 @@ public class UserProfileActivity extends AppCompatActivity {
             userUtils.uploadProfileImage(this, imageUri, userProfileImageView);
         }
     }
+
+    private void logoutUser() {
+        // Déconnexion de Firebase Auth
+        FirebaseAuth.getInstance().signOut();
+
+        // Redirection vers la page de connexion
+        Intent intent = new Intent(UserProfileActivity.this, LoginActivity.class);
+        startActivity(intent);
+
+        // Ferme l'activité actuelle
+        finish();
+    }
+
 }
