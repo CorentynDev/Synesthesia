@@ -2,9 +2,7 @@ package com.example.synesthesia;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -16,11 +14,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
-    UserUtils userUtils = new UserUtils();
     RecommendationsUtils recommendationsUtils;
-
-    ImageView profileImageView;
-    TextView profileSummary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,9 +24,6 @@ public class MainActivity extends AppCompatActivity {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         recommendationsUtils = new RecommendationsUtils(db);
 
-        profileImageView = findViewById(R.id.profileImageView);
-        profileSummary = findViewById(R.id.profileSummary);
-
         FooterUtils.setupFooter(this, R.id.homeButton);
 
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
@@ -41,12 +32,12 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout.setOnRefreshListener(() -> recommendationsUtils.getRecommendationData(this, recommendationList, swipeRefreshLayout));
 
         recommendationsUtils.getRecommendationData(this, recommendationList, swipeRefreshLayout);
-        userUtils.getUserProfile(profileImageView, profileSummary);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        UserUtils userUtils = new UserUtils();
         if (!userUtils.isUserLoggedIn()) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
