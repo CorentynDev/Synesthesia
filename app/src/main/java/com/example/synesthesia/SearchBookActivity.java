@@ -3,6 +3,7 @@ package com.example.synesthesia;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -79,6 +80,14 @@ public class SearchBookActivity extends AppCompatActivity {
         searchButton.setOnClickListener(v -> {
             String query = searchField.getText().toString();
             searchBooks(query);
+        });
+        searchField.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) { // Vérifie si l'action est "Done" (OK)
+                String query = searchField.getText().toString();
+                searchBooks(query); // Appelle la recherche
+                return true; // Action gérée
+            }
+            return false;
         });
     }
 
