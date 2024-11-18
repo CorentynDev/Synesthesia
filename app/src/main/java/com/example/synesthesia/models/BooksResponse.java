@@ -9,7 +9,6 @@ BooksResponse {
     public BooksResponse(List<Book> items) {
         this.items = items;
     }
-
     public List<Book> getItems() {
         return items;
     }
