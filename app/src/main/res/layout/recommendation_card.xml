@@ -34,10 +34,19 @@
                 android:id="@+id/recommendationUser"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/recommendationTypeIcon"
+                android:layout_width="40dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:layout_marginStart="8dp" />
         </LinearLayout>
+
 
         <!-- Informations du produit recommandé -->
         <LinearLayout

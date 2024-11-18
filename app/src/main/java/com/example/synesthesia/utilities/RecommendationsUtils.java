@@ -90,6 +90,8 @@ public class RecommendationsUtils {
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
         UserUtils.loadUserProfile(context, recommendation.getUserId(), userTextView, profileImageView);
 
+        ImageView typeIconImageView = cardView.findViewById(R.id.recommendationTypeIcon);
+
         ImageView coverImageView = cardView.findViewById(R.id.recommendationCover);
         ImagesUtils.loadImage(context, recommendation.getCoverUrl(), coverImageView);
 
@@ -100,9 +102,19 @@ public class RecommendationsUtils {
 
         TextView commentCounter = cardView.findViewById(R.id.commentCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);
+
         commentUtils.loadCommentCount(recommendationId, commentCounter);
 
         commentButton.setOnClickListener(v -> commentUtils.showCommentModal(context, recommendationId, commentCounter));
+
+        String recommendationType = recommendation.getType();
+        if ("book".equals(recommendationType)) {
+            typeIconImageView.setImageResource(R.drawable.book);
+        } else if ("music".equals(recommendationType)) {
+            typeIconImageView.setImageResource(R.drawable.musical_note);
+        } else {
+            typeIconImageView.setVisibility(View.GONE);
+        }
 
         container.addView(cardView);
     }
