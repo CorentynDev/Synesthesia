@@ -112,6 +112,10 @@ public class RecommendationsUtils {
             typeIconImageView.setImageResource(R.drawable.book);
         } else if ("music".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.musical_note);
+        } else if ("artist".equals(recommendationType)) {
+            typeIconImageView.setImageResource(R.drawable.artist);
+        } else if ("album".equals(recommendationType)) {
+            typeIconImageView.setImageResource(R.drawable.music_album);
         } else {
             typeIconImageView.setVisibility(View.GONE);
         }
