@@ -65,7 +65,7 @@ public class BookDetailsActivity extends AppCompatActivity {
             String comment = commentField.getText().toString().trim();
 
             submitRecommendation(book, comment.isEmpty() ? "" : comment);
-            Intent intent = new Intent(BookDetailsActivity.this, MainActivity.class);
+            Intent intent = new Intent(BookDetailsActivity.this, HomeActivity.class);
             startActivity(intent);
             finish();
         });

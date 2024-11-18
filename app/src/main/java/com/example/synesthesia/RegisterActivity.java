@@ -85,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
 
         loginRedirect.setOnClickListener(v -> {
-            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            Intent intent = new Intent(RegisterActivity.this, MainContainerActivity.class);
             startActivity(intent);
         });
     }
@@ -160,7 +160,7 @@ public class RegisterActivity extends AppCompatActivity {
         db.collection("users").document(userId).set(newUser)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(RegisterActivity.this, "User profile picture registered successfully", Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                    startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
                     finish();
                 })
                 .addOnFailureListener(e -> {

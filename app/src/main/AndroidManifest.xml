@@ -31,8 +31,13 @@
         <!-- RegisterActivity (Activité pour créer un compte) -->
         <activity android:name=".RegisterActivity" android:exported="true"/>
 
-        <!-- Déclaration de MainActivity -->
-        <activity android:name=".MainActivity"
+        <!-- Déclaration de MainContainerActivity -->
+        <activity android:name=".MainContainerActivity"
+            android:exported="true">
+        </activity>
+
+        <!-- Déclaration de HomeActivity -->
+        <activity android:name=".HomeActivity"
             android:exported="true">
         </activity>
 

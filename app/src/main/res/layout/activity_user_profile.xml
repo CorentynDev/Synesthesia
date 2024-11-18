@@ -73,31 +73,18 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_below="@id/headerLayout"
-        android:layout_above="@id/footer"
-        android:layout_marginTop="16dp">
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="0dp">
 
         <!-- Recommendations LinearLayout -->
         <LinearLayout
             android:id="@+id/linearLayoutUserRecommendations"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true" />
+            android:layout_alignParentEnd="true"
+            android:orientation="vertical" />
     </ScrollView>
-
-    <!-- Footer -->
-    <include
-        android:id="@+id/footer"
-        layout="@layout/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginStart="-20dp"
-        android:layout_marginEnd="-20dp"
-        android:layout_marginBottom="-20dp" />
-
 
 </RelativeLayout>

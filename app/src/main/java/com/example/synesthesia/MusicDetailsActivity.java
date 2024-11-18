@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
-import com.example.synesthesia.models.TrackResponse;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.Timestamp;
@@ -114,7 +113,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(track, commentText.isEmpty() ? "" : commentText);
 
-            Intent intent = new Intent(MusicDetailsActivity.this, MainActivity.class);
+            Intent intent = new Intent(MusicDetailsActivity.this, HomeActivity.class);
             startActivity(intent);
             finish();
         });

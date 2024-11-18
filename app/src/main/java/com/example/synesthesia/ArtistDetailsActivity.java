@@ -89,7 +89,7 @@ public class ArtistDetailsActivity extends AppCompatActivity {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(artist, commentText.isEmpty() ? "" : commentText);
 
-            Intent intent = new Intent(ArtistDetailsActivity.this, MainActivity.class);
+            Intent intent = new Intent(ArtistDetailsActivity.this, HomeActivity.class);
             startActivity(intent);
             finish();
         });

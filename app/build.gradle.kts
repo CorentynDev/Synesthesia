@@ -37,6 +37,7 @@ dependencies {
 
     // Glide dependencies
     implementation("com.github.bumptech.glide:glide:4.15.1")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
     implementation("com.google.firebase:firebase-auth:23.0.0")
     implementation("com.google.firebase:firebase-storage:21.0.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
@@ -51,10 +52,9 @@ dependencies {
     implementation ("androidx.recyclerview:recyclerview:1.3.0")
     implementation ("com.squareup.picasso:picasso:2.71828")
 
-    implementation ("com.github.bumptech.glide:glide:4.14.2")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.14.2")
+    implementation ("androidx.viewpager2:viewpager2:1.0.0");
 
-    implementation ("com.google.android.gms:play-services-auth:latest_version")
+    implementation ("com.google.android.gms:play-services-auth:20.5.0");
 
 
 }

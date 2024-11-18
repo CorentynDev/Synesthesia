@@ -3,7 +3,6 @@ package com.example.synesthesia.utilities;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.text.InputType;
 import android.util.Log;
@@ -18,8 +17,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
-import com.example.synesthesia.LoginActivity;
-import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.RecommendationAdapter;
 import com.example.synesthesia.models.Recommendation;
@@ -43,10 +40,19 @@ public class UserUtils {
     public static FirebaseFirestore db;
     private final FirebaseStorage firebaseStorage;
 
+    static {
+        // Assurez-vous que Firestore est initialisé avant d'utiliser la classe
+        db = FirebaseFirestore.getInstance();
+    }
+
     public UserUtils() {
         this.firebaseAuth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
         this.firebaseStorage = FirebaseStorage.getInstance();
+        if (db == null) {
+            Log.e("UserUtils", "FirebaseFirestore instance is null");
+        } else {
+            Log.d("UserUtils", "FirebaseFirestore instance initialized successfully");
+        }
     }
 
     /**

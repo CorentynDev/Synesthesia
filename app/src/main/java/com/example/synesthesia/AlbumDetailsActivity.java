@@ -1,10 +1,8 @@
 package com.example.synesthesia;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -113,7 +111,7 @@ public class AlbumDetailsActivity extends AppCompatActivity {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(album, commentText.isEmpty() ? "" : commentText);
 
-            Intent intent = new Intent(AlbumDetailsActivity.this, MainActivity.class);
+            Intent intent = new Intent(AlbumDetailsActivity.this, HomeActivity.class);
             startActivity(intent);
             finish();
         });

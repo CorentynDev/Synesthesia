@@ -61,7 +61,7 @@ public class RecommendationsUtils {
 
             swipeRefreshLayout.setRefreshing(false);
         }).addOnFailureListener(e -> {
-            Log.e("FirestoreData", "Error when fetching documents: ", e);
+            Log.e("FirestoreData", "Error when fetching documents: " + e.getMessage(), e);
             swipeRefreshLayout.setRefreshing(false);
         });
     }
@@ -119,6 +119,7 @@ public class RecommendationsUtils {
         } else {
             typeIconImageView.setVisibility(View.GONE);
         }
+        Log.d("RecommendationsUtils", "Adding card for: " + recommendation.getTitle());
 
         container.addView(cardView);
     }

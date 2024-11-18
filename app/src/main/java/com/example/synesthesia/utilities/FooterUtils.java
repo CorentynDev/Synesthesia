@@ -8,7 +8,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 
 import com.example.synesthesia.BookmarksActivity;
-import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.HomeActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.SearchBookActivity;
 import com.example.synesthesia.SearchMusicActivity;
@@ -44,7 +44,7 @@ public class FooterUtils {
         }
 
         homeButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, MainActivity.class);
+            Intent intent = new Intent(activity, HomeActivity.class);
             activity.startActivity(intent);
         });
 
