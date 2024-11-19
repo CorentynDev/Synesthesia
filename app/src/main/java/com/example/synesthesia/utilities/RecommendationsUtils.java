@@ -1,6 +1,7 @@
 package com.example.synesthesia.utilities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.R;
+import com.example.synesthesia.UserProfileActivity;
 import com.example.synesthesia.api.ApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Recommendation;
@@ -98,6 +100,13 @@ public class RecommendationsUtils {
         TextView userTextView = cardView.findViewById(R.id.recommendationUser);
         ImageView profileImageView = cardView.findViewById(R.id.profileImageView);
         UserUtils.loadUserProfile(context, recommendation.getUserId(), userTextView, profileImageView);
+
+        // Add onClickListener for userTextView to navigate to UserProfileActivity
+        userTextView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, UserProfileActivity.class);
+            intent.putExtra("userId", recommendation.getUserId()); // Pass user ID to the activity
+            context.startActivity(intent);
+        });
 
         ImageView typeIconImageView = cardView.findViewById(R.id.recommendationTypeIcon);
         ImageView playPauseButton = cardView.findViewById(R.id.playPauseButton);

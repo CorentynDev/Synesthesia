@@ -352,4 +352,19 @@ public class UserUtils {
                     profileImageView.setImageResource(R.drawable.placeholder_image);
                 });
     }
+
+    /**
+     * Charge une image de profil à partir d'une URL et l'affiche dans un ImageView.
+     *
+     * @param context        Le contexte de l'application.
+     * @param imageUrl       L'URL de l'image à charger.
+     * @param imageView      L'ImageView où afficher l'image.
+     */
+    public static void loadImageFromUrl(Context context, String imageUrl, ImageView imageView) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(context).load(imageUrl).into(imageView);
+        } else {
+            imageView.setImageResource(R.drawable.placeholder_image);
+        }
+    }
 }

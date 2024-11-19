@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -54,23 +55,32 @@ public class UserProfileActivity extends AppCompatActivity {
 
         userUtils = new UserUtils();
 
-        userUtils.loadUserData(userProfileImageView, userPseudoTextView, userEmailTextView);
+        String targetUserId = getIntent().getStringExtra("userId");
+        if (targetUserId == null) {
+            targetUserId = userUtils.getCurrentUserId();
+        }
 
-        userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));
-        userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
-        userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
-        userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
+        boolean isCurrentUser = targetUserId.equals(userUtils.getCurrentUserId());
 
-        loadUserRecommendations(linearLayoutUserRecommendations);
+        loadUserData(targetUserId, isCurrentUser);
 
-        Button logoutButton = findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(v -> logoutUser());
+        loadUserRecommendations(targetUserId, linearLayoutUserRecommendations);
 
+        if (!isCurrentUser) {
+            userEmailTextView.setVisibility(View.GONE);
+            userPasswordTextView.setVisibility(View.GONE);
+            findViewById(R.id.logoutButton).setVisibility(View.GONE);
+        } else {
+            userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));
+            userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
+            userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
+            userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
+            Button logoutButton = findViewById(R.id.logoutButton);
+            logoutButton.setOnClickListener(v -> logoutUser());
+        }
     }
 
-    private void loadUserRecommendations(LinearLayout linearLayoutUserRecommendations) {
-        String userId = userUtils.getCurrentUserId();
-
+    private void loadUserRecommendations(String userId, LinearLayout linearLayoutUserRecommendations) {
         db.collection("recommendations")
                 .whereEqualTo("userId", userId)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
@@ -79,13 +89,11 @@ public class UserProfileActivity extends AppCompatActivity {
                     linearLayoutUserRecommendations.removeAllViews();
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         Recommendation recommendation = document.toObject(Recommendation.class);
-                        // Passer l'ID de la recommandation ici
                         recommendationsUtils.addRecommendationCard(this, linearLayoutUserRecommendations, recommendation, document.getId());
                     }
                 })
                 .addOnFailureListener(e -> Log.e("LoadRecommendations", "Erreur lors du chargement des recommandations", e));
     }
-
 
     private void showEditProfileImageDialog() {
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -101,6 +109,28 @@ public class UserProfileActivity extends AppCompatActivity {
             Uri imageUri = data.getData();
             userUtils.uploadProfileImage(this, imageUri, userProfileImageView);
         }
+    }
+
+    private void loadUserData(String userId, boolean isCurrentUser) {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String pseudo = documentSnapshot.getString("username");
+                        String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+
+                        userPseudoTextView.setText(pseudo);
+
+                        // Charger l'image de profil
+                        UserUtils.loadImageFromUrl(this, profileImageUrl, userProfileImageView);
+
+                        // Si c'est l'utilisateur actuel, charge aussi son email
+                        if (isCurrentUser) {
+                            String email = documentSnapshot.getString("email");
+                            userEmailTextView.setText(email);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("LoadUserData", "Erreur lors du chargement des données utilisateur", e));
     }
 
     private void logoutUser() {
