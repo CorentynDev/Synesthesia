@@ -103,7 +103,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                userNote
+                                userNote,
+                                book.getVolumeInfo().getId()
                         );
 
                         db.collection("recommendations")
