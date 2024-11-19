@@ -1,6 +1,7 @@
 package com.example.synesthesia.utilities;
 
 import android.content.Context;
+import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,11 @@ import androidx.annotation.NonNull;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.R;
+import com.example.synesthesia.api.ApiClient;
+import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.models.Track;
+import com.example.synesthesia.models.TrackResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -22,6 +27,10 @@ import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class RecommendationsUtils {
 
@@ -114,7 +123,12 @@ public class RecommendationsUtils {
         } else if ("music".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.musical_note);
             playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
-        } else if ("artist".equals(recommendationType)) {
+
+            // Récupérer la prévisualisation via l'API Deezer pour l'ID de l'article de la recommandation
+            String articleId = recommendation.getArticleId();
+            fetchPreviewFromDeezer(context, playPauseButton, articleId);
+
+    } else if ("artist".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.artist);
         } else if ("album".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.music_album);
@@ -175,6 +189,77 @@ public class RecommendationsUtils {
                 likeUtils.updateLikeList(userId, recommendation, newLikeStatus);
                 likeUtils.toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
             });
+        }
+    }
+
+    /**
+     * Fetch the preview URL from Deezer using their API.
+     *
+     * @param context      Context in which the method is called.
+     * @param playButton   ImageView for play/pause button.
+     * @param articleId    ID of the article to search on Deezer.
+     */
+    private void fetchPreviewFromDeezer(Context context, ImageView playButton, String articleId) {
+        if (articleId == null || articleId.isEmpty()) {
+            Log.e("DeezerAPI", "Article ID is null or empty, skipping API call.");
+            playButton.setVisibility(View.GONE);
+            return;
+        }
+
+        DeezerApi deezerApi = ApiClient.getDeezerApi();
+
+        // Effectuer un appel à l'API Deezer pour récupérer la piste via l'article ID
+        deezerApi.getTrackById(articleId).enqueue(new Callback<Track>() {
+            @Override
+            public void onResponse(Call<Track> call, Response<Track> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    Track track = response.body();
+                    String previewUrl = track.getPreviewUrl();
+
+                    if (previewUrl != null && !previewUrl.isEmpty()) {
+                        setupPlayPauseButton(context, playButton, previewUrl);
+                    } else {
+                        Log.e("DeezerAPI", "No preview URL available for the given article ID.");
+                        playButton.setVisibility(View.GONE);
+                    }
+                } else {
+                    Log.e("DeezerAPI", "Failed to fetch track data: " + response.message());
+                    playButton.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Track> call, Throwable t) {
+                Log.e("DeezerAPI", "API request failed: " + t.getMessage());
+                playButton.setVisibility(View.GONE);
+            }
+        });
+    }
+
+
+    /**
+     * Set up the play/pause button to play the preview from Deezer.
+     *
+     * @param context      Context of the application.
+     * @param playButton   ImageView to be configured as play/pause.
+     * @param previewUrl   The preview URL obtained from Deezer API.
+     */
+    private void setupPlayPauseButton(Context context, ImageView playButton, String previewUrl) {
+        MediaPlayer mediaPlayer = new MediaPlayer();
+        try {
+            mediaPlayer.setDataSource(previewUrl);
+            mediaPlayer.prepare();
+            playButton.setOnClickListener(v -> {
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.pause();
+                    playButton.setImageResource(R.drawable.bouton_de_lecture);
+                } else {
+                    mediaPlayer.start();
+                    playButton.setImageResource(R.drawable.pause);
+                }
+            });
+        } catch (Exception e) {
+            Log.e("DeezerAPI", "Error setting up media player: " + e.getMessage());
         }
     }
 }

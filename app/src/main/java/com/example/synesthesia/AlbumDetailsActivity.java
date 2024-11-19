@@ -158,7 +158,8 @@ public class AlbumDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                userNote
+                                userNote,
+                                album.getId()
                         );
 
                         // Enregistrer la recommandation dans Firestore

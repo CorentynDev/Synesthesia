@@ -2,6 +2,7 @@ package com.example.synesthesia.models;
 
 import java.util.List;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.PropertyName;
 
 public class Recommendation {
 
@@ -12,18 +13,20 @@ public class Recommendation {
     private Timestamp timestamp;
     private String type;
     private String userNote;
+    private String articleId;
 
     // Empty constructor required for Firebase
     public Recommendation() {
     }
 
-    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type, String userNote) {
+    public Recommendation(String title, String date, String coverUrl, String userId, String username, List<Comment> comments, Timestamp timestamp, String type, String userNote, String articleId) {
         this.title = title;
         this.coverUrl = coverUrl;
         this.userId = userId;
         this.timestamp = timestamp;
         this.type = type;
         this.userNote = userNote;
+        this.articleId = articleId;
     }
 
     public String getTitle() {
@@ -59,5 +62,12 @@ public class Recommendation {
     }
     public void setUserNote(String userNote) {
         this.userNote = userNote;
+    }
+
+    public String getArticleId() {
+        return articleId;
+    }
+    public void setArticleId(String articleId) {
+        this.articleId = articleId;
     }
 }
