@@ -194,7 +194,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                commentText
+                                commentText,
+                                track.getId()
                         );
 
                         db.collection("recommendations")

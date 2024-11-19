@@ -38,6 +38,7 @@ public class Book implements Parcelable {
     }
 
     public static class VolumeInfo implements Parcelable {
+        private final String id;
         private final String title;
         private final List<String> authors;
         private final String publishedDate;
@@ -45,6 +46,7 @@ public class Book implements Parcelable {
         private final String description;
 
         protected VolumeInfo(Parcel in) {
+            id = in.readString();
             title = in.readString();
             authors = in.createStringArrayList();
             publishedDate = in.readString();
@@ -71,11 +73,16 @@ public class Book implements Parcelable {
 
         @Override
         public void writeToParcel(Parcel parcel, int i) {
+            parcel.writeString(id);
             parcel.writeString(title);
             parcel.writeStringList(authors);
             parcel.writeString(publishedDate);
             parcel.writeParcelable(imageLinks, i);
             parcel.writeString(description);
+        }
+
+        public String getId() {
+            return id;
         }
 
         public String getTitle() {
