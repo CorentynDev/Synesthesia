@@ -246,9 +246,10 @@ public class RecommendationsUtils {
     }
 
 
-    // Instance unique de MediaPlayer partagée dans la classe
-    private static MediaPlayer globalMediaPlayer;
-    private static ImageView currentlyPlayingButton;
+    // Variables globales nécessaires
+    private static MediaPlayer globalMediaPlayer; // MediaPlayer partagé
+    private static ImageView currentlyPlayingButton; // Bouton actuellement actif
+    private static String currentlyPlayingUrl; // URL en cours de lecture
 
     /**
      * Set up the play/pause button to play the preview from Deezer.
@@ -260,14 +261,30 @@ public class RecommendationsUtils {
     private void setupPlayPauseButton(Context context, ImageView playButton, String previewUrl) {
         playButton.setOnClickListener(v -> {
             try {
-                // Si un MediaPlayer est en cours de lecture, l'arrêter
+                // Si le bouton est déjà actif (musique en cours de lecture ou pause sur la même URL)
+                if (currentlyPlayingButton == playButton && currentlyPlayingUrl != null && currentlyPlayingUrl.equals(previewUrl)) {
+                    if (globalMediaPlayer != null) {
+                        if (globalMediaPlayer.isPlaying()) {
+                            // Pause la musique si elle est en lecture
+                            globalMediaPlayer.pause();
+                            playButton.setImageResource(R.drawable.bouton_de_lecture);
+                        } else {
+                            // Relance la musique si elle est en pause
+                            globalMediaPlayer.start();
+                            playButton.setImageResource(R.drawable.pause);
+                        }
+                    }
+                    return; // Pas besoin de reconfigurer le MediaPlayer
+                }
+
+                // Si une autre musique est en cours, arrêter et réinitialiser le MediaPlayer
                 if (globalMediaPlayer != null) {
                     if (globalMediaPlayer.isPlaying()) {
                         globalMediaPlayer.stop();
                     }
                     globalMediaPlayer.reset();
 
-                    // Réinitialiser l'image du bouton précédemment actif
+                    // Réinitialiser le bouton précédemment actif
                     if (currentlyPlayingButton != null) {
                         currentlyPlayingButton.setImageResource(R.drawable.bouton_de_lecture);
                     }
@@ -276,19 +293,23 @@ public class RecommendationsUtils {
                     globalMediaPlayer = new MediaPlayer();
                 }
 
-                // Configurer la nouvelle piste pour le MediaPlayer
+                // Configurer le MediaPlayer pour la nouvelle URL
                 globalMediaPlayer.setDataSource(previewUrl);
                 globalMediaPlayer.prepare(); // Préparation synchrone
 
-                // Mettre à jour l'état visuel et jouer la musique
+                // Jouer la musique
                 globalMediaPlayer.start();
                 playButton.setImageResource(R.drawable.pause);
-                currentlyPlayingButton = playButton;
 
-                // Ajouter un listener pour réinitialiser le bouton à la fin de la piste
+                // Mettre à jour les références globales
+                currentlyPlayingButton = playButton;
+                currentlyPlayingUrl = previewUrl;
+
+                // Réinitialiser le bouton à la fin de la musique
                 globalMediaPlayer.setOnCompletionListener(mp -> {
                     playButton.setImageResource(R.drawable.bouton_de_lecture);
                     currentlyPlayingButton = null;
+                    currentlyPlayingUrl = null;
                 });
 
             } catch (Exception e) {
@@ -296,6 +317,5 @@ public class RecommendationsUtils {
             }
         });
     }
-
 
 }
