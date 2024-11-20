@@ -246,6 +246,10 @@ public class RecommendationsUtils {
     }
 
 
+    // Instance unique de MediaPlayer partagée dans la classe
+    private static MediaPlayer globalMediaPlayer;
+    private static ImageView currentlyPlayingButton;
+
     /**
      * Set up the play/pause button to play the preview from Deezer.
      *
@@ -254,21 +258,44 @@ public class RecommendationsUtils {
      * @param previewUrl   The preview URL obtained from Deezer API.
      */
     private void setupPlayPauseButton(Context context, ImageView playButton, String previewUrl) {
-        MediaPlayer mediaPlayer = new MediaPlayer();
-        try {
-            mediaPlayer.setDataSource(previewUrl);
-            mediaPlayer.prepare();
-            playButton.setOnClickListener(v -> {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.pause();
-                    playButton.setImageResource(R.drawable.bouton_de_lecture);
+        playButton.setOnClickListener(v -> {
+            try {
+                // Si un MediaPlayer est en cours de lecture, l'arrêter
+                if (globalMediaPlayer != null) {
+                    if (globalMediaPlayer.isPlaying()) {
+                        globalMediaPlayer.stop();
+                    }
+                    globalMediaPlayer.reset();
+
+                    // Réinitialiser l'image du bouton précédemment actif
+                    if (currentlyPlayingButton != null) {
+                        currentlyPlayingButton.setImageResource(R.drawable.bouton_de_lecture);
+                    }
                 } else {
-                    mediaPlayer.start();
-                    playButton.setImageResource(R.drawable.pause);
+                    // Créer une nouvelle instance de MediaPlayer si elle n'existe pas
+                    globalMediaPlayer = new MediaPlayer();
                 }
-            });
-        } catch (Exception e) {
-            Log.e("DeezerAPI", "Error setting up media player: " + e.getMessage());
-        }
+
+                // Configurer la nouvelle piste pour le MediaPlayer
+                globalMediaPlayer.setDataSource(previewUrl);
+                globalMediaPlayer.prepare(); // Préparation synchrone
+
+                // Mettre à jour l'état visuel et jouer la musique
+                globalMediaPlayer.start();
+                playButton.setImageResource(R.drawable.pause);
+                currentlyPlayingButton = playButton;
+
+                // Ajouter un listener pour réinitialiser le bouton à la fin de la piste
+                globalMediaPlayer.setOnCompletionListener(mp -> {
+                    playButton.setImageResource(R.drawable.bouton_de_lecture);
+                    currentlyPlayingButton = null;
+                });
+
+            } catch (Exception e) {
+                Log.e("DeezerAPI", "Error setting up media player: " + e.getMessage());
+            }
+        });
     }
+
+
 }
