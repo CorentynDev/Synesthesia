@@ -15,11 +15,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.R;
 import com.example.synesthesia.UserProfileActivity;
-import com.example.synesthesia.api.ApiClient;
+import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.Track;
-import com.example.synesthesia.models.TrackResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -215,7 +214,7 @@ public class RecommendationsUtils {
             return;
         }
 
-        DeezerApi deezerApi = ApiClient.getDeezerApi();
+        DeezerApi deezerApi = DeezerApiClient.getDeezerApi();
 
         // Effectuer un appel à l'API Deezer pour récupérer la piste via l'article ID
         deezerApi.getTrackById(articleId).enqueue(new Callback<Track>() {
