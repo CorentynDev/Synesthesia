@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,6 +28,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class UserProfileActivity extends AppCompatActivity {
@@ -38,6 +40,9 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView userEmailTextView;
     private UserUtils userUtils;
     private RecommendationsUtils recommendationsUtils;
+    private Button followButton;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,13 +57,16 @@ public class UserProfileActivity extends AppCompatActivity {
         userEmailTextView = findViewById(R.id.userEmailTextView);
         TextView userPasswordTextView = findViewById(R.id.userPasswordTextView);
         LinearLayout linearLayoutUserRecommendations = findViewById(R.id.linearLayoutUserRecommendations);
+        followButton = findViewById(R.id.followButton);
+
 
         userUtils = new UserUtils();
 
         String targetUserId = getIntent().getStringExtra("userId");
-        if (targetUserId == null) {
+        if (targetUserId == null || targetUserId.isEmpty()) {
             targetUserId = userUtils.getCurrentUserId();
         }
+
 
         boolean isCurrentUser = targetUserId.equals(userUtils.getCurrentUserId());
 
@@ -66,18 +74,49 @@ public class UserProfileActivity extends AppCompatActivity {
 
         loadUserRecommendations(targetUserId, linearLayoutUserRecommendations);
 
+
+        Log.d("UserProfileActivity", "targetUserId: " + targetUserId);
+        Log.d("UserProfileActivity", "currentUserId: " + userUtils.getCurrentUserId());
+
+
         if (!isCurrentUser) {
+            Log.d("UserProfileActivity", "Affichage d'un autre profil.");
             userEmailTextView.setVisibility(View.GONE);
             userPasswordTextView.setVisibility(View.GONE);
             findViewById(R.id.logoutButton).setVisibility(View.GONE);
+            followButton.setVisibility(View.VISIBLE); // Afficher le bouton Suivre
+            final String userIdToFollow = targetUserId; // Créer une variable finale
+            followButton.setOnClickListener(v -> followUser(userIdToFollow));
+
+            db.collection("followers")
+                    .document(userUtils.getCurrentUserId())
+                    .collection("following")
+                    .document(targetUserId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            Log.d("UserProfileActivity", "L'utilisateur est déjà suivi.");
+                            followButton.setText("Suivi");
+                            followButton.setEnabled(false); // Désactiver le bouton
+                        } else {
+                            Log.d("UserProfileActivity", "L'utilisateur n'est pas suivi.");
+                            followButton.setVisibility(View.VISIBLE); // Afficher le bouton pour suivre
+                        }
+                    })
+
+                    .addOnFailureListener(e -> Log.e("CheckFollow", "Erreur lors de la vérification du suivi", e));
+
         } else {
+            Log.d("UserProfileActivity", "Affichage de mon propre profil.");
             userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));
             userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
             userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
             userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
             Button logoutButton = findViewById(R.id.logoutButton);
             logoutButton.setOnClickListener(v -> logoutUser());
+            followButton.setVisibility(View.GONE);
         }
+
     }
 
     private void loadUserRecommendations(String userId, LinearLayout linearLayoutUserRecommendations) {
@@ -143,6 +182,35 @@ public class UserProfileActivity extends AppCompatActivity {
 
         // Ferme l'activité actuelle
         finish();
+    }
+    private void followUser(String userIdToFollow) {
+        // Référence à Firestore
+        String currentUserId = userUtils.getCurrentUserId();
+
+        // Ajouter l'utilisateur suivi dans la collection "following" de l'utilisateur actuel
+        db.collection("followers")
+                .document(currentUserId) // ID de l'utilisateur actuel
+                .collection("following") // Collection des personnes suivies
+                .document(userIdToFollow) // ID de l'utilisateur à suivre
+                .set(new HashMap<>())// Ajout de l'objet vide ou des données supplémentaires si nécessaire
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("FollowUser", "Ajout à 'following' réussi pour l'utilisateur actuel.");
+
+                    // Ajouter l'utilisateur actuel dans la collection "followers" de l'utilisateur suivi
+                    db.collection("followers")
+                            .document(userIdToFollow) // ID de l'utilisateur suivi
+                            .collection("followers") // Collection des abonnés
+                            .document(currentUserId) // ID de l'utilisateur actuel
+                            .set(new HashMap<>())// Ajout de l'objet vide
+                            .addOnSuccessListener(aVoid2 -> {
+                                Log.d("FollowUser", "Ajout à 'followers' réussi pour l'utilisateur suivi.");
+                                followButton.setText("Suivi"); // Mettre à jour le texte du bouton
+                                followButton.setEnabled(false); // Désactiver le bouton
+                                Toast.makeText(this, "Vous suivez maintenant cet utilisateur.", Toast.LENGTH_SHORT).show();
+                            })
+                            .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'followers'", e));
+                })
+                .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'following'", e));
     }
 
 }
