@@ -29,8 +29,8 @@ public class SearchMovieActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Button searchButton = findViewById(R.id.searchButton);
         setContentView(R.layout.activity_search_movies);
+        Button searchButton = findViewById(R.id.searchButton);
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
