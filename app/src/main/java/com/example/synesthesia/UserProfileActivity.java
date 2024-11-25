@@ -15,21 +15,16 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class UserProfileActivity extends AppCompatActivity {
 
@@ -41,8 +36,6 @@ public class UserProfileActivity extends AppCompatActivity {
     private UserUtils userUtils;
     private RecommendationsUtils recommendationsUtils;
     private Button followButton;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,17 +60,14 @@ public class UserProfileActivity extends AppCompatActivity {
             targetUserId = userUtils.getCurrentUserId();
         }
 
-
         boolean isCurrentUser = targetUserId.equals(userUtils.getCurrentUserId());
 
         loadUserData(targetUserId, isCurrentUser);
 
         loadUserRecommendations(targetUserId, linearLayoutUserRecommendations);
 
-
         Log.d("UserProfileActivity", "targetUserId: " + targetUserId);
         Log.d("UserProfileActivity", "currentUserId: " + userUtils.getCurrentUserId());
-
 
         if (!isCurrentUser) {
             Log.d("UserProfileActivity", "Affichage d'un autre profil.");
@@ -116,7 +106,6 @@ public class UserProfileActivity extends AppCompatActivity {
             logoutButton.setOnClickListener(v -> logoutUser());
             followButton.setVisibility(View.GONE);
         }
-
     }
 
     private void loadUserRecommendations(String userId, LinearLayout linearLayoutUserRecommendations) {
@@ -212,5 +201,4 @@ public class UserProfileActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'following'", e));
     }
-
 }

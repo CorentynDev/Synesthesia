@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.models.User;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -22,7 +23,7 @@ import java.util.Map;
 public class SearchUserActivity extends AppCompatActivity {
     private RecyclerView usersRecyclerView;
     private UserAdapter userAdapter;
-    private List<String> pseudoList = new ArrayList<>();
+    private List<User> userList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,24 +34,23 @@ public class SearchUserActivity extends AppCompatActivity {
         Button searchButton = findViewById(R.id.searchButton);
         EditText searchField = findViewById(R.id.searchField);  // Récupère le champ de recherche
 
-        userAdapter = new UserAdapter(this, pseudoList, userMap); // Correction ici
+        userAdapter = new UserAdapter(this, userList);
         usersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         usersRecyclerView.setAdapter(userAdapter);
 
         // Action au clic du bouton "Valider"
         searchButton.setOnClickListener(v -> {
             String query = searchField.getText().toString().trim();
-            Log.d("SearchUserActivity", "Button clicked, search query: " + query);  // Ajout d'un log
             if (!query.isEmpty()) {
-                searchUsers(query);  // Lance la recherche des utilisateurs
+                searchUsers(query);
             } else {
-                Log.d("SearchUserActivity", "Search field is empty");
+                Log.d("SearchUserActivity", "Search field is empty or only contains spaces");
             }
+
         });
 
         fetchUsersFromFirestore();  // Charge initialement tous les utilisateurs
     }
-    private Map<String, String> userMap = new HashMap<>(); // Associe pseudo -> URL
 
     private void fetchUsersFromFirestore() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -59,17 +59,18 @@ public class SearchUserActivity extends AppCompatActivity {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        pseudoList.clear();
-                        userMap.clear(); // Nettoie les données existantes
+                        userList.clear(); // Efface les utilisateurs existants
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String pseudo = document.getString("username");
                             String profileImageUrl = document.getString("profileImageUrl");
+                            String id = document.getId();
                             if (pseudo != null && profileImageUrl != null) {
-                                pseudoList.add(pseudo); // Ajoute uniquement les pseudos dans la liste
-                                userMap.put(pseudo, profileImageUrl); // Stocke l'URL correspondante
+                                // Crée un objet User et l'ajoute à la liste
+                                User user = new User(pseudo, profileImageUrl, id);
+                                userList.add(user);
                             }
                         }
-                        userAdapter.notifyDataSetChanged();
+                        userAdapter.notifyDataSetChanged(); // Met à jour l'adaptateur
                     } else {
                         Log.e("SearchUserActivity", "Error fetching users: ", task.getException());
                     }
@@ -79,29 +80,29 @@ public class SearchUserActivity extends AppCompatActivity {
     private void searchUsers(String query) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Convertir la requête en minuscules pour ne pas tenir compte de la casse
         String queryLowerCase = query.toLowerCase();
-        Log.d("SearchUserActivity", "Starting search for: " + queryLowerCase);  // Log de début de recherche
+        Log.d("SearchUserActivity", "Starting search for: " + queryLowerCase); // Log de recherche
 
         db.collection("users")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Log.d("SearchUserActivity", "Search successful, number of results: " + task.getResult().size());  // Log des résultats
+                        Log.d("SearchUserActivity", "Search successful, number of results: " + task.getResult().size());
 
-                        pseudoList.clear();
-                        userMap.clear(); // Nettoie aussi userMap pour éviter des erreurs
+                        userList.clear(); // Efface la liste avant d'ajouter les résultats de la recherche
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String pseudo = document.getString("username");
                             String profileImageUrl = document.getString("profileImageUrl");
+                            String id = document.getId();
+
                             if (pseudo != null && profileImageUrl != null && pseudo.toLowerCase().contains(queryLowerCase)) {
-                                pseudoList.add(pseudo);  // Ajouter le pseudo dans la liste
-                                userMap.put(pseudo, profileImageUrl);  // Associer le pseudo à son image
+                                User user = new User(pseudo, profileImageUrl, id);
+                                userList.add(user);
                             }
                         }
 
-                        userAdapter.notifyDataSetChanged();  // Met à jour l'adaptateur
+                        userAdapter.notifyDataSetChanged(); // Met à jour l'adaptateur
                     } else {
                         Log.e("SearchUserActivity", "Error fetching users: ", task.getException());
                     }

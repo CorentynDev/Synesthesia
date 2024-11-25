@@ -1,7 +1,9 @@
 package com.example.synesthesia;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,19 +13,18 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.models.User;
 
 import java.util.List;
 import java.util.Map;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
-    private List<String> pseudoList;
-    private Map<String, String> userMap;
+    private List<User> userList;  // Liste d'objets User
     private Context context;
 
-    public UserAdapter(Context context, List<String> pseudoList, Map<String, String> userMap) {
+    public UserAdapter(Context context, List<User> userList) {
         this.context = context;
-        this.pseudoList = pseudoList;
-        this.userMap = userMap;
+        this.userList = userList;
     }
 
     @NonNull
@@ -35,26 +36,32 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
-        String pseudo = pseudoList.get(position);
-        holder.userPseudo.setText(pseudo);
+        User user = userList.get(position); // Récupère l'objet User
 
-        // Récupérer l'URL associée au pseudo
-        String profileImageUrl = userMap.get(pseudo);
-
-        // Charger l'image de profil avec Glide
+        holder.userPseudo.setText(user.getPseudo()); // Affiche le pseudo
+        // Charge l'image de profil avec Glide
+        String profileImageUrl = user.getProfileImageUrl();
         if (profileImageUrl != null) {
             Glide.with(context)
                     .load(profileImageUrl)
-                    .placeholder(R.drawable.placeholder_image) // Image par défaut
+                    .placeholder(R.drawable.placeholder_image)
                     .into(holder.userImage);
         } else {
-            holder.userImage.setImageResource(R.drawable.placeholder_image); // Si l'URL est introuvable
+            holder.userImage.setImageResource(R.drawable.placeholder_image);
         }
+
+        // Ajout du OnClickListener pour rediriger vers la page de profil
+        holder.itemView.setOnClickListener(v -> {
+            Log.d("UserAdapter", "User ID: " + user.getId());
+            Intent intent = new Intent(context, UserProfileActivity.class);
+            intent.putExtra("userId", user.getId());  // Passe l'ID de l'utilisateur à l'activité de profil
+            context.startActivity(intent);
+        });
     }
 
     @Override
     public int getItemCount() {
-        return pseudoList.size();
+        return userList.size();
     }
 
     public static class UserViewHolder extends RecyclerView.ViewHolder {
@@ -68,5 +75,3 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
     }
 }
-
-
