@@ -55,6 +55,8 @@
 
         <activity android:name=".ArtistDetailsActivity" />
 
+        <activity android:name=".SearchUserActivity" />
+
 
     </application>
 
