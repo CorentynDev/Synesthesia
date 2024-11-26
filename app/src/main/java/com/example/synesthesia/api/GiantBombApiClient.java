@@ -3,18 +3,17 @@ package com.example.synesthesia.api;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ApiClient {
-    private static final String BASE_URL = "https://api.deezer.com/";
-
+public class GiantBombApiClient {
+    private static final String BASE_URL = "https://www.giantbomb.com/api/";
     private static Retrofit retrofit;
 
-    public static DeezerApi getDeezerApi() {
+    public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
-        return retrofit.create(DeezerApi.class);
+        return retrofit;
     }
 }

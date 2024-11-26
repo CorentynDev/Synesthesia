@@ -11,6 +11,8 @@ import com.example.synesthesia.BookmarksActivity;
 import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.SearchBookActivity;
+import com.example.synesthesia.SearchGameActivity;
+import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.SearchMusicActivity;
 import com.example.synesthesia.UserProfileActivity;
 
@@ -52,7 +54,7 @@ public class FooterUtils {
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("Choisissez un type de recommandation");
 
-            String[] types = {"Musique", "Livre"};
+            String[] types = {"Musique", "Livre", "Film", "Jeu Vidéo"};
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
                     case 0:
@@ -60,6 +62,12 @@ public class FooterUtils {
                         break;
                     case 1:
                         activity.startActivity(new Intent(activity, SearchBookActivity.class));
+                        break;
+                    case 2:
+                        activity.startActivity(new Intent(activity, SearchMovieActivity.class));
+                        break;
+                    case 3:
+                        activity.startActivity(new Intent(activity, SearchGameActivity.class));
                         break;
                 }
             });

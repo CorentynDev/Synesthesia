@@ -14,6 +14,7 @@ public class Recommendation {
     private String type;
     private String userNote;
     private String articleId;
+    private String externalLink;
 
     // Empty constructor required for Firebase
     public Recommendation() {
@@ -69,5 +70,13 @@ public class Recommendation {
     }
     public void setArticleId(String articleId) {
         this.articleId = articleId;
+    }
+
+    public String getExternalLink() {
+        return externalLink;
+    }
+
+    public void setExternalLink(String externalLink) {
+        this.externalLink = externalLink;
     }
 }
