@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.models.User;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -29,6 +30,7 @@ public class SearchUserActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_user);
+        FooterUtils.setupFooter(this, R.id.research);
 
         usersRecyclerView = findViewById(R.id.usersRecyclerView);
         Button searchButton = findViewById(R.id.searchButton);

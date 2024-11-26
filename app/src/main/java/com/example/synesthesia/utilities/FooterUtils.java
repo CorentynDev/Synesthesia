@@ -39,7 +39,7 @@ public class FooterUtils {
         if (activeButtonId == R.id.homeButton) {
             homeButton.setImageResource(R.drawable.home_active);
         } if (activeButtonId == R.id.research) {
-            research.setImageResource(R.drawable.default_profil_picture);
+            research.setImageResource(R.drawable.loupe_active);
         } else if (activeButtonId == R.id.createRecommendationButton) {
             createRecommendationButton.setImageResource(R.drawable.add_active);
         } else if (activeButtonId == R.id.bookmarkButton) {
