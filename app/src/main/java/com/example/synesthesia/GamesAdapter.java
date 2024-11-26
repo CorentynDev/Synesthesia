@@ -2,6 +2,7 @@ package com.example.synesthesia;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +15,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.models.GiantBombGame;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHolder> {
 
@@ -48,13 +52,15 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
 
         private final ImageView gameCoverImageView;
         private final TextView gameTitleTextView;
-        private final TextView gameDescriptionTextView;
+        private final TextView gameDeveloperTextView;
+        private final TextView gameReleaseDateTextView;
 
         public GameViewHolder(@NonNull View itemView) {
             super(itemView);
             gameCoverImageView = itemView.findViewById(R.id.bookThumbnail);
             gameTitleTextView = itemView.findViewById(R.id.bookTitle);
-            gameDescriptionTextView = itemView.findViewById(R.id.bookAuthor);
+            gameDeveloperTextView = itemView.findViewById(R.id.bookAuthor);
+            gameReleaseDateTextView = itemView.findViewById(R.id.bookDate);
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -69,8 +75,29 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
 
         public void bind(GiantBombGame game) {
             gameTitleTextView.setText(game.getName() != null ? game.getName() : "Titre inconnu");
-            gameDescriptionTextView.setText(game.getDescription() != null ? game.getDescription() : "Description indisponible");
 
+            // Affichage des développeurs
+            if (game.getDevelopers() != null && !game.getDevelopers().isEmpty()) {
+                gameDeveloperTextView.setText(TextUtils.join(", ", game.getDevelopers()));
+            } else {
+                gameDeveloperTextView.setText("Développeur inconnu");
+            }
+
+            // Format de la date de sortie
+            if (game.getOriginalReleaseDate() != null) {
+                try {
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    Date date = dateFormat.parse(game.getOriginalReleaseDate());
+                    SimpleDateFormat displayFormat = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
+                    gameReleaseDateTextView.setText(displayFormat.format(date));
+                } catch (Exception e) {
+                    gameReleaseDateTextView.setText("Date inconnue");
+                }
+            } else {
+                gameReleaseDateTextView.setText("Date inconnue");
+            }
+
+            // Chargement de l'image avec Glide
             if (game.getImage() != null && game.getImage().getMediumUrl() != null) {
                 Glide.with(gameCoverImageView.getContext())
                         .load(game.getImage().getMediumUrl())

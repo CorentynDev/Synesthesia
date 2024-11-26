@@ -35,38 +35,57 @@ public class GameDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_details);
 
-        game = getIntent().getParcelableExtra("game");
-
+        // Initialisation des composants UI
         TextView gameTitle = findViewById(R.id.gameTitle);
         TextView gameDescription = findViewById(R.id.gameDescription);
         ImageView gameImage = findViewById(R.id.gameImage);
+        Button recommendButton = findViewById(R.id.recommendButton);
+        Button backButton = findViewById(R.id.backButton);
+        commentField = findViewById(R.id.commentField);
 
-        gameTitle.setText(game.getName());
-        gameDescription.setText(game.getDescription());
+        // Récupération de l'objet jeu
+        game = getIntent().getParcelableExtra("game");
 
-        Glide.with(this)
-                .load(game.getImage().getMediumUrl())
-                .into(gameImage);
+        // Vérification de nullité
+        if (game == null) {
+            Toast.makeText(this, "Les détails du jeu sont indisponibles.", Toast.LENGTH_SHORT).show();
+            finish(); // Ferme l'activité si les données sont manquantes
+            return;
+        }
 
+        // Affichage des détails du jeu
+        gameTitle.setText(game.getName() != null ? game.getName() : "Titre inconnu");
+        gameDescription.setText(game.getDescription() != null ? game.getDescription() : "Description indisponible");
+
+        if (game.getImage() != null && game.getImage().getMediumUrl() != null) {
+            Glide.with(this)
+                    .load(game.getImage().getMediumUrl())
+                    .placeholder(R.drawable.image_progress)
+                    .error(R.drawable.placeholder_image)
+                    .into(gameImage);
+        } else {
+            gameImage.setImageResource(R.drawable.placeholder_image);
+        }
+
+        // Initialisation Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        Button recommendButton = findViewById(R.id.recommendButton);
-        commentField = findViewById(R.id.commentField);
-
+        // Bouton pour recommander un jeu
         recommendButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
-
             submitRecommendation(game, comment.isEmpty() ? "" : comment);
+
             Intent intent = new Intent(GameDetailsActivity.this, MainActivity.class);
             startActivity(intent);
             finish();
         });
 
-        Button backButton = findViewById(R.id.backButton);
+        // Bouton retour
         backButton.setOnClickListener(v -> finish());
     }
 
+    // Fonction pour soumettre une recommandation
     private void submitRecommendation(GiantBombGame game, String commentText) {
         String userId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
@@ -83,7 +102,7 @@ public class GameDetailsActivity extends AppCompatActivity {
                         Recommendation recommendation = new Recommendation(
                                 game.getName(),
                                 null,
-                                game.getImage().getMediumUrl(),
+                                game.getImage() != null ? game.getImage().getMediumUrl() : null,
                                 userId,
                                 username,
                                 commentsList,

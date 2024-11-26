@@ -1,10 +1,12 @@
 package com.example.synesthesia;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,8 +46,9 @@ public class SearchGameActivity extends AppCompatActivity {
         GiantBombApiService apiService = GiantBombApiClient.getRetrofitInstance().create(GiantBombApiService.class);
         apiService.searchGames("d9d7b71c1e1dc8970f331f1de97007a295bd8282", "json", query, "game").enqueue(new Callback<GiantBombResponse>() {
             @Override
-            public void onResponse(Call<GiantBombResponse> call, Response<GiantBombResponse> response) {
+            public void onResponse(@NonNull Call<GiantBombResponse> call, @NonNull Response<GiantBombResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    Log.i("API Response", String.valueOf(response));
                     List<GiantBombGame> games = response.body().getGames();
                     adapter = new GamesAdapter(games, SearchGameActivity.this);
                     recyclerView.setAdapter(adapter);

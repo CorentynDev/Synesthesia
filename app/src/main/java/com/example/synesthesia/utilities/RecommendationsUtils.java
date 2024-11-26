@@ -128,8 +128,9 @@ public class RecommendationsUtils {
             userNote.setVisibility(View.GONE);
         }
 
-        // Configuration du lien vers la description du film
-        if ("movie".equals(recommendation.getType())) {
+        // Configuration du lien vers la description du film ou jeu
+        String recommendationType = recommendation.getType();
+        if ("movie".equals(recommendationType)) {
             recommendationLink.setVisibility(View.VISIBLE);
             recommendationLink.setOnClickListener(v -> {
                 String baseUrl = "https://www.themoviedb.org/movie/";
@@ -143,6 +144,15 @@ public class RecommendationsUtils {
                     Toast.makeText(context, "Movie ID not found", Toast.LENGTH_SHORT).show();
                 }
             });
+        } else if ("game".equals(recommendationType)) { // Ajouter un conditionnel pour le type "game"
+            recommendationLink.setVisibility(View.VISIBLE);
+            recommendationLink.setOnClickListener(v -> {
+                // Exemple d'URL pour un jeu
+                String gameUrl = "https://www.giantbomb.com/" + recommendation.getTitle().replace(" ", "-").toLowerCase() + "/3030-85417/";
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gameUrl));
+                context.startActivity(browserIntent);
+            });
         } else {
             recommendationLink.setVisibility(View.GONE);
         }
@@ -154,18 +164,14 @@ public class RecommendationsUtils {
 
         commentButton.setOnClickListener(v -> commentUtils.showCommentModal(context, recommendationId, commentCounter));
 
-        String recommendationType = recommendation.getType();
         if ("book".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.book);
         } else if ("music".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.musical_note);
             playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
-
-            // Récupérer la prévisualisation via l'API Deezer pour l'ID de l'article de la recommandation
             String articleId = recommendation.getArticleId();
             fetchPreviewFromDeezer(context, playPauseButton, articleId);
-
-    } else if ("artist".equals(recommendationType)) {
+        } else if ("artist".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.artist);
         } else if ("album".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.music_album);
