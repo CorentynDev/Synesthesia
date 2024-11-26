@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.net.Uri;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -116,7 +118,34 @@ public class RecommendationsUtils {
         setupLikeAndMarkButtons(cardView, recommendation, recommendationId);
 
         TextView userNote = cardView.findViewById(R.id.userRating);
-        userNote.setText(recommendation.getUserNote());
+        TextView recommendationLink = cardView.findViewById(R.id.recommendationLink);
+
+        // Gestion dynamique de l'affichage du commentaire utilisateur
+        if (recommendation.getUserNote() != null && !recommendation.getUserNote().isEmpty()) {
+            userNote.setText(recommendation.getUserNote());
+            userNote.setVisibility(View.VISIBLE);
+        } else {
+            userNote.setVisibility(View.GONE);
+        }
+
+        // Configuration du lien vers la description du film
+        if ("movie".equals(recommendation.getType())) {
+            recommendationLink.setVisibility(View.VISIBLE);
+            recommendationLink.setOnClickListener(v -> {
+                String baseUrl = "https://www.themoviedb.org/movie/";
+                String movieId = recommendation.getArticleId();
+                if (movieId != null && !movieId.isEmpty()) {
+                    String movieUrl = baseUrl + movieId;
+
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(movieUrl));
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "Movie ID not found", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            recommendationLink.setVisibility(View.GONE);
+        }
 
         TextView commentCounter = cardView.findViewById(R.id.commentCounter);
         ImageView commentButton = cardView.findViewById(R.id.commentButton);

@@ -12,9 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.api.TmdbApiClient;
+import com.example.synesthesia.api.TmdbApiService;
+import com.example.synesthesia.models.CreditsResponse;
 import com.example.synesthesia.models.TmdbMovie;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import retrofit2.Call;
 
 public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewHolder> {
 
@@ -69,8 +78,14 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
 
         public void bind(TmdbMovie movie) {
             movieTitleTextView.setText(movie.getTitle() != null ? movie.getTitle() : "Titre inconnu");
-            movieOverviewTextView.setText(movie.getOverview() != null ? movie.getOverview() : "Description indisponible");
+            // Affichage du réalisateur
+            fetchDirector(movie.getId(), movieOverviewTextView);
 
+            // Affichage de la date formatée
+            TextView movieDateTextView = itemView.findViewById(R.id.bookDate);
+            movieDateTextView.setText(movie.getReleaseDate() != null ? formatDate(movie.getReleaseDate()) : "Date inconnue");
+
+            // Affichage de l'image
             if (movie.getPosterPath() != null) {
                 String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
                 Glide.with(moviePosterImageView.getContext())
@@ -82,5 +97,53 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
                 moviePosterImageView.setImageResource(R.drawable.placeholder_image);
             }
         }
+    }
+
+    public static String formatDate(String originalDate) {
+        SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        SimpleDateFormat outputFormat = new SimpleDateFormat("d MMMM yyyy", Locale.FRENCH);
+
+        try {
+            Date date = inputFormat.parse(originalDate);
+
+            assert date != null;
+            return outputFormat.format(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return originalDate;
+        }
+    }
+
+    private void fetchDirector(String movieId, TextView directorTextView) {
+        TmdbApiService apiService = TmdbApiClient.getRetrofitInstance().create(TmdbApiService.class);
+        String apiKey = "f07ebbaf992b26f432b9ba90fa71ea8d";
+
+        apiService.getMovieCredits(movieId, apiKey, "fr-FR").enqueue(new retrofit2.Callback<CreditsResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<CreditsResponse> call, @NonNull retrofit2.Response<CreditsResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<CreditsResponse.Crew> crewList = response.body().getCrew();
+                    String directorName = "Réalisateur inconnu";
+
+                    for (CreditsResponse.Crew crew : crewList) {
+                        if ("Director".equals(crew.getJob())) {
+                            directorName = crew.getName();
+                            break;
+                        }
+                    }
+
+                    String finalDirectorName = directorName;
+                    directorTextView.post(() -> directorTextView.setText("Réalisé par : " + finalDirectorName));
+                } else {
+                    directorTextView.post(() -> directorTextView.setText("Réalisateur inconnu"));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<CreditsResponse> call, @NonNull Throwable t) {
+                directorTextView.post(() -> directorTextView.setText("Erreur lors du chargement"));
+            }
+        });
     }
 }

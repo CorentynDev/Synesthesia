@@ -3,11 +3,12 @@ package com.example.synesthesia.models;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
-public class TmdbMovieResponse {
+public class VideoResponse {
     @SerializedName("results")
-    private List<TmdbMovie> movies;
+    private List<Video> results;
 
-    public List<TmdbMovie> getMovies() {
-        return movies;
+    public List<Video> getResults() {
+        return results;
     }
 }
+

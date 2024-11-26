@@ -3,8 +3,8 @@ package com.example.synesthesia;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,9 +42,9 @@ public class SearchMovieActivity extends AppCompatActivity {
 
     private void performSearch(String query) {
         TmdbApiService apiService = TmdbApiClient.getRetrofitInstance().create(TmdbApiService.class);
-        apiService.searchMovies("f07ebbaf992b26f432b9ba90fa71ea8d", query).enqueue(new Callback<TmdbMovieResponse>() {
+        apiService.searchMovies("f07ebbaf992b26f432b9ba90fa71ea8d", query, "fr-FR").enqueue(new Callback<TmdbMovieResponse>() {
             @Override
-            public void onResponse(Call<TmdbMovieResponse> call, Response<TmdbMovieResponse> response) {
+            public void onResponse(@NonNull Call<TmdbMovieResponse> call, @NonNull Response<TmdbMovieResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<TmdbMovie> movies = response.body().getMovies();
                     adapter = new MoviesAdapter(movies, SearchMovieActivity.this);
@@ -53,7 +53,7 @@ public class SearchMovieActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<TmdbMovieResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<TmdbMovieResponse> call, @NonNull Throwable t) {
                 // Gérer l'erreur
             }
         });
