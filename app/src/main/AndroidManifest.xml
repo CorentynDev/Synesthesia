@@ -57,6 +57,7 @@
 
         <activity android:name=".SearchUserActivity" />
 
+        <activity android:name=".UserInfoActivity" />
 
     </application>
 

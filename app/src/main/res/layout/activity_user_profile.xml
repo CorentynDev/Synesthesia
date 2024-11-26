@@ -6,14 +6,25 @@
     android:padding="16dp">
 
 
-    <!-- Header Layout -->
+    <Button
+        android:id="@+id/logoutButton"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="16dp"
+        android:layout_marginEnd="349dp"
+        android:background="@drawable/deconection"
+        android:padding="12dp"
+        android:textColor="@color/white"
+        android:textStyle="bold" />
+
     <LinearLayout
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp">
 
         <!-- User Profile Image -->
         <ImageView
@@ -24,74 +35,18 @@
             android:src="@drawable/placeholder_image"
             android:clickable="true"
             android:focusable="true"
-            android:scaleType="centerCrop"/>
-
-        <!-- User Info Container -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_vertical">
-
-            <!-- User Pseudo -->
-            <TextView
-                android:id="@+id/userPseudoTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:textColor="@color/white"
-                android:text="Username"
-                android:clickable="true"
-                android:focusable="true" />
-
-            <!-- User Email -->
-            <TextView
-                android:id="@+id/userEmailTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:text="user@example.com"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_marginTop="4dp" />
-
-            <!-- User Password -->
-            <TextView
-                android:id="@+id/userPasswordTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:text="Changer de mot de passe"
-                android:clickable="true"
-                android:focusable="true"
-                android:layout_marginTop="4dp" />
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/followButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Suivre"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            android:background="@color/gray_medium"
-            android:textColor="@color/white" />
-
-        <Button
-            android:id="@+id/logoutButton"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_below="@id/linearLayoutUserRecommendations"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="16dp"
-            android:background="@drawable/deconection"
-            android:padding="12dp"
-            android:textColor="@color/white"
-            android:textStyle="bold" />
-
+            android:scaleType="centerCrop" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/followButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Suivre"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        android:background="@color/gray_medium"
+        android:textColor="@color/white" />
 
     <!-- ScrollView for Recommendations -->
     <ScrollView
@@ -123,6 +78,4 @@
         android:layout_marginStart="-20dp"
         android:layout_marginEnd="-20dp"
         android:layout_marginBottom="-20dp" />
-
-
 </RelativeLayout>

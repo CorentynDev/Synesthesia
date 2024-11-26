@@ -6,10 +6,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +29,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.HashMap;
+
+import com.example.synesthesia.R;
+
 
 public class UserProfileActivity extends AppCompatActivity {
 
@@ -46,9 +53,9 @@ public class UserProfileActivity extends AppCompatActivity {
         FooterUtils.setupFooter(this, R.id.profileButton);
 
         userProfileImageView = findViewById(R.id.userProfileImageView);
-        userPseudoTextView = findViewById(R.id.userPseudoTextView);
-        userEmailTextView = findViewById(R.id.userEmailTextView);
-        TextView userPasswordTextView = findViewById(R.id.userPasswordTextView);
+        //userPseudoTextView = findViewById(R.id.userPseudoTextView);
+        //userEmailTextView = findViewById(R.id.userEmailTextView);
+        //TextView userPasswordTextView = findViewById(R.id.userPasswordTextView);
         LinearLayout linearLayoutUserRecommendations = findViewById(R.id.linearLayoutUserRecommendations);
         followButton = findViewById(R.id.followButton);
 
@@ -72,7 +79,7 @@ public class UserProfileActivity extends AppCompatActivity {
         if (!isCurrentUser) {
             Log.d("UserProfileActivity", "Affichage d'un autre profil.");
             userEmailTextView.setVisibility(View.GONE);
-            userPasswordTextView.setVisibility(View.GONE);
+            //userPasswordTextView.setVisibility(View.GONE);
             findViewById(R.id.logoutButton).setVisibility(View.GONE);
             followButton.setVisibility(View.VISIBLE); // Afficher le bouton Suivre
             final String userIdToFollow = targetUserId; // Créer une variable finale
@@ -98,15 +105,36 @@ public class UserProfileActivity extends AppCompatActivity {
 
         } else {
             Log.d("UserProfileActivity", "Affichage de mon propre profil.");
-            userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));
-            userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
-            userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
-            userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
+            //userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));
+            //userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
+            //userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
+            //userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
             Button logoutButton = findViewById(R.id.logoutButton);
             logoutButton.setOnClickListener(v -> logoutUser());
             followButton.setVisibility(View.GONE);
         }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.user_info_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.paramètre) { // ID de l'élément du menu
+            Intent intent = new Intent(this, UserInfoActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
     private void loadUserRecommendations(String userId, LinearLayout linearLayoutUserRecommendations) {
         db.collection("recommendations")
@@ -146,7 +174,7 @@ public class UserProfileActivity extends AppCompatActivity {
                         String pseudo = documentSnapshot.getString("username");
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
 
-                        userPseudoTextView.setText(pseudo);
+                        //userPseudoTextView.setText(pseudo);
 
                         // Charger l'image de profil
                         UserUtils.loadImageFromUrl(this, profileImageUrl, userProfileImageView);
@@ -154,7 +182,7 @@ public class UserProfileActivity extends AppCompatActivity {
                         // Si c'est l'utilisateur actuel, charge aussi son email
                         if (isCurrentUser) {
                             String email = documentSnapshot.getString("email");
-                            userEmailTextView.setText(email);
+                            //userEmailTextView.setText(email);
                         }
                     }
                 })
