@@ -130,7 +130,24 @@ public class RecommendationsUtils {
 
         // Configuration du lien vers la description du film ou jeu
         String recommendationType = recommendation.getType();
-        if ("movie".equals(recommendationType)) {
+        // Configuration du lien vers la description du livre
+        if ("book".equals(recommendationType)) {
+            recommendationLink.setVisibility(View.VISIBLE);
+            recommendationLink.setOnClickListener(v -> {
+                // URL base pour les livres (exemple : utiliser Google Books ou un autre service)
+                String baseUrl = "https://books.google.com/";
+                String bookId = recommendation.getArticleId();
+                if (bookId != null && !bookId.isEmpty()) {
+                    String bookUrl = baseUrl + "books?id=" + bookId;
+
+                    // Ouvrir le lien dans le navigateur
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(bookUrl));
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "ID du livre introuvable", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if ("movie".equals(recommendationType)) {
             recommendationLink.setVisibility(View.VISIBLE);
             recommendationLink.setOnClickListener(v -> {
                 String baseUrl = "https://www.themoviedb.org/movie/";
@@ -141,13 +158,12 @@ public class RecommendationsUtils {
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(movieUrl));
                     context.startActivity(browserIntent);
                 } else {
-                    Toast.makeText(context, "Movie ID not found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "ID du film introuvable", Toast.LENGTH_SHORT).show();
                 }
             });
-        } else if ("game".equals(recommendationType)) { // Ajouter un conditionnel pour le type "game"
+        } else if ("game".equals(recommendationType)) {
             recommendationLink.setVisibility(View.VISIBLE);
             recommendationLink.setOnClickListener(v -> {
-                // Exemple d'URL pour un jeu
                 String gameUrl = "https://www.giantbomb.com/" + recommendation.getTitle().replace(" ", "-").toLowerCase() + "/3030-85417/";
 
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gameUrl));
@@ -175,6 +191,10 @@ public class RecommendationsUtils {
             typeIconImageView.setImageResource(R.drawable.artist);
         } else if ("album".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.music_album);
+        } else if ("film".equals(recommendationType)) {
+            typeIconImageView.setImageResource(R.drawable.film);
+        } else if ("game".equals(recommendationType)) {
+            typeIconImageView.setImageResource(R.drawable.console);
         } else {
             typeIconImageView.setVisibility(View.GONE);
         }

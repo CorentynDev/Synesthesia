@@ -2,6 +2,7 @@ package com.example.synesthesia;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -106,6 +107,8 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 userNote,
                                 book.getVolumeInfo().getId()
                         );
+
+                        Log.i("BOOK ID", book.getVolumeInfo().getId());
 
                         db.collection("recommendations")
                                 .add(recommendation)
