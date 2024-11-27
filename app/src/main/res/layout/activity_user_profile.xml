@@ -5,16 +5,19 @@
     android:background="@color/black"
     android:padding="16dp">
 
-
     <Button
         android:id="@+id/logoutButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:layout_marginEnd="349dp"
+        android:layout_margin="0dp"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp"
         android:background="@drawable/deconection"
-        android:padding="12dp"
+        android:padding="0dp"
         android:textColor="@color/white"
         android:textStyle="bold" />
 
@@ -26,7 +29,7 @@
         android:gravity="center_vertical"
         android:layout_marginTop="16dp">
 
-        <!-- User Profile Image -->
+        <!-- Image de profil -->
         <ImageView
             android:id="@+id/userProfileImageView"
             android:layout_width="100dp"
@@ -36,19 +39,111 @@
             android:clickable="true"
             android:focusable="true"
             android:scaleType="centerCrop" />
+
+        <!-- Section des compteurs et bouton de suivi -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Section des compteurs -->
+            <LinearLayout
+                android:id="@+id/headerStats"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <!-- Nombre de publications -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginEnd="16dp">
+
+                    <TextView
+                        android:id="@+id/publicationCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Publications"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Nombre de followers -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginEnd="16dp">
+
+                    <TextView
+                        android:id="@+id/followerCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Followers"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Nombre de following -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/followingCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Following"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Bouton de suivi -->
+            <Button
+                android:id="@+id/followButton"
+                android:layout_width="match_parent"
+                android:layout_height="26dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
+                android:background="@color/gray_medium"
+
+                android:text="Suivre"
+                android:textColor="@color/white" />
+        </LinearLayout>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/followButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Suivre"
-        android:layout_marginTop="8dp"
-        android:visibility="gone"
-        android:background="@color/gray_medium"
-        android:textColor="@color/white" />
-
-    <!-- ScrollView for Recommendations -->
+    <!-- ScrollView pour les recommandations -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -56,7 +151,6 @@
         android:layout_above="@id/footer"
         android:layout_marginTop="16dp">
 
-        <!-- Recommendations LinearLayout -->
         <LinearLayout
             android:id="@+id/linearLayoutUserRecommendations"
             android:layout_width="match_parent"

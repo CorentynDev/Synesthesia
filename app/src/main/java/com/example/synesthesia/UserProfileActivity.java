@@ -38,24 +38,27 @@ public class UserProfileActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 1;
 
     private ImageView userProfileImageView;
-    private TextView userPseudoTextView;
-    private TextView userEmailTextView;
     private UserUtils userUtils;
     private RecommendationsUtils recommendationsUtils;
     private Button followButton;
+    private TextView publicationCount;
+    private TextView followerCount;
+    private TextView followingCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
+        // Initialisation des TextViews
+        publicationCount = findViewById(R.id.publicationCount);
+        followerCount = findViewById(R.id.followerCount);
+        followingCount = findViewById(R.id.followingCount);
+
         recommendationsUtils = new RecommendationsUtils(db);
         FooterUtils.setupFooter(this, R.id.profileButton);
 
         userProfileImageView = findViewById(R.id.userProfileImageView);
-        //userPseudoTextView = findViewById(R.id.userPseudoTextView);
-        //userEmailTextView = findViewById(R.id.userEmailTextView);
-        //TextView userPasswordTextView = findViewById(R.id.userPasswordTextView);
         LinearLayout linearLayoutUserRecommendations = findViewById(R.id.linearLayoutUserRecommendations);
         followButton = findViewById(R.id.followButton);
 
@@ -73,42 +76,40 @@ public class UserProfileActivity extends AppCompatActivity {
 
         loadUserRecommendations(targetUserId, linearLayoutUserRecommendations);
 
+        // Charger les données utilisateur
+        loadUserData(targetUserId, isCurrentUser);
+        loadUserRecommendations(targetUserId, linearLayoutUserRecommendations);
+
+        // Charger les statistiques
+        loadUserStats(targetUserId);
+
         Log.d("UserProfileActivity", "targetUserId: " + targetUserId);
         Log.d("UserProfileActivity", "currentUserId: " + userUtils.getCurrentUserId());
 
         if (!isCurrentUser) {
             Log.d("UserProfileActivity", "Affichage d'un autre profil.");
-            userEmailTextView.setVisibility(View.GONE);
-            //userPasswordTextView.setVisibility(View.GONE);
             findViewById(R.id.logoutButton).setVisibility(View.GONE);
             followButton.setVisibility(View.VISIBLE); // Afficher le bouton Suivre
             final String userIdToFollow = targetUserId; // Créer une variable finale
-            followButton.setOnClickListener(v -> followUser(userIdToFollow));
+            followButton.setOnClickListener(v -> toggleFollowUser(userIdToFollow));
 
+            // Vérifie si l'utilisateur est déjà suivi
             db.collection("followers")
                     .document(userUtils.getCurrentUserId())
                     .collection("following")
-                    .document(targetUserId)
+                    .document(userIdToFollow)
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            Log.d("UserProfileActivity", "L'utilisateur est déjà suivi.");
                             followButton.setText("Suivi");
-                            followButton.setEnabled(false); // Désactiver le bouton
                         } else {
-                            Log.d("UserProfileActivity", "L'utilisateur n'est pas suivi.");
-                            followButton.setVisibility(View.VISIBLE); // Afficher le bouton pour suivre
+                            followButton.setText("Suivre");
                         }
                     })
-
                     .addOnFailureListener(e -> Log.e("CheckFollow", "Erreur lors de la vérification du suivi", e));
 
         } else {
             Log.d("UserProfileActivity", "Affichage de mon propre profil.");
-            //userPseudoTextView.setOnClickListener(v -> userUtils.showEditPseudoDialog(this, userPseudoTextView));
-            //userEmailTextView.setOnClickListener(v -> userUtils.showEditEmailDialog(this, userEmailTextView));
-            //userProfileImageView.setOnClickListener(v -> showEditProfileImageDialog());
-            //userPasswordTextView.setOnClickListener(v -> userUtils.showChangePasswordDialog(this));
             Button logoutButton = findViewById(R.id.logoutButton);
             logoutButton.setOnClickListener(v -> logoutUser());
             followButton.setVisibility(View.GONE);
@@ -149,12 +150,6 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> Log.e("LoadRecommendations", "Erreur lors du chargement des recommandations", e));
-    }
-
-    private void showEditProfileImageDialog() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
     }
 
     @Override
@@ -200,33 +195,113 @@ public class UserProfileActivity extends AppCompatActivity {
         // Ferme l'activité actuelle
         finish();
     }
-    private void followUser(String userIdToFollow) {
-        // Référence à Firestore
+    private void toggleFollowUser(String userIdToFollow) {
         String currentUserId = userUtils.getCurrentUserId();
 
-        // Ajouter l'utilisateur suivi dans la collection "following" de l'utilisateur actuel
+        // Vérifier si l'utilisateur est déjà suivi
         db.collection("followers")
-                .document(currentUserId) // ID de l'utilisateur actuel
-                .collection("following") // Collection des personnes suivies
-                .document(userIdToFollow) // ID de l'utilisateur à suivre
-                .set(new HashMap<>())// Ajout de l'objet vide ou des données supplémentaires si nécessaire
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("FollowUser", "Ajout à 'following' réussi pour l'utilisateur actuel.");
+                .document(currentUserId) // Document de l'utilisateur actuel
+                .collection("following") // Collection des suivis
+                .document(userIdToFollow) // ID de l'utilisateur à vérifier
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Utilisateur déjà suivi, désabonner
+                        unfollowUser(userIdToFollow);
+                    } else {
+                        // Utilisateur non suivi, suivre
+                        followUser(userIdToFollow);
+                    }
+                })
+                .addOnFailureListener(e -> Log.e("ToggleFollowUser", "Erreur lors de la vérification du suivi", e));
+    }
 
-                    // Ajouter l'utilisateur actuel dans la collection "followers" de l'utilisateur suivi
+    private void followUser(String userIdToFollow) {
+        String currentUserId = userUtils.getCurrentUserId();
+
+        db.collection("followers")
+                .document(currentUserId)
+                .collection("following")
+                .document(userIdToFollow)
+                .set(new HashMap<>())
+                .addOnSuccessListener(aVoid -> {
                     db.collection("followers")
-                            .document(userIdToFollow) // ID de l'utilisateur suivi
-                            .collection("followers") // Collection des abonnés
-                            .document(currentUserId) // ID de l'utilisateur actuel
-                            .set(new HashMap<>())// Ajout de l'objet vide
+                            .document(userIdToFollow)
+                            .collection("followers")
+                            .document(currentUserId)
+                            .set(new HashMap<>())
                             .addOnSuccessListener(aVoid2 -> {
-                                Log.d("FollowUser", "Ajout à 'followers' réussi pour l'utilisateur suivi.");
-                                followButton.setText("Suivi"); // Mettre à jour le texte du bouton
-                                followButton.setEnabled(false); // Désactiver le bouton
+                                Log.d("FollowUser", "Utilisateur suivi avec succès.");
+                                followButton.setText("Suivi");
+                                followButton.setEnabled(true);
                                 Toast.makeText(this, "Vous suivez maintenant cet utilisateur.", Toast.LENGTH_SHORT).show();
+                                // Mettre à jour les compteurs
+                                loadUserStats(userIdToFollow);
                             })
                             .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'followers'", e));
                 })
                 .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'following'", e));
     }
+
+    private void unfollowUser(String userIdToFollow) {
+        String currentUserId = userUtils.getCurrentUserId();
+
+        db.collection("followers")
+                .document(currentUserId)
+                .collection("following")
+                .document(userIdToFollow)
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    db.collection("followers")
+                            .document(userIdToFollow)
+                            .collection("followers")
+                            .document(currentUserId)
+                            .delete()
+                            .addOnSuccessListener(aVoid2 -> {
+                                Log.d("UnfollowUser", "Utilisateur désabonné avec succès.");
+                                followButton.setText("Suivre");
+                                followButton.setEnabled(true);
+                                Toast.makeText(this, "Vous ne suivez plus cet utilisateur.", Toast.LENGTH_SHORT).show();
+                                // Mettre à jour les compteurs
+                                loadUserStats(userIdToFollow);
+                            })
+                            .addOnFailureListener(e -> Log.e("UnfollowUser", "Erreur lors de la suppression dans 'followers'", e));
+                })
+                .addOnFailureListener(e -> Log.e("UnfollowUser", "Erreur lors de la suppression dans 'following'", e));
+    }
+
+    private void loadUserStats(String userId) {
+        // Charger le nombre de publications
+        db.collection("recommendations")
+                .whereEqualTo("userId", userId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    int publicationCountValue = querySnapshot.size();
+                    publicationCount.setText(String.valueOf(publicationCountValue));
+                })
+                .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des publications", e));
+
+        // Charger le nombre de followers
+        db.collection("followers")
+                .document(userId)
+                .collection("followers")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    int followerCountValue = querySnapshot.size();
+                    followerCount.setText(String.valueOf(followerCountValue));
+                })
+                .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des followers", e));
+
+        // Charger le nombre de following
+        db.collection("followers")
+                .document(userId)
+                .collection("following")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    int followingCountValue = querySnapshot.size();
+                    followingCount.setText(String.valueOf(followingCountValue));
+                })
+                .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des following", e));
+    }
+
 }
