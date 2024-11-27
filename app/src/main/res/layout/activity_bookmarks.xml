@@ -7,27 +7,16 @@
     android:layout_height="match_parent"
     tools:context=".BookmarksActivity">
 
-    <!-- Barre de titre ou d'action pour indiquer la page de favoris -->
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@color/black"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:title="Bookmarks" />
-
     <!-- ScrollView et LinearLayout pour afficher la liste des éléments favoris -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="85dp"
         android:background="@color/black"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar">
+        app:layout_constraintRight_toRightOf="parent">
 
         <LinearLayout
             android:id="@+id/linearLayoutBookmarks"
