@@ -5,9 +5,12 @@ import android.os.Parcelable;
 import java.util.List;
 
 public class Book implements Parcelable {
+    private final String id; // ID au niveau supérieur
     private final VolumeInfo volumeInfo;
 
+    // Constructeur pour Parcelable
     protected Book(Parcel in) {
+        id = in.readString(); // Lire l'ID au niveau supérieur
         volumeInfo = in.readParcelable(VolumeInfo.class.getClassLoader());
     }
 
@@ -29,24 +32,30 @@ public class Book implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel parcel, int i) {
-        parcel.writeParcelable(volumeInfo, i);
+    public void writeToParcel(Parcel parcel, int flags) {
+        parcel.writeString(id); // Écrire l'ID
+        parcel.writeParcelable(volumeInfo, flags);
     }
 
+    // Getter pour l'ID
+    public String getId() {
+        return id;
+    }
+
+    // Getter pour VolumeInfo
     public VolumeInfo getVolumeInfo() {
         return volumeInfo;
     }
 
     public static class VolumeInfo implements Parcelable {
-        private final String id;
         private final String title;
         private final List<String> authors;
         private final String publishedDate;
         private final ImageLinks imageLinks;
         private final String description;
 
+        // Constructeur pour Parcelable
         protected VolumeInfo(Parcel in) {
-            id = in.readString();
             title = in.readString();
             authors = in.createStringArrayList();
             publishedDate = in.readString();
@@ -72,19 +81,15 @@ public class Book implements Parcelable {
         }
 
         @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            parcel.writeString(id);
+        public void writeToParcel(Parcel parcel, int flags) {
             parcel.writeString(title);
             parcel.writeStringList(authors);
             parcel.writeString(publishedDate);
-            parcel.writeParcelable(imageLinks, i);
+            parcel.writeParcelable(imageLinks, flags);
             parcel.writeString(description);
         }
 
-        public String getId() {
-            return id;
-        }
-
+        // Getters pour chaque champ
         public String getTitle() {
             return title;
         }
@@ -104,12 +109,12 @@ public class Book implements Parcelable {
         public String getDescription() {
             return description;
         }
-
     }
 
     public static class ImageLinks implements Parcelable {
         private final String thumbnail;
 
+        // Constructeur pour Parcelable
         protected ImageLinks(Parcel in) {
             thumbnail = in.readString();
         }
@@ -127,18 +132,18 @@ public class Book implements Parcelable {
         };
 
         @Override
+        public void writeToParcel(Parcel parcel, int flags) {
+            parcel.writeString(thumbnail);
+        }
+
+        @Override
         public int describeContents() {
             return 0;
         }
 
-        @Override
-        public void writeToParcel(Parcel parcel, int i) {
-            parcel.writeString(thumbnail);
-        }
-
+        // Getter pour Thumbnail
         public String getThumbnail() {
             return thumbnail;
         }
-
     }
 }

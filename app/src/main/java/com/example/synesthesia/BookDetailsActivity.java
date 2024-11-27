@@ -105,10 +105,10 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 recommendationTimestamp,
                                 type,
                                 userNote,
-                                book.getVolumeInfo().getId()
+                                book.getId()
                         );
 
-                        Log.i("BOOK ID", book.getVolumeInfo().getId());
+                        Log.i("BOOK ID", "Voici l'id : " + book.getId());
 
                         db.collection("recommendations")
                                 .add(recommendation)
