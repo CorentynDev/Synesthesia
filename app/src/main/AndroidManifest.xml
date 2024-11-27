@@ -109,6 +109,9 @@
             android:screenOrientation="portrait"
             tools:ignore="DiscouragedApi,LockedOrientationActivity" />
 
+        <activity android:name=".SearchUserActivity" />
+
+        <activity android:name=".UserInfoActivity" />
 
     </application>
 

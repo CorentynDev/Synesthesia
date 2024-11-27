@@ -56,7 +56,10 @@ public class UserUtils {
      * @throws NullPointerException If no user is currently connected.
      */
     public String getCurrentUserId() {
-        return Objects.requireNonNull(firebaseAuth.getCurrentUser()).getUid();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            return FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
+        return null;
     }
 
     /**
