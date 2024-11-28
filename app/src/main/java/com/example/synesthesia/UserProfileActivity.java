@@ -5,6 +5,7 @@ import static com.example.synesthesia.utilities.UserUtils.db;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Layout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -44,6 +45,8 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView publicationCount;
     private TextView followerCount;
     private TextView followingCount;
+    private LinearLayout followerLayout;
+    private LinearLayout followingLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,9 @@ public class UserProfileActivity extends AppCompatActivity {
         publicationCount = findViewById(R.id.publicationCount);
         followerCount = findViewById(R.id.followerCount);
         followingCount = findViewById(R.id.followingCount);
+
+        followerLayout = findViewById(R.id.followerLayout);
+        followingLayout = findViewById(R.id.followingLayout);
 
         recommendationsUtils = new RecommendationsUtils(db);
         FooterUtils.setupFooter(this, R.id.profileButton);
@@ -69,6 +75,9 @@ public class UserProfileActivity extends AppCompatActivity {
         if (targetUserId == null || targetUserId.isEmpty()) {
             targetUserId = userUtils.getCurrentUserId();
         }
+        String finalTargetUserId = targetUserId;
+        followerLayout.setOnClickListener(v -> openFollowerList(finalTargetUserId));
+        followingLayout.setOnClickListener(v -> openFollowingList(finalTargetUserId));
 
         boolean isCurrentUser = targetUserId.equals(userUtils.getCurrentUserId());
 
@@ -304,4 +313,17 @@ public class UserProfileActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des following", e));
     }
 
+    private void openFollowerList(String userId) {
+        Intent intent = new Intent(this, UserListActivity.class);
+        intent.putExtra("userId", userId);
+        intent.putExtra("type", "followers"); // Identifier qu'on veut afficher les followers
+        startActivity(intent);
+    }
+
+    private void openFollowingList(String userId) {
+        Intent intent = new Intent(this, UserListActivity.class);
+        intent.putExtra("userId", userId);
+        intent.putExtra("type", "following"); // Identifier qu'on veut afficher les personnes suivies
+        startActivity(intent);
+    }
 }
