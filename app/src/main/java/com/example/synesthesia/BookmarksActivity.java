@@ -102,4 +102,23 @@ public class BookmarksActivity extends AppCompatActivity {
         linearLayoutBookmarks.setVisibility(View.GONE);
         emptyView.setVisibility(View.VISIBLE);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Arrêter la musique si elle est en cours de lecture
+        if (RecommendationsUtils.globalMediaPlayer != null && RecommendationsUtils.globalMediaPlayer.isPlaying()) {
+            RecommendationsUtils.globalMediaPlayer.stop();
+            RecommendationsUtils.globalMediaPlayer.release();  // Libérer les ressources du MediaPlayer
+            RecommendationsUtils.globalMediaPlayer = null;  // Réinitialiser le MediaPlayer
+        }
+
+        // Réinitialiser le bouton de lecture/pause de la musique en cours
+        if (RecommendationsUtils.currentlyPlayingButton != null) {
+            RecommendationsUtils.currentlyPlayingButton.setImageResource(R.drawable.bouton_de_lecture);  // Icône de lecture
+            RecommendationsUtils.currentlyPlayingButton = null;
+        }
+        RecommendationsUtils.currentlyPlayingUrl = null;
+    }
 }

@@ -301,9 +301,9 @@ public class RecommendationsUtils {
 
 
     // Variables globales nécessaires
-    private static MediaPlayer globalMediaPlayer; // MediaPlayer partagé
-    private static ImageView currentlyPlayingButton; // Bouton actuellement actif
-    private static String currentlyPlayingUrl; // URL en cours de lecture
+    public static MediaPlayer globalMediaPlayer; // MediaPlayer partagé
+    public static ImageView currentlyPlayingButton; // Bouton actuellement actif
+    public static String currentlyPlayingUrl; // URL en cours de lecture
 
     /**
      * Set up the play/pause button to play the preview from Deezer.
