@@ -113,10 +113,20 @@ public class Book implements Parcelable {
 
     public static class ImageLinks implements Parcelable {
         private final String thumbnail;
+        private final String smallThumbnail;
+        private final String small;
+        private final String medium;
+        private final String large;
+        private final String extraLarge;
 
         // Constructeur pour Parcelable
         protected ImageLinks(Parcel in) {
             thumbnail = in.readString();
+            smallThumbnail = in.readString();
+            small = in.readString();
+            medium = in.readString();
+            large = in.readString();
+            extraLarge = in.readString();
         }
 
         public static final Creator<ImageLinks> CREATOR = new Creator<ImageLinks>() {
@@ -134,6 +144,11 @@ public class Book implements Parcelable {
         @Override
         public void writeToParcel(Parcel parcel, int flags) {
             parcel.writeString(thumbnail);
+            parcel.writeString(smallThumbnail);
+            parcel.writeString(small);
+            parcel.writeString(medium);
+            parcel.writeString(large);
+            parcel.writeString(extraLarge);
         }
 
         @Override
@@ -141,9 +156,51 @@ public class Book implements Parcelable {
             return 0;
         }
 
-        // Getter pour Thumbnail
+        // Getters pour chaque champ
         public String getThumbnail() {
             return thumbnail;
         }
+
+        public String getSmallThumbnail() {
+            return smallThumbnail;
+        }
+
+        public String getSmall() {
+            return small;
+        }
+
+        public String getMedium() {
+            return medium;
+        }
+
+        public String getLarge() {
+            return large;
+        }
+
+        public String getExtraLarge() {
+            return extraLarge;
+        }
+    }
+
+    public String getBestImageUrl() {
+        ImageLinks imageLinks = getVolumeInfo().getImageLinks();
+
+        // Essayez de récupérer l'image extra large
+        if (imageLinks.getExtraLarge() != null && !imageLinks.getExtraLarge().isEmpty()) {
+            return imageLinks.getExtraLarge();
+        }
+
+        // Essayez de récupérer l'image large
+        if (imageLinks.getLarge() != null && !imageLinks.getLarge().isEmpty()) {
+            return imageLinks.getLarge();
+        }
+
+        // Essayez de récupérer l'image medium
+        if (imageLinks.getMedium() != null && !imageLinks.getMedium().isEmpty()) {
+            return imageLinks.getMedium();
+        }
+
+        // Si aucune image plus grande n'est disponible, renvoyez la version thumbnail
+        return imageLinks.getThumbnail();
     }
 }
