@@ -71,7 +71,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             userPseudo = itemView.findViewById(R.id.userPseudo);
-            userImage = itemView.findViewById(R.id.musicImageView);
+            userImage = itemView.findViewById(R.id.userImageView);
         }
     }
 }

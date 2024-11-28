@@ -59,6 +59,8 @@
 
         <activity android:name=".UserInfoActivity" />
 
+        <activity android:name=".UserListActivity" />
+
     </application>
 
 </manifest>

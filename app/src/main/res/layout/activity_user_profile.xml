@@ -81,11 +81,14 @@
 
                 <!-- Nombre de followers -->
                 <LinearLayout
+                    android:id="@+id/followerLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:layout_marginEnd="16dp">
+                    android:layout_marginEnd="16dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <TextView
                         android:id="@+id/followerCount"
@@ -106,10 +109,13 @@
 
                 <!-- Nombre de following -->
                 <LinearLayout
+                    android:id="@+id/followingLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true">
 
                     <TextView
                         android:id="@+id/followingCount"
