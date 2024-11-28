@@ -228,6 +228,24 @@ public class RecommendationsUtils {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(gameUrl));
                 context.startActivity(browserIntent);
             });
+        } else if ("music".equals(recommendationType)) {
+            // Ajouter le bouton "Voir plus" pour les musiques
+            recommendationLink.setVisibility(View.VISIBLE);
+            recommendationLink.setText("Voir plus");
+
+            recommendationLink.setOnClickListener(v -> {
+                String articleId = recommendation.getArticleId();
+                if (articleId != null && !articleId.isEmpty()) {
+                    // Utilisation de Deezer pour ouvrir l'album, l'artiste ou la chanson
+                    String deezerUrl = "https://www.deezer.com/fr/track/" + articleId;  // Assurez-vous que l'ID corresponde à Deezer
+
+                    // Ouvrir l'URL Deezer dans le navigateur
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deezerUrl));
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "ID de la musique introuvable", Toast.LENGTH_SHORT).show();
+                }
+            });
         } else {
             recommendationLink.setVisibility(View.GONE);
         }
