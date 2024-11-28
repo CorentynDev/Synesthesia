@@ -4,4 +4,8 @@
     <string name="recommendation_date">${recommendation.date}</string>
     <string name="recommendation_cover">Recommendation cover</string>
     <string name="music_thumbnail_desc">Music Thumbnail</string>
+    <string-array name="filter_options">
+        <item>Toutes</item>
+        <item>Suivis</item>
+    </string-array>
 </resources>

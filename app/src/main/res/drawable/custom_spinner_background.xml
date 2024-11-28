@@ -1,0 +1,11 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fond transparent sans flèche -->
+    <item android:drawable="@android:color/transparent"/>
+    <!-- Bordure arrondie -->
+    <item>
+        <shape>
+            <solid android:color="#333333"/> <!-- Fond sombre -->
+            <corners android:radius="10dp"/> <!-- Coins arrondis -->
+        </shape>
+    </item>
+</layer-list>
