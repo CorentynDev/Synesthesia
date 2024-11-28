@@ -24,6 +24,7 @@ import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
 import com.example.synesthesia.utilities.FooterUtils;
+import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -233,4 +234,13 @@ public class AlbumDetailsActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (tracksAdapter != null) {
+            tracksAdapter.resetPlayer(); // Arrêtez le lecteur audio
+        }
+    }
+
 }

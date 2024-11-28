@@ -167,4 +167,12 @@ public class SearchMusicActivity extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (musicAdapter != null) {
+            musicAdapter.resetPlayer(); // Arrêtez le lecteur audio
+        }
+    }
 }
