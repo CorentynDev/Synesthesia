@@ -8,7 +8,11 @@ import retrofit2.http.Query;
 
 public interface GoogleBooksApi {
     @GET("/books/v1/volumes")
-    Call<BooksResponse> searchBooks(@Query("q") String query, @Query("key") String apiKey);
-}
+    Call<BooksResponse> searchBooks(
+            @Query("q") String query,
+            @Query("key") String apiKey,
+            @Query("maxResults") int maxResults,
+            @Query("startIndex") int startIndex
+    );
 
-//TODO: Add the system to have more than 10 books in the list
+}

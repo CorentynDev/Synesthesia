@@ -20,7 +20,7 @@ import java.util.List;
 
 public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHolder> {
 
-    private final List<Book> books;
+    private List<Book> books;  // List des livres
     private final Context context;
 
     public BooksAdapter(List<Book> books, Context context) {
@@ -44,6 +44,13 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
     @Override
     public int getItemCount() {
         return books.size();
+    }
+
+    // Ajouter de nouveaux livres à la liste
+    public void addBooks(List<Book> newBooks) {
+        int startPosition = books.size();  // Position de départ des nouveaux livres
+        books.addAll(newBooks);  // Ajouter les livres à la liste
+        notifyItemRangeInserted(startPosition, newBooks.size());  // Notifier l'adaptateur du changement
     }
 
     class BookViewHolder extends RecyclerView.ViewHolder {
