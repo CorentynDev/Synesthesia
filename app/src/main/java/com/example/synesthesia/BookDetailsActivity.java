@@ -53,7 +53,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         bookDescription.setText(book.getVolumeInfo().getDescription() != null ? book.getVolumeInfo().getDescription() : "Pas de description");
 
         if (book.getVolumeInfo().getImageLinks() != null) {
-            Glide.with(this).load(book.getVolumeInfo().getImageLinks().getThumbnail()).into(bookImage);
+            Glide.with(this).load(book.getBestImageUrl()).into(bookImage);
         }
 
         db = FirebaseFirestore.getInstance();
