@@ -27,6 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,26 +57,84 @@ public class RecommendationsUtils {
      * @param recommendationList     LinearLayout in which recommendations cards will be added.
      * @param swipeRefreshLayout     SwipeRefreshLayout used to allow user to refresh the list.
      */
-    public void getRecommendationData(Context context, LinearLayout recommendationList, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+    public void getRecommendationData(Context context, LinearLayout recommendationList,
+                                      @NonNull SwipeRefreshLayout swipeRefreshLayout,
+                                      boolean filterFollowed) {
         Log.d("RecommendationsUtils", "Starting to fetch recommendations");
 
         swipeRefreshLayout.setRefreshing(true);
 
-        db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING)
-                .get().addOnSuccessListener(queryDocumentSnapshots -> {
-            Log.d("RecommendationsUtils", "Successfully fetched recommendations");
-            recommendationList.removeAllViews();
-
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                Recommendation recommendation = document.toObject(Recommendation.class);
-                addRecommendationCard(context, recommendationList, recommendation, document.getId());
-            }
-
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(context, "Utilisateur non connecté.", Toast.LENGTH_SHORT).show();
             swipeRefreshLayout.setRefreshing(false);
-        }).addOnFailureListener(e -> {
-            Log.e("FirestoreData", "Error when fetching documents: ", e);
-            swipeRefreshLayout.setRefreshing(false);
-        });
+            return;
+        }
+
+        String userId = currentUser.getUid();
+
+        if (filterFollowed) {
+            // Charger uniquement les recommandations des utilisateurs suivis
+            db.collection("followers")
+                    .document(userId)
+                    .collection("following")
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        List<String> followedUsers = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : querySnapshot) {
+                            followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
+                        }
+
+                        if (!followedUsers.isEmpty()) {
+                            // Maintenant récupérer les recommandations des utilisateurs suivis
+                            db.collection("recommendations")
+                                    .whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
+                                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                                    .get()
+                                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                                        populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                                        swipeRefreshLayout.setRefreshing(false);
+                                    });
+                        } else {
+                            Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
+                            swipeRefreshLayout.setRefreshing(false);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("RecommendationsUtils", "Error fetching following users.", e);
+                        swipeRefreshLayout.setRefreshing(false);
+                    });
+        } else {
+            // Charger toutes les recommandations sans filtre
+            db.collection("recommendations")
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .get()
+                    .addOnSuccessListener(queryDocumentSnapshots -> {
+                        populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                        swipeRefreshLayout.setRefreshing(false);
+                    });
+        }
+    }
+
+    /**
+     * Helper method to populate recommendations list.
+     */
+    private void populateRecommendations(Context context, LinearLayout recommendationList, QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+        Log.d("RecommendationsUtils", "Successfully fetched recommendations");
+        recommendationList.removeAllViews();
+
+        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+            Recommendation recommendation = document.toObject(Recommendation.class);
+            addRecommendationCard(context, recommendationList, recommendation, document.getId());
+        }
+
+        swipeRefreshLayout.setRefreshing(false);
     }
 
     /**
