@@ -245,7 +245,32 @@ public class RecommendationsUtils {
                     Toast.makeText(context, "ID de la musique introuvable", Toast.LENGTH_SHORT).show();
                 }
             });
-        } else {
+        } else if ("album".equals(recommendationType)) {
+            recommendationLink.setVisibility(View.VISIBLE);
+            recommendationLink.setOnClickListener(v -> {
+                String articleId = recommendation.getArticleId();
+                if (articleId != null && !articleId.isEmpty()) {
+                    String deezerUrl = "https://www.deezer.com/album/" + articleId;
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deezerUrl));
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "ID de l'album introuvable", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else if ("artist".equals(recommendationType)) {
+            recommendationLink.setVisibility(View.VISIBLE);
+            recommendationLink.setOnClickListener(v -> {
+                String articleId = recommendation.getArticleId();
+                if (articleId != null && !articleId.isEmpty()) {
+                    String deezerUrl = "https://www.deezer.com/artist/" + articleId;
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(deezerUrl));
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "ID de l'artiste introuvable", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        else {
             recommendationLink.setVisibility(View.GONE);
         }
 
