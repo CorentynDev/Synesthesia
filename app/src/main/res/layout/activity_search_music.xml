@@ -51,9 +51,7 @@
         android:id="@+id/searchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Valider"
-        android:backgroundTint="@color/gray_medium"
-        android:textColor="@color/white"/>
+        android:text="Valider"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/resultsRecyclerView"

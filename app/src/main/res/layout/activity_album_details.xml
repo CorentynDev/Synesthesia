@@ -15,9 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:text="Retour"
-        android:backgroundTint="@color/gray_medium"
-        android:textColor="@color/white"/>
+        android:text="Retour"/>
 
     <!-- Image de couverture de l'album -->
     <ImageView
@@ -70,7 +68,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Ajoutez une note ou un commentaire"
-        android:textColor="@color/white"/>
+        android:textColor="@color/white"
+        android:textColorHint="@color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -82,9 +81,7 @@
             android:id="@+id/recommendButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Recommander"
-            android:backgroundTint="@color/gray_medium"
-            android:textColor="@color/white"/>
+            android:text="Recommander"/>
 
     </LinearLayout>
 

@@ -21,7 +21,7 @@ public class UserInfoActivity extends AppCompatActivity {
 
     private EditText editPseudo, editEmail, editPassword;
     private ImageView userProfileImageView;
-    private Button savePseudoButton, saveEmailButton, savePasswordButton, changeProfileImageButton;
+    private Button savePseudoButton, saveEmailButton, savePasswordButton, changeProfileImageButton, backButton;
     private UserUtils userUtils;
 
     @Override
@@ -37,11 +37,14 @@ public class UserInfoActivity extends AppCompatActivity {
         saveEmailButton = findViewById(R.id.saveEmailButton);
         savePasswordButton = findViewById(R.id.savePasswordButton);
         changeProfileImageButton = findViewById(R.id.changeProfileImageButton);
+        backButton = findViewById(R.id.backButton);
 
         userUtils = new UserUtils();
 
         // Charger les données utilisateur actuelles
         loadUserInfo();
+
+        backButton.setOnClickListener(v -> finish());
 
         // Bouton pour sauvegarder le pseudo
         savePseudoButton.setOnClickListener(v -> savePseudo());

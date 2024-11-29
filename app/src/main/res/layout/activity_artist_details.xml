@@ -25,9 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:backgroundTint="@color/gray_medium"
-                android:text="Retour"
-                android:textColor="@color/white" />
+                android:text="Retour"/>
 
             <ImageView
                 android:id="@+id/artistImage"
@@ -64,9 +62,7 @@
                     android:id="@+id/recommendButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:backgroundTint="@color/gray_medium"
-                    android:text="Recommander"
-                    android:textColor="@color/white" />
+                    android:text="Recommander"/>
 
             </LinearLayout>
 

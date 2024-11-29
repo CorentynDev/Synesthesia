@@ -28,10 +28,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="Valider"
-        android:backgroundTint="@color/gray_medium"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchField"
-        android:textColor="@color/white"/>
+        app:layout_constraintTop_toBottomOf="@id/searchField"/>
 
     <!-- Liste des résultats de la recherche -->
 

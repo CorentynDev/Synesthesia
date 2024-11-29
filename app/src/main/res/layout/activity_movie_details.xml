@@ -10,6 +10,13 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <Button
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:text="Retour" />
+
         <ImageView
             android:id="@+id/moviePoster"
             android:layout_width="match_parent"
@@ -113,27 +120,19 @@
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:textColorHint="@color/white"
-            android:hint="Ajouter un commentaire..."
-            android:layout_marginBottom="16dp" />
+            android:hint="Ajouter un commentaire..." />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
-
-            <Button
-                android:id="@+id/backButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Retour" />
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/recommendButton"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Recommander"
-                android:layout_marginStart="16dp" />
+                android:text="Recommander" />
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

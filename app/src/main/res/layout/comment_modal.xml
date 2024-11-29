@@ -41,9 +41,7 @@
         android:id="@+id/postCommentButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:backgroundTint="@color/gray_medium"
-        android:text="Publier"
-        android:textColor="@color/white" />
+        android:text="Publier"/>
 
     <!-- Liste des commentaires -->
     <androidx.recyclerview.widget.RecyclerView
