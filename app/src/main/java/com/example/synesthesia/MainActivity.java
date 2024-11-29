@@ -43,18 +43,25 @@ public class MainActivity extends AppCompatActivity {
         filterSpinner.setAdapter(adapter);
         filterSpinner.setSelection(0); // Initialisation sur la première option
 
-        // Set a listener on the Spinner to detect filter changes
+        // Ajouter le Listener pour le SwipeRefreshLayout
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            // Utiliser la position actuelle du spinner pour déterminer le filtre
+            boolean filterFollowed = filterSpinner.getSelectedItemPosition() == 1;
+            recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, filterFollowed);
+        });
+
+        // Ajouter le Listener pour détecter les changements dans le Spinner
         filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                swipeRefreshLayout.setEnabled(false);  // Désactiver le SwipeRefreshLayout
+                // Utiliser le SwipeRefreshLayout pour recharger avec le bon filtre
                 boolean filterFollowed = position == 1; // Position 1 pour "Recommandations des gens suivis"
                 recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, filterFollowed);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                swipeRefreshLayout.setEnabled(true);  // Réactiver le SwipeRefreshLayout
+                // Charger les recommandations sans filtre si rien n'est sélectionné
                 recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
             }
         });

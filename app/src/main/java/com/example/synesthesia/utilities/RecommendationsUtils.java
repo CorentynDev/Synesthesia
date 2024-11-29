@@ -231,7 +231,6 @@ public class RecommendationsUtils {
         } else if ("music".equals(recommendationType)) {
             // Ajouter le bouton "Voir plus" pour les musiques
             recommendationLink.setVisibility(View.VISIBLE);
-            recommendationLink.setText("Voir plus");
 
             recommendationLink.setOnClickListener(v -> {
                 String articleId = recommendation.getArticleId();
@@ -268,7 +267,7 @@ public class RecommendationsUtils {
             typeIconImageView.setImageResource(R.drawable.artist);
         } else if ("album".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.music_album);
-        } else if ("film".equals(recommendationType)) {
+        } else if ("movie   ".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.film);
         } else if ("game".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.console);
