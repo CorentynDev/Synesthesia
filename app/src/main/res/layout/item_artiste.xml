@@ -10,7 +10,7 @@
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:contentDescription="Image de la chanson"
-        android:src="@drawable/placeholder_image" />
+        android:src="@drawable/rotating_loader" />
 
     <LinearLayout
         android:layout_width="0dp"
