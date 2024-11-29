@@ -24,7 +24,7 @@
         android:layout_height="200dp"
         android:layout_gravity="center_horizontal"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_image" />
+        android:src="@drawable/rotating_loader" />
 
     <!-- Titre de l'album -->
     <TextView

@@ -92,7 +92,7 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
                             .load(thumbnailUrl)
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
                             .skipMemoryCache(false)
-                            .placeholder(R.drawable.image_progress)
+                            .placeholder(R.drawable.rotating_loader)
                             .error(R.drawable.placeholder_image)
                             .into(bookCoverImageView);
                 } else {

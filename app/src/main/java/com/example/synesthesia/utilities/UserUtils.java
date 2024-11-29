@@ -143,7 +143,7 @@ public class UserUtils {
      */
     public static void loadImageFromUrl(Context context, String imageUrl, ImageView imageView) {
         if (imageUrl != null && !imageUrl.isEmpty()) {
-            Glide.with(context).load(imageUrl).into(imageView);
+            Glide.with(context).load(imageUrl).placeholder(R.drawable.rotating_loader).into(imageView);
         } else {
             imageView.setImageResource(R.drawable.placeholder_image);
         }

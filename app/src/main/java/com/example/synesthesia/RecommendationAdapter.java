@@ -52,7 +52,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         // Charger l'image de couverture avec Picasso
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
             Picasso.get().load(recommendation.getCoverUrl())
-                    .placeholder(R.drawable.placeholder_image)
+                    .placeholder(R.drawable.rotating_loader)
                     .into(holder.coverImageView);
         } else {
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
@@ -120,7 +120,7 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     private void bindUserData(ViewHolder holder, User user) {
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
             Picasso.get().load(user.getProfileImageUrl())
-                    .placeholder(R.drawable.default_profil_picture)
+                    .placeholder(R.drawable.rotating_loader)
                     .into(holder.profileImageView);
         } else {
             holder.profileImageView.setImageResource(R.drawable.default_profil_picture);

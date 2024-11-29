@@ -96,6 +96,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         Glide.with(this)
                 .load("https://image.tmdb.org/t/p/w500" + movie.getPosterPath())
+                .placeholder(R.drawable.rotating_loader)
                 .into(moviePoster);
 
         fetchTrailerUrl(movie.getId());

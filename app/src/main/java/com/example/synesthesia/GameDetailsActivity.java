@@ -60,8 +60,7 @@ public class GameDetailsActivity extends AppCompatActivity {
         if (game.getImage() != null && game.getImage().getMediumUrl() != null) {
             Glide.with(this)
                     .load(game.getImage().getMediumUrl())
-                    .placeholder(R.drawable.image_progress)
-                    .error(R.drawable.placeholder_image)
+                    .placeholder(R.drawable.rotating_loader)
                     .into(gameImage);
         } else {
             gameImage.setImageResource(R.drawable.placeholder_image);

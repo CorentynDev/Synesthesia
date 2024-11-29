@@ -151,7 +151,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
         if (coverUrl != null && !coverUrl.isEmpty()) {
             Glide.with(this)
                     .load(coverUrl)
-                    .placeholder(R.drawable.placeholder_image)
+                    .placeholder(R.drawable.rotating_loader)
                     .into(trackImage);
         } else {
             Log.w(TAG, "URL de couverture est null ou vide");

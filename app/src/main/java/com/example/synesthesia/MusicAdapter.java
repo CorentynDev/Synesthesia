@@ -199,7 +199,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             if (artist.getImageUrl() != null) {
                 Glide.with(context)
                         .load(artist.getImageUrl())
-                        .placeholder(R.drawable.placeholder_image)
+                        .placeholder(R.drawable.rotating_loader)
                         .into(imageView);
             } else {
                 imageView.setImageResource(R.drawable.placeholder_image);
@@ -218,7 +218,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             if (album.getCoverXl() != null) {
                 Glide.with(context)
                         .load(album.getCoverXl())
-                        .placeholder(R.drawable.placeholder_image)
+                        .placeholder(R.drawable.rotating_loader)
                         .into(imageView);
             } else {
                 imageView.setImageResource(R.drawable.placeholder_image);
@@ -232,7 +232,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
             if (track.getAlbum() != null) {
                 Glide.with(context)
                         .load(track.getAlbum().getCoverXl())
-                        .placeholder(R.drawable.placeholder_image)
+                        .placeholder(R.drawable.rotating_loader)
                         .into(imageView);
             } else {
                 imageView.setImageResource(R.drawable.placeholder_image);
