@@ -126,7 +126,7 @@ public class ArtistDetailsActivity extends AppCompatActivity {
         if (artistUrl != null && !artistUrl.isEmpty()) {
             Glide.with(this)
                     .load(artistUrl)
-                    .placeholder(R.drawable.placeholder_image) // Assurez-vous d'avoir une image par défaut
+                    .placeholder(R.drawable.rotating_loader) // Assurez-vous d'avoir une image par défaut
                     .into(artistImage);
         } else {
             Log.w(TAG, "URL d'image de l'artiste est null ou vide");
