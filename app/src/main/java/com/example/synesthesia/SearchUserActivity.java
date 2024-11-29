@@ -1,7 +1,8 @@
 package com.example.synesthesia;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,9 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class SearchUserActivity extends AppCompatActivity {
     private RecyclerView usersRecyclerView;
@@ -40,7 +39,7 @@ public class SearchUserActivity extends AppCompatActivity {
         usersRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         usersRecyclerView.setAdapter(userAdapter);
 
-        // Action au clic du bouton "Valider"
+        // Action au clic du bouton "Valider" (peut être gardé ou supprimé selon tes besoins)
         searchButton.setOnClickListener(v -> {
             String query = searchField.getText().toString().trim();
             if (!query.isEmpty()) {
@@ -48,12 +47,37 @@ public class SearchUserActivity extends AppCompatActivity {
             } else {
                 Log.d("SearchUserActivity", "Search field is empty or only contains spaces");
             }
-
         });
 
-        fetchUsersFromFirestore();  // Charge initialement tous les utilisateurs
+        // Ajouter le TextWatcher pour la recherche dynamique
+        searchField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
+                // Pas nécessaire pour cette implémentation
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+                String query = charSequence.toString().trim();
+                if (!query.isEmpty()) {
+                    searchUsers(query);
+                } else {
+                    // Optionnel : Afficher tous les utilisateurs si la recherche est vide
+                    fetchUsersFromFirestore();
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // Pas nécessaire pour cette implémentation
+            }
+        });
+
+        // Charger initialement tous les utilisateurs
+        fetchUsersFromFirestore();
     }
 
+    // Méthode pour récupérer tous les utilisateurs depuis Firestore
     private void fetchUsersFromFirestore() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -79,6 +103,7 @@ public class SearchUserActivity extends AppCompatActivity {
                 });
     }
 
+    // Méthode pour rechercher des utilisateurs en fonction de la requête
     private void searchUsers(String query) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
