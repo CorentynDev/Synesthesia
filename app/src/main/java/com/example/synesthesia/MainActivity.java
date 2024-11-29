@@ -2,11 +2,10 @@ package com.example.synesthesia;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
+import android.view.MenuInflater;
+import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
+import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -27,43 +26,40 @@ public class MainActivity extends AppCompatActivity {
 
         FooterUtils.setupFooter(this, R.id.homeButton);
 
-        Spinner filterSpinner = findViewById(R.id.filterSpinner);
+        Button filterMenuButton = findViewById(R.id.filterMenuButton); // Remplacement du Spinner par un bouton
         LinearLayout recommendationList = findViewById(R.id.recommendationList);
         SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
         recommendationsUtils = new RecommendationsUtils(FirebaseFirestore.getInstance());
 
-        // Créer et configurer l'adaptateur pour le Spinner
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.filter_options, R.layout.custom_spinner_item);
+        // Ajouter un listener pour afficher le PopupMenu
+        filterMenuButton.setOnClickListener(view -> {
+            PopupMenu popupMenu = new PopupMenu(MainActivity.this, filterMenuButton);
+            MenuInflater inflater = popupMenu.getMenuInflater();
+            inflater.inflate(R.menu.filter_menu, popupMenu.getMenu()); // Fichier XML du menu
 
-        // Appliquer un style personnalisé pour le texte de l'élément sélectionné
-        adapter.setDropDownViewResource(R.layout.custom_spinner_dropdown_item);
+            // Gérer les clics sur les options du menu
+            popupMenu.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.all_recommendations) {
+                    // Filtrer pour toutes les recommandations
+                    recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
+                    return true;
+                } else if (id == R.id.followed_recommendations) {
+                    // Filtrer pour les recommandations des gens suivis
+                    recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, true);
+                    return true;
+                }
+                return false;
+            });
 
-        filterSpinner.setAdapter(adapter);
-        filterSpinner.setSelection(0); // Initialisation sur la première option
+            popupMenu.show(); // Afficher le menu
+        });
 
         // Ajouter le Listener pour le SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            // Utiliser la position actuelle du spinner pour déterminer le filtre
-            boolean filterFollowed = filterSpinner.getSelectedItemPosition() == 1;
-            recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, filterFollowed);
-        });
-
-        // Ajouter le Listener pour détecter les changements dans le Spinner
-        filterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                // Utiliser le SwipeRefreshLayout pour recharger avec le bon filtre
-                boolean filterFollowed = position == 1; // Position 1 pour "Recommandations des gens suivis"
-                recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, filterFollowed);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Charger les recommandations sans filtre si rien n'est sélectionné
-                recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
-            }
+            // Relancer les données avec le filtre par défaut (false pour toutes les recommandations)
+            recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
         });
 
         // Charger les recommandations par défaut à la création

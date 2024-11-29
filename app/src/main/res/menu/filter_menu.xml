@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/all_recommendations"
+        android:title="@string/all_recommendations" />
+    <item
+        android:id="@+id/followed_recommendations"
+        android:title="@string/followed_recommendations" />
+</menu>
