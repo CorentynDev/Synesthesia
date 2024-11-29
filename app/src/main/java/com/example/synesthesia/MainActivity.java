@@ -17,6 +17,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
+    private boolean isFollowingFilterActive = false; // Variable pour suivre l'état du filtre
+
     RecommendationsUtils recommendationsUtils;
 
     @Override
@@ -44,10 +46,16 @@ public class MainActivity extends AppCompatActivity {
                 if (id == R.id.all_recommendations) {
                     // Filtrer pour toutes les recommandations
                     recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
+                    // Mettre à jour le texte du bouton
+                    filterMenuButton.setText(R.string.all_recommendations);
+                    isFollowingFilterActive = false; // Mise à jour de l'état du filtre
                     return true;
                 } else if (id == R.id.followed_recommendations) {
                     // Filtrer pour les recommandations des gens suivis
                     recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, true);
+                    // Mettre à jour le texte du bouton
+                    filterMenuButton.setText(R.string.followed_recommendations);
+                    isFollowingFilterActive = true; // Mise à jour de l'état du filtre
                     return true;
                 }
                 return false;
@@ -58,11 +66,18 @@ public class MainActivity extends AppCompatActivity {
 
         // Ajouter le Listener pour le SwipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            // Relancer les données avec le filtre par défaut (false pour toutes les recommandations)
-            recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
+            // Relancer les données avec le filtre actuel et mettre à jour le texte du bouton
+            recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, isFollowingFilterActive);
+
+            // Mettre à jour le texte du bouton en fonction du filtre actif
+            if (isFollowingFilterActive) {
+                filterMenuButton.setText(R.string.followed_recommendations);
+            } else {
+                filterMenuButton.setText(R.string.all_recommendations);
+            }
         });
 
-        // Charger les recommandations par défaut à la création
+        // Charger les recommandations par défaut à la création (filtre "Toutes")
         recommendationsUtils.getRecommendationData(this, recommendationList, swipeRefreshLayout, false);
     }
 
