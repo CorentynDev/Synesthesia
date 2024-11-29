@@ -44,7 +44,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         if (profileImageUrl != null) {
             Glide.with(context)
                     .load(profileImageUrl)
-                    .placeholder(R.drawable.placeholder_image)
+                    .placeholder(R.drawable.rotating_loader)
                     .into(holder.userImage);
         } else {
             holder.userImage.setImageResource(R.drawable.placeholder_image);

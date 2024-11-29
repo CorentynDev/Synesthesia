@@ -90,7 +90,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
                 String posterUrl = "https://image.tmdb.org/t/p/w500" + movie.getPosterPath();
                 Glide.with(moviePosterImageView.getContext())
                         .load(posterUrl)
-                        .placeholder(R.drawable.image_progress)
+                        .placeholder(R.drawable.rotating_loader)
                         .error(R.drawable.placeholder_image)
                         .into(moviePosterImageView);
             } else {

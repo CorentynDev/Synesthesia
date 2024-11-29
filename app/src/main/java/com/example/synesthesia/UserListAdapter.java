@@ -71,7 +71,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
                                 // Utilisation d'une bibliothèque comme Glide ou Picasso pour charger l'image
                                 Glide.with(itemView.getContext())
                                         .load(imageUrl)
-                                        .placeholder(R.drawable.placeholder_image) // image par défaut
+                                        .placeholder(R.drawable.rotating_loader) // image par défaut
                                         .into(userImageView);
                             }
                         }

@@ -19,7 +19,7 @@ public class ImagesUtils {
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(context)
                     .load(imageUrl)
-                    .placeholder(R.drawable.placeholder_image)
+                    .placeholder(R.drawable.rotating_loader)
                     .into(imageView);
         } else {
             imageView.setImageResource(R.drawable.placeholder_image);
