@@ -3,6 +3,7 @@ package com.example.synesthesia;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -80,19 +81,50 @@ public class SearchBookActivity extends AppCompatActivity {
             String query = searchField.getText().toString();
             searchBooks(query);
         });
+        searchField.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) { // Vérifie si l'action est "Done" (OK)
+                String query = searchField.getText().toString();
+                searchBooks(query); // Appelle la recherche
+                return true; // Action gérée
+            }
+            return false;
+        });
     }
 
     private void searchBooks(String query) {
         String apiKey = "AIzaSyDQm9NR9F8AbZtrAqxWcSnUdC87Dci-hP8";
-        Call<BooksResponse> call = googleBooksApi.searchBooks(query, apiKey);
+        int maxResults = 40;  // Limite de résultats par requête
+        int startIndex = 0;   // L'index de départ (pour la pagination)
+
+        fetchBooks(query, apiKey, maxResults, startIndex);
+    }
+
+    private void fetchBooks(String query, String apiKey, int maxResults, int startIndex) {
+        // Faire une requête API pour récupérer les livres
+        Call<BooksResponse> call = googleBooksApi.searchBooks(query, apiKey, maxResults, startIndex);
         call.enqueue(new Callback<BooksResponse>() {
             @Override
             public void onResponse(@NonNull Call<BooksResponse> call, @NonNull Response<BooksResponse> response) {
                 if (response.isSuccessful()) {
                     assert response.body() != null;
                     List<Book> books = response.body().getItems();
-                    booksAdapter = new BooksAdapter(books, SearchBookActivity.this);
-                    booksRecyclerView.setAdapter(booksAdapter);
+
+                    if (books != null && !books.isEmpty()) {
+                        // Si la liste des livres est vide, on arrête la pagination
+                        if (booksAdapter == null) {
+                            booksAdapter = new BooksAdapter(books, SearchBookActivity.this);
+                            booksRecyclerView.setAdapter(booksAdapter);
+                        } else {
+                            // Si des livres sont déjà affichés, on les ajoute à la liste
+                            booksAdapter.addBooks(books);
+                        }
+
+                        // Si nous avons récupéré 40 livres, on fait une autre requête pour obtenir plus de livres
+                        if (books.size() == maxResults) {
+                            // On fait une nouvelle requête avec l'index suivant
+                            fetchBooks(query, apiKey, maxResults, startIndex + maxResults);
+                        }
+                    }
                 }
             }
 

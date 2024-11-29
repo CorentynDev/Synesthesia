@@ -25,6 +25,15 @@
             app:tint="@color/white" />
 
         <ImageView
+            android:id="@+id/research"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:padding="10dp"
+            android:src="@drawable/loupe" />
+
+        <ImageView
             android:id="@+id/createRecommendationButton"
             android:layout_width="0dp"
             android:layout_height="54dp"

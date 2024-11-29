@@ -39,8 +39,6 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText usernameField;
     private EditText passwordField;
     private ImageView profileImageView;
-    private EditText profileImageUrlEditText;
-
     private Uri profileImageUri;
 
     @Override
@@ -58,8 +56,6 @@ public class RegisterActivity extends AppCompatActivity {
         Button registerButton = findViewById(R.id.registerButton);
         TextView loginRedirect = findViewById(R.id.loginRedirect);
         profileImageView = findViewById(R.id.profileImageView);
-        profileImageUrlEditText = findViewById(R.id.profileImageUrl);
-        Button pasteImageUrlButton = findViewById(R.id.pasteImageUrlButton);
 
         profileImageView.setOnClickListener(v -> openImageChooser());
 
@@ -72,15 +68,6 @@ public class RegisterActivity extends AppCompatActivity {
                 registerUser(email, username, password);
             } else {
                 Toast.makeText(RegisterActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        pasteImageUrlButton.setOnClickListener(v -> {
-            String imageUrl = profileImageUrlEditText.getText().toString();
-            if (!imageUrl.isEmpty()) {
-                new DownloadImageTask().execute(imageUrl);
-            } else {
-                Toast.makeText(RegisterActivity.this, "Please enter an image URL", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -167,50 +154,6 @@ public class RegisterActivity extends AppCompatActivity {
                     Log.w("RegisterActivity", "Error adding user to Firestore", e);
                     Toast.makeText(RegisterActivity.this, "Failed to register user", Toast.LENGTH_SHORT).show();
                 });
-    }
-
-
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-            String imageUrl = urls[0];
-            Bitmap bitmap = null;
-            try {
-                InputStream in = new URL(imageUrl).openStream();
-                bitmap = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("DownloadImageTask", "Error downloading image", e);
-            }
-            return bitmap;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            if (result != null) {
-                profileImageView.setImageBitmap(result);
-                Uri uri = getImageUri(result);
-                if (uri != null) {
-                    profileImageUri = uri;
-                } else {
-                    Toast.makeText(RegisterActivity.this, "Failed to convert image", Toast.LENGTH_SHORT).show();
-                }
-            } else {
-                Toast.makeText(RegisterActivity.this, "Failed to download image", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        private Uri getImageUri(Bitmap bitmap) {
-            try {
-                File file = new File(getExternalCacheDir(), "profile_image.jpg");
-                FileOutputStream out = new FileOutputStream(file);
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                out.close();
-                return Uri.fromFile(file);
-            } catch (Exception e) {
-                Log.e("GetImageUri", "Error converting bitmap to URI", e);
-                return null;
-            }
-        }
     }
 
     public static class User {

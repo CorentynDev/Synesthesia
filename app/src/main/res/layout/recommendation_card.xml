@@ -34,10 +34,19 @@
                 android:id="@+id/recommendationUser"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold" />
+
+            <ImageView
+                android:id="@+id/recommendationTypeIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end"
+                android:layout_marginStart="8dp" />
         </LinearLayout>
+
 
         <!-- Informations du produit recommandé -->
         <LinearLayout
@@ -54,31 +63,63 @@
                 android:contentDescription="@string/recommendation_cover"
                 android:scaleType="centerCrop" />
 
-            <TextView
-                android:id="@+id/recommendationTitle"
-                android:layout_width="wrap_content"
+            <!-- Titre et bouton Play -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/white"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="10dp">
 
-            <TextView
-                android:id="@+id/recommendationDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
+                <TextView
+                    android:id="@+id/recommendationTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-            <!-- Ajouter un espace pour la note de l'utilisateur -->
-            <TextView
-                android:id="@+id/userRating"
-                android:layout_width="wrap_content"
+                <!-- Space to push the button to the right -->
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <ImageButton
+                    android:id="@+id/playPauseButton"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:layout_marginEnd="9dp" />
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textColor="@color/white"
-                android:textSize="16sp" />
+                android:orientation="vertical">
+
+                <!-- Commentaire utilisateur -->
+                <TextView
+                    android:id="@+id/userRating"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:visibility="gone" /> <!-- Par défaut caché -->
+
+                <!-- Lien vers une page externe -->
+                <TextView
+                    android:id="@+id/recommendationLink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Voir plus de détails"
+                    android:textColor="@android:color/holo_blue_bright"
+                    android:textSize="14sp"
+                    android:visibility="gone" /> <!-- Masqué par défaut -->
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Boutons d'action -->
@@ -158,6 +199,14 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <TextView
+            android:layout_marginTop="10dp"
+            android:id="@+id/recommendationDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="12dp" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

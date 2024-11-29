@@ -2,6 +2,7 @@ package com.example.synesthesia;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -52,7 +53,7 @@ public class BookDetailsActivity extends AppCompatActivity {
         bookDescription.setText(book.getVolumeInfo().getDescription() != null ? book.getVolumeInfo().getDescription() : "Pas de description");
 
         if (book.getVolumeInfo().getImageLinks() != null) {
-            Glide.with(this).load(book.getVolumeInfo().getImageLinks().getThumbnail()).into(bookImage);
+            Glide.with(this).load(book.getBestImageUrl()).into(bookImage);
         }
 
         db = FirebaseFirestore.getInstance();
@@ -103,8 +104,11 @@ public class BookDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                userNote
+                                userNote,
+                                book.getId()
                         );
+
+                        Log.i("BOOK ID", "Voici l'id : " + book.getId());
 
                         db.collection("recommendations")
                                 .add(recommendation)

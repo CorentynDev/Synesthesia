@@ -42,6 +42,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Rechercher..."
+        android:imeOptions="actionDone"
+        android:inputType="text"
         android:textColor="@color/white"
         android:textColorHint="@color/white"/>
 
@@ -49,9 +51,7 @@
         android:id="@+id/searchButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rechercher"
-        android:backgroundTint="@color/gray_medium"
-        android:textColor="@color/white"/>
+        android:text="Valider"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/resultsRecyclerView"

@@ -13,17 +13,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.TimeUtils;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
-
 import java.util.HashMap;
+import java.util.List;
 
 public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAdapter.ViewHolder> {
 
@@ -48,66 +45,40 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Recommendation recommendation = recommendations.get(position);
+
+        // Titre de la recommandation
         holder.titleTextView.setText(recommendation.getTitle());
 
-        // Charger l'image de couverture
+        // Charger l'image de couverture avec Picasso
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
-            Picasso.get().load(recommendation.getCoverUrl()).into(holder.coverImageView);
+            Picasso.get().load(recommendation.getCoverUrl())
+                    .placeholder(R.drawable.placeholder_image)
+                    .into(holder.coverImageView);
         } else {
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
+        // Note utilisateur
         String userNote = recommendation.getUserNote();
-        Log.d(TAG, "User note: " + userNote);
         if (userNote != null && !userNote.isEmpty()) {
             holder.userRating.setText(userNote);
-            Log.d(TAG, "User note set to: " + userNote);
         } else {
             holder.userRating.setText("Pas de note");
-            Log.d(TAG, "User note is null or empty, setting to default message.");
         }
 
-
-        // Récupérer l'ID utilisateur associé à la recommandation
+        // Récupération des informations utilisateur
         String userId = recommendation.getUserId();
-
         if (userId != null && !userId.isEmpty()) {
-            // Vérifier si l'utilisateur est dans le cache
-            if (userCache.containsKey(userId)) {
-                User user = userCache.get(userId);
-                bindUserData(holder, user);
-            } else {
-                // Récupérer les informations de l'utilisateur depuis Firestore
-                db.collection("users").document(userId).get()
-                        .addOnSuccessListener(documentSnapshot -> {
-                            if (documentSnapshot.exists()) {
-                                String profileImageUrl = documentSnapshot.getString("profileImageUrl");
-                                String userName = documentSnapshot.getString("username");
-                                User user = new User(profileImageUrl, userName); // Classe User définie plus bas
-                                userCache.put(userId, user); // Ajouter dans le cache
-                                bindUserData(holder, user);
-                            } else {
-                                // Gestion des cas où l'utilisateur n'existe pas
-                                holder.userNameTextView.setText("Utilisateur inconnu");
-                                holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
-                            }
-                        })
-                        .addOnFailureListener(e -> {
-                            holder.userNameTextView.setText("Erreur de chargement");
-                            holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
-                        });
-            }
+            loadUserData(userId, holder);
         } else {
-            // Si l'userId est null ou vide, afficher des informations par défaut
-            holder.userNameTextView.setText("Utilisateur inconnu");
-            holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+            displayDefaultUser(holder);
         }
 
-        // Affichage des likes
+        // Afficher le nombre de likes
         List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
         holder.likesCountTextView.setText(String.valueOf(likedBy.size()));
 
-        // Affichage de la date
+        // Afficher la date
         if (recommendation.getTimestamp() != null) {
             String timeAgo = TimeUtils.getTimeAgo(recommendation.getTimestamp());
             holder.dateTextView.setText(timeAgo);
@@ -116,14 +87,53 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         }
     }
 
+    /**
+     * Méthode pour charger les données utilisateur depuis Firestore ou le cache.
+     */
+    private void loadUserData(String userId, ViewHolder holder) {
+        if (userCache.containsKey(userId)) {
+            bindUserData(holder, userCache.get(userId));
+        } else {
+            db.collection("users").document(userId).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                            String username = documentSnapshot.getString("username");
+                            User user = new User(profileImageUrl, username);
+
+                            userCache.put(userId, user); // Ajouter l'utilisateur au cache
+                            bindUserData(holder, user);
+                        } else {
+                            displayDefaultUser(holder);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e(TAG, "Erreur lors du chargement de l'utilisateur: ", e);
+                        displayDefaultUser(holder);
+                    });
+        }
+    }
+
+    /**
+     * Méthode pour lier les données utilisateur à la vue.
+     */
     private void bindUserData(ViewHolder holder, User user) {
-        // Méthode pour lier les données utilisateur
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
-            Picasso.get().load(user.getProfileImageUrl()).into(holder.profileImageView);
+            Picasso.get().load(user.getProfileImageUrl())
+                    .placeholder(R.drawable.default_profil_picture)
+                    .into(holder.profileImageView);
         } else {
             holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
         }
         holder.userNameTextView.setText(user.getUsername() != null ? user.getUsername() : "Utilisateur inconnu");
+    }
+
+    /**
+     * Méthode pour afficher les valeurs par défaut lorsque les données utilisateur sont indisponibles.
+     */
+    private void displayDefaultUser(ViewHolder holder) {
+        holder.userNameTextView.setText("Utilisateur inconnu");
+        holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
     }
 
     @Override
@@ -137,6 +147,9 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         notifyDataSetChanged();
     }
 
+    /**
+     * ViewHolder pour le RecyclerView.
+     */
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView coverImageView;
         ImageView profileImageView;
@@ -158,7 +171,9 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         }
     }
 
-    // Classe pour stocker les données utilisateur
+    /**
+     * Classe interne pour représenter un utilisateur.
+     */
     private static class User {
         private final String profileImageUrl;
         private final String username;

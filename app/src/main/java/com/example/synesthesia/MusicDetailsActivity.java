@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -41,9 +42,10 @@ public class MusicDetailsActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private EditText commentField;
     private DeezerApi deezerApi;
-    private String coverImageUrl; // Variable pour stocker l'URL de l'image de couverture
+    private String coverImageUrl;
 
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,7 +83,7 @@ public class MusicDetailsActivity extends AppCompatActivity {
         // Remplissage des données de la musique
         musicTitle.setText(track.getTitle());
         musicArtist.setText(track.getArtist().getName());
-        musicDuration.setText(formatDuration(track.getDuration()));
+        musicDuration.setText(formatDuration(track.getDuration()) + "minutes");
         // Chargement de l'image de couverture
         final String[] coverUrl = {null};
         if (track.getAlbum() != null) {
@@ -192,7 +194,8 @@ public class MusicDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                commentText
+                                commentText,
+                                track.getId()
                         );
 
                         db.collection("recommendations")

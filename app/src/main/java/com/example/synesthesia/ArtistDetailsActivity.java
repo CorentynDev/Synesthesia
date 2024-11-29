@@ -170,7 +170,8 @@ public class ArtistDetailsActivity extends AppCompatActivity {
                                 commentsList,
                                 recommendationTimestamp,
                                 type,
-                                commentText
+                                commentText,
+                                artist.getId()
                         );
 
                         // Ajouter la recommandation à Firestore

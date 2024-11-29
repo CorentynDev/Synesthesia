@@ -1,5 +1,6 @@
 package com.example.synesthesia;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -135,5 +136,16 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewH
             trackDurationTextView = itemView.findViewById(R.id.trackDurationTextView);
             playPauseButton = itemView.findViewById(R.id.trackPlayPauseButton);
         }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void resetPlayer() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+        currentlyPlayingPosition = RecyclerView.NO_POSITION;
+        notifyDataSetChanged();
     }
 }
