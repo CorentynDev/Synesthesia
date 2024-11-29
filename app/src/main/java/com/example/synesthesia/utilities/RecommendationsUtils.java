@@ -19,8 +19,13 @@ import com.example.synesthesia.R;
 import com.example.synesthesia.UserProfileActivity;
 import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
+import com.example.synesthesia.api.TmdbApiClient;
+import com.example.synesthesia.api.TmdbApiService;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.models.TmdbMovie;
 import com.example.synesthesia.models.Track;
+import com.example.synesthesia.models.Video;
+import com.example.synesthesia.models.VideoResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,6 +47,7 @@ public class RecommendationsUtils {
     private final LikeUtils likeUtils;
     private final BookmarkUtils bookmarkUtils;
     private final CommentUtils commentUtils;
+    private TmdbMovie movie;
 
     public RecommendationsUtils(FirebaseFirestore db) {
         this.db = db;
@@ -292,8 +298,16 @@ public class RecommendationsUtils {
             typeIconImageView.setImageResource(R.drawable.artist);
         } else if ("album".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.music_album);
-        } else if ("movie   ".equals(recommendationType)) {
+        } else if ("movie".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.film);
+            playPauseButton.setImageResource(R.drawable.bouton_de_lecture); // Icône de lecture
+
+            String movieId = recommendation.getArticleId();
+            if (movieId != null && !movieId.isEmpty()) {
+                setupTrailerButton(context, playPauseButton, movieId);
+            } else {
+                playPauseButton.setVisibility(View.GONE);
+            }
         } else if ("game".equals(recommendationType)) {
             typeIconImageView.setImageResource(R.drawable.console);
         } else {
@@ -473,4 +487,61 @@ public class RecommendationsUtils {
         });
     }
 
+    /**
+     * Configure the play button for the movie trailer.
+     *
+     * @param context      Context of the application.
+     * @param playButton   ImageView to be configured as the play button.
+     * @param movieId      The movie ID to fetch the trailer.
+     */
+    private void setupTrailerButton(Context context, ImageView playButton, String movieId) {
+        playButton.setOnClickListener(v -> {
+            // Fetch the trailer URL
+            fetchTrailerUrl(movieId, trailerUrl -> {
+                if (trailerUrl != null && !trailerUrl.isEmpty()) {
+                    // Open the trailer URL in a browser or YouTube app
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailerUrl));
+                    context.startActivity(browserIntent);
+                } else {
+                    Toast.makeText(context, "Aucune bande-annonce disponible", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+    }
+
+    /**
+     * Fetch the trailer URL from TMDB and return it via a callback.
+     *
+     * @param movieId      The movie ID to fetch the trailer for.
+     * @param callback     A callback to handle the fetched trailer URL.
+     */
+    private void fetchTrailerUrl(String movieId, TrailerUrlCallback callback) {
+        TmdbApiService apiService = TmdbApiClient.getRetrofitInstance().create(TmdbApiService.class);
+        apiService.getMovieVideos(movieId, "f07ebbaf992b26f432b9ba90fa71ea8d", "fr").enqueue(new Callback<VideoResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<VideoResponse> call, @NonNull Response<VideoResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    for (Video video : response.body().getResults()) {
+                        if ("YouTube".equalsIgnoreCase(video.getSite()) && "Trailer".equalsIgnoreCase(video.getType())) {
+                            callback.onTrailerUrlFetched("https://www.youtube.com/watch?v=" + video.getKey());
+                            return;
+                        }
+                    }
+                }
+                callback.onTrailerUrlFetched(null); // No trailer found
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<VideoResponse> call, @NonNull Throwable t) {
+                callback.onTrailerUrlFetched(null); // API call failed
+            }
+        });
+    }
+
+    /**
+     * Callback interface for fetching trailer URLs.
+     */
+    public interface TrailerUrlCallback {
+        void onTrailerUrlFetched(String trailerUrl);
+    }
 }
