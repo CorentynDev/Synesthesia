@@ -35,7 +35,7 @@
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/placeholder_image"
+            android:src="@drawable/rotating_loader"
             android:clickable="true"
             android:focusable="true"
             android:scaleType="centerCrop" />

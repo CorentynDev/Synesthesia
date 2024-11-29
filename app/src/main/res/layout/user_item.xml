@@ -13,7 +13,7 @@
         android:layout_height="64dp"
         android:contentDescription="Image de la chanson"
         android:scaleType="centerCrop"
-        android:src="@drawable/placeholder_image" />
+        android:src="@drawable/rotating_loader" />
 
     <TextView
         android:id="@+id/userPseudo"

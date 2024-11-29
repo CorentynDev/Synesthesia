@@ -8,6 +8,7 @@
         android:id="@+id/bookThumbnail"
         android:layout_width="100dp"
         android:layout_height="150dp"
+        android:src="@drawable/rotating_loader"
         android:contentDescription="Image du livre" />
 
     <LinearLayout
