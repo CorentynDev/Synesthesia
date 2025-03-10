@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.synesthesia.BookDetailsActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.Book;
 
 import java.util.List;

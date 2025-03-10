@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.GameDetailsActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.GiantBombGame;
 
 import java.text.SimpleDateFormat;

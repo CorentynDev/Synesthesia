@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,10 +13,11 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.R;
+import com.example.synesthesia.UserProfileActivity;
 import com.example.synesthesia.models.User;
 
 import java.util.List;
-import java.util.Map;
 
 public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private List<User> userList;  // Liste d'objets User

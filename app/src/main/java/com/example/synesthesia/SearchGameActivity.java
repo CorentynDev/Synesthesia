@@ -4,13 +4,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.adapters.GamesAdapter;
 import com.example.synesthesia.api.GiantBombApiClient;
 import com.example.synesthesia.api.GiantBombApiService;
 import com.example.synesthesia.models.GiantBombGame;

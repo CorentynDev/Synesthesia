@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Comment;
-import com.example.synesthesia.CommentsAdapter;
+import com.example.synesthesia.adapters.CommentsAdapter;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;

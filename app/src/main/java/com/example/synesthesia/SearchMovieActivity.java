@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.adapters.MoviesAdapter;
 import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
 import com.example.synesthesia.models.TmdbMovie;

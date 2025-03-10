@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -12,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.adapters.UserAdapter;
 import com.example.synesthesia.models.User;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.firestore.FirebaseFirestore;

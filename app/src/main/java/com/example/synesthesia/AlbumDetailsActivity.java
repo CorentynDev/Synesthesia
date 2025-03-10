@@ -1,10 +1,8 @@
 package com.example.synesthesia;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -17,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.adapters.TracksAdapter;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Album;
 import com.example.synesthesia.models.Comment;
@@ -24,7 +23,6 @@ import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.models.TrackResponse;
 import com.example.synesthesia.utilities.FooterUtils;
-import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;

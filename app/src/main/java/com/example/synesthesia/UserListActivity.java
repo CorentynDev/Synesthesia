@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.adapters.UserListAdapter;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 

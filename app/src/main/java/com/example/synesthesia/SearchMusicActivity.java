@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.adapters.MusicAdapter;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Album;
 import com.example.synesthesia.models.AlbumResponse;

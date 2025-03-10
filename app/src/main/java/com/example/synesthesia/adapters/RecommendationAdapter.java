@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import static android.content.ContentValues.TAG;
 
@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.TimeUtils;
 import com.google.firebase.firestore.FirebaseFirestore;

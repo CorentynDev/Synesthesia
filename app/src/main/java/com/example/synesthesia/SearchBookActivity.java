@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.adapters.BooksAdapter;
 import com.example.synesthesia.api.GoogleBooksApi;
-import com.example.synesthesia.dialogs.BookRecommendationDialog;
 import com.example.synesthesia.models.Book;
 import com.example.synesthesia.models.BooksResponse;
 import com.example.synesthesia.utilities.FooterUtils;

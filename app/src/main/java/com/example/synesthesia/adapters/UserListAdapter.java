@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import static com.example.synesthesia.utilities.UserUtils.db;
 
@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.R;
 
 import java.util.List;
 

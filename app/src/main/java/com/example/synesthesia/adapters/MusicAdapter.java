@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -17,6 +17,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.AlbumDetailsActivity;
+import com.example.synesthesia.MusicDetailsActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.Artist;
 import com.example.synesthesia.models.Album;
 import com.example.synesthesia.models.Track;

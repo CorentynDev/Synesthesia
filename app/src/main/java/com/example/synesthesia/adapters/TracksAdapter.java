@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -16,6 +16,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.MusicDetailsActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.Track;
 
 import java.io.IOException;
