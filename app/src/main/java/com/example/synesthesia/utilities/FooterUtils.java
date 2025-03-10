@@ -1,31 +1,26 @@
 package com.example.synesthesia.utilities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import com.example.synesthesia.BookmarksActivity;
-import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.SearchBookActivity;
 import com.example.synesthesia.SearchGameActivity;
 import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.SearchMusicActivity;
-import com.example.synesthesia.SearchUserActivity;
-import com.example.synesthesia.UserProfileActivity;
+import com.example.synesthesia.fragments.HomeFragment;
+import com.example.synesthesia.fragments.SearchUserFragment;
 
 public class FooterUtils {
 
-    /**
-     * Method to initialize footer redirections and manage active/inactive states.
-     * @param activity Current activity.
-     * @param activeButtonId Resource ID of the button to be set as active.
-     */
-    public static void setupFooter(@NonNull Activity activity, int activeButtonId) {
-        // Get all buttons
+    public static void setupFooter(@NonNull FragmentActivity activity, int activeButtonId) {
         ImageView homeButton = activity.findViewById(R.id.homeButton);
         ImageView research = activity.findViewById(R.id.research);
         ImageView createRecommendationButton = activity.findViewById(R.id.createRecommendationButton);
@@ -38,9 +33,10 @@ public class FooterUtils {
         bookmarkButton.setImageResource(R.drawable.bookmark);
         profileButton.setImageResource(R.drawable.user);
 
+        // Active le bouton en fonction de l'id fourni
         if (activeButtonId == R.id.homeButton) {
             homeButton.setImageResource(R.drawable.home_active);
-        } if (activeButtonId == R.id.research) {
+        } else if (activeButtonId == R.id.research) {
             research.setImageResource(R.drawable.loupe_active);
         } else if (activeButtonId == R.id.createRecommendationButton) {
             createRecommendationButton.setImageResource(R.drawable.add_active);
@@ -50,14 +46,21 @@ public class FooterUtils {
             profileButton.setImageResource(R.drawable.user_active);
         }
 
+        // Configuration des listeners
         homeButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, MainActivity.class);
-            activity.startActivity(intent);
+            HomeFragment homeFragment = new HomeFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, homeFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
 
         research.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, SearchUserActivity.class);
-            activity.startActivity(intent);
+            SearchUserFragment searchUserFragment = new SearchUserFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, searchUserFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
 
         createRecommendationButton.setOnClickListener(view -> {
@@ -83,15 +86,14 @@ public class FooterUtils {
             });
             builder.create().show();
         });
+    }
 
-        bookmarkButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, BookmarksActivity.class);
-            activity.startActivity(intent);
-        });
+    private static void replaceFragment(FragmentActivity activity, Fragment fragment) {
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-        profileButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, UserProfileActivity.class);
-            activity.startActivity(intent);
-        });
+        transaction.replace(R.id.fragmentContainer, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }

@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="@color/black">
 
-    <!-- Bouton pour le menu de filtrage -->
     <Button
         android:id="@+id/filterMenuButton"
         android:layout_width="wrap_content"
@@ -17,7 +16,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- SwipeRefreshLayout contenant les recommandations -->
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="0dp"
@@ -40,7 +38,6 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Exemple de carte dans la liste de recommandations -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
