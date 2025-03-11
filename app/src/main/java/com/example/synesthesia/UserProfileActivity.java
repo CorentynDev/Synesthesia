@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.FooterUtils;
+import com.example.synesthesia.utilities.NotificationUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -246,10 +247,37 @@ public class UserProfileActivity extends AppCompatActivity {
                                 Toast.makeText(this, "Vous suivez maintenant cet utilisateur.", Toast.LENGTH_SHORT).show();
                                 // Mettre à jour les compteurs
                                 loadUserStats(userIdToFollow);
+
+                                // Envoyer une notification
+                                sendFollowNotification(userIdToFollow);
                             })
                             .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'followers'", e));
                 })
                 .addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'following'", e));
+    }
+
+    private void sendFollowNotification(String userIdToFollow) {
+
+        // Récupérer le pseudo de l'utilisateur connecté
+        UserUtils.getPseudo().addOnSuccessListener(username -> {
+            // Récupérer les informations de l'utilisateur suivi
+            db.collection("users").document(userIdToFollow).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String fcmTokenToFollow = documentSnapshot.getString("fcmToken"); // Token FCM du suivi
+
+                            if (fcmTokenToFollow != null) {
+                                String title = "Nouveau follower!";
+                                String message = username + " commence à vous suivre."; // Affiche le pseudo
+
+                                // Envoyer la notification
+                                NotificationUtils.sendNotification(this, fcmTokenToFollow, title, message);
+                                Log.d("FCM", "Notification envoyée à " + userIdToFollow);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du token de l'utilisateur suivi", e));
+        }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du pseudo de l'utilisateur connecté", e));
     }
 
     private void unfollowUser(String userIdToFollow) {

@@ -23,6 +23,8 @@ import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.RecommendationAdapter;
 import com.example.synesthesia.models.Recommendation;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,7 +57,7 @@ public class UserUtils {
      * @return User ID of the connected user as a String.
      * @throws NullPointerException If no user is currently connected.
      */
-    public String getCurrentUserId() {
+    public static String getCurrentUserId() {
         if (FirebaseAuth.getInstance().getCurrentUser() != null) {
             return FirebaseAuth.getInstance().getCurrentUser().getUid();
         }
@@ -123,9 +125,12 @@ public class UserUtils {
                     if (documentSnapshot.exists()) {
                         String username = documentSnapshot.getString("username");
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
+                        Log.d("Firestore", "Document utilisateur trouvé: " + documentSnapshot.getData());
 
                         userTextView.setText(username);
                         ImagesUtils.loadImage(context, profileImageUrl, profileImageView);
+                    }else {
+                        Log.e("Firestore", "Aucun document trouvé pour l'utilisateur: " + userId);
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -148,4 +153,32 @@ public class UserUtils {
             imageView.setImageResource(R.drawable.placeholder_image);
         }
     }
+
+    public void saveUserToken(String userId, String token) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Log.d("Firestore", "Tentative de sauvegarde du token pour l'utilisateur: " + userId);
+
+        db.collection("users").document(userId).update("fcmToken", token)
+                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Token sauvegardé avec succès dans Firestore"))
+                .addOnFailureListener(e -> Log.e("Firestore", "Erreur lors de la sauvegarde du token", e));
+    }
+
+    public static Task<String> getPseudo() {
+        String userId = getCurrentUserId();
+        if (userId == null) {
+            return Tasks.forException(new Exception("Utilisateur non connecté"));
+        }
+
+        return db.collection("users").document(userId).get()
+                .continueWith(task -> {
+                    if (task.isSuccessful() && task.getResult() != null) {
+                        return task.getResult().getString("username");
+                    } else {
+                        throw Objects.requireNonNull(task.getException());
+                    }
+                });
+    }
+
+
 }

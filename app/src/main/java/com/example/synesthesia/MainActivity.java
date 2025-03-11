@@ -1,19 +1,31 @@
 package com.example.synesthesia;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuInflater;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,10 +33,26 @@ public class MainActivity extends AppCompatActivity {
 
     RecommendationsUtils recommendationsUtils;
 
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o){
+                Toast.makeText(MainActivity.this, "Post  notification permission granted!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FirebaseApp.initializeApp(this);
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
 
         FooterUtils.setupFooter(this, R.id.homeButton);
 
@@ -79,6 +107,16 @@ public class MainActivity extends AppCompatActivity {
 
         // Charger les recommandations par défaut à la création (filtre "Toutes")
         recommendationsUtils.getRecommendationData(this, recommendationList, swipeRefreshLayout, false);
+
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                String token = task.getResult();
+                String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                new UserUtils().saveUserToken(currentUserId, token);
+            }
+        });
+
+
     }
 
     @Override
