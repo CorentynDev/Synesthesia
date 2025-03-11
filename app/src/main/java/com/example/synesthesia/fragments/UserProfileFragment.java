@@ -22,7 +22,6 @@ import androidx.fragment.app.Fragment;
 
 import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
-import com.example.synesthesia.UserInfoActivity;
 import com.example.synesthesia.authentication.LoginActivity;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.RecommendationsUtils;
@@ -121,8 +120,9 @@ public class UserProfileFragment extends Fragment {
         int id = item.getItemId();
 
         if (id == R.id.paramètre) {
-            Intent intent = new Intent(requireContext(), UserInfoActivity.class);
-            startActivity(intent);
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).showUserInfoFragment();
+            }
             return true;
         }
 
@@ -145,7 +145,6 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadUserStats(String userId) {
-        // Charger le nombre de publications
         db.collection("recommendations")
                 .whereEqualTo("userId", userId)
                 .get()
@@ -155,7 +154,6 @@ public class UserProfileFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des publications", e));
 
-        // Charger le nombre de followers
         db.collection("followers")
                 .document(userId)
                 .collection("followers")
@@ -166,7 +164,6 @@ public class UserProfileFragment extends Fragment {
                 })
                 .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des followers", e));
 
-        // Charger le nombre de following
         db.collection("followers")
                 .document(userId)
                 .collection("following")

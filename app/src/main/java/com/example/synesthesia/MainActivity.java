@@ -8,6 +8,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
+import com.example.synesthesia.fragments.UserInfoFragment;
 import com.example.synesthesia.fragments.UserListFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
 import com.example.synesthesia.utilities.FooterUtils;
@@ -53,4 +54,13 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
+    public void showUserInfoFragment() {
+        UserInfoFragment userInfoFragment = new UserInfoFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, userInfoFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
 }
