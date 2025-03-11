@@ -1,4 +1,4 @@
-package com.example.synesthesia;
+package com.example.synesthesia.authentication;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.R;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.Objects;
