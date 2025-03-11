@@ -20,9 +20,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.UserInfoActivity;
-import com.example.synesthesia.UserListActivity;
 import com.example.synesthesia.authentication.LoginActivity;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.RecommendationsUtils;
@@ -79,11 +79,17 @@ public class UserProfileFragment extends Fragment {
         userUtils = new UserUtils();
         recommendationsUtils = new RecommendationsUtils(db);
 
-        String targetUserId = requireActivity().getIntent().getStringExtra("userId");
+        Bundle args = getArguments();
+        String targetUserId = null;
+        if (args != null) {
+            targetUserId = args.getString("userId");
+        }
+
         if (targetUserId == null || targetUserId.isEmpty()) {
             targetUserId = userUtils.getCurrentUserId();
         }
-        String finalTargetUserId = targetUserId;
+
+        final String finalTargetUserId = targetUserId;
         followerLayout.setOnClickListener(v -> openFollowerList(finalTargetUserId));
         followingLayout.setOnClickListener(v -> openFollowingList(finalTargetUserId));
 
@@ -219,16 +225,14 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void openFollowerList(String userId) {
-        Intent intent = new Intent(requireContext(), UserListActivity.class);
-        intent.putExtra("userId", userId);
-        intent.putExtra("type", "followers");
-        startActivity(intent);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).showUserListFragment(userId, "followers");
+        }
     }
 
     private void openFollowingList(String userId) {
-        Intent intent = new Intent(requireContext(), UserListActivity.class);
-        intent.putExtra("userId", userId);
-        intent.putExtra("type", "following");
-        startActivity(intent);
+        if (getActivity() instanceof MainActivity) {
+            ((MainActivity) getActivity()).showUserListFragment(userId, "following");
+        }
     }
 }

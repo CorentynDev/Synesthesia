@@ -13,8 +13,8 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
-import com.example.synesthesia.UserProfileActivity;
 import com.example.synesthesia.models.User;
 
 import java.util.List;
@@ -51,12 +51,15 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             holder.userImage.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Ajout du OnClickListener pour rediriger vers la page de profil
+        // Ajout du OnClickListener pour rediriger vers le fragment de profil
         holder.itemView.setOnClickListener(v -> {
             Log.d("UserAdapter", "User ID: " + user.getId());
-            Intent intent = new Intent(context, UserProfileActivity.class);
-            intent.putExtra("userId", user.getId());  // Passe l'ID de l'utilisateur à l'activité de profil
-            context.startActivity(intent);
+
+            // Vérifiez si le contexte est une instance de MainActivity
+            if (context instanceof MainActivity) {
+                // Appel de la méthode pour afficher le fragment UserProfileFragment
+                ((MainActivity) context).showUserProfileFragment(user.getId());
+            }
         });
     }
 

@@ -8,6 +8,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
+import com.example.synesthesia.fragments.UserListFragment;
+import com.example.synesthesia.fragments.UserProfileFragment;
 import com.example.synesthesia.utilities.FooterUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,13 +29,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showUserListFragment(String userId, String type) {
-        SearchUserFragment searchUserFragment = SearchUserFragment.newInstance(userId, type);
+        UserListFragment userListFragment = UserListFragment.newInstance(userId, type);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragmentContainer, searchUserFragment);
+        fragmentTransaction.replace(R.id.fragmentContainer, userListFragment);
 
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
+    public void showUserProfileFragment(String userId) {
+        UserProfileFragment userProfileFragment = new UserProfileFragment();
+
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        userProfileFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, userProfileFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
 }

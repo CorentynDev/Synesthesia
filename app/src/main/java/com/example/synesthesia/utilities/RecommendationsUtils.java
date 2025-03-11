@@ -15,8 +15,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
-import com.example.synesthesia.UserProfileActivity;
 import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.api.TmdbApiClient;
@@ -131,7 +131,7 @@ public class RecommendationsUtils {
     /**
      * Helper method to populate recommendations list.
      */
-    private void populateRecommendations(Context context, LinearLayout recommendationList, QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+    private void populateRecommendations(Context context, @NonNull LinearLayout recommendationList, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
         Log.d("RecommendationsUtils", "Successfully fetched recommendations");
         recommendationList.removeAllViews();
 
@@ -169,9 +169,11 @@ public class RecommendationsUtils {
 
         // Add onClickListener for userTextView to navigate to UserProfileActivity
         userTextView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, UserProfileActivity.class);
-            intent.putExtra("userId", recommendation.getUserId()); // Pass user ID to the activity
-            context.startActivity(intent);
+            if (context instanceof MainActivity) {
+                // Appel de la méthode pour afficher le fragment UserProfileFragment
+                Log.d("USER ID", recommendation.getUserId());
+                ((MainActivity) context).showUserProfileFragment(recommendation.getUserId());
+            }
         });
 
         ImageView typeIconImageView = cardView.findViewById(R.id.recommendationTypeIcon);

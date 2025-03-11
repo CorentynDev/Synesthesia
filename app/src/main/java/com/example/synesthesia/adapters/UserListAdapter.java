@@ -59,26 +59,21 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.UserVi
         }
 
         public void bind(String userId, OnUserClickListener listener) {
-            // Récupère les données de Firestore pour cet utilisateur
             db.collection("users").document(userId).get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
-                            // Met à jour le pseudo
                             userPseudo.setText(documentSnapshot.getString("username"));
 
-                            // Charger une image utilisateur (si elle existe)
                             String imageUrl = documentSnapshot.getString("profileImageUrl");
                             if (imageUrl != null && !imageUrl.isEmpty()) {
-                                // Utilisation d'une bibliothèque comme Glide ou Picasso pour charger l'image
                                 Glide.with(itemView.getContext())
                                         .load(imageUrl)
-                                        .placeholder(R.drawable.rotating_loader) // image par défaut
+                                        .placeholder(R.drawable.rotating_loader)
                                         .into(userImageView);
                             }
                         }
                     });
 
-            // Détecte les clics sur cet élément
             itemView.setOnClickListener(v -> listener.onUserClick(userId));
         }
     }

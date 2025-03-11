@@ -25,6 +25,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class SearchUserFragment extends Fragment {
     private RecyclerView usersRecyclerView;
@@ -33,20 +34,17 @@ public class SearchUserFragment extends Fragment {
     private EditText searchField;
     private Button searchButton;
 
-    private String userId;  // Ajout des variables pour récupérer les paramètres
-    private String type;
-
     public SearchUserFragment() {
         // Required empty public constructor
     }
 
-    // Méthode pour créer une nouvelle instance du fragment avec les paramètres
+    @NonNull
     public static SearchUserFragment newInstance(String userId, String type) {
         SearchUserFragment fragment = new SearchUserFragment();
         Bundle args = new Bundle();
-        args.putString("userId", userId);  // Ajoute les paramètres au Bundle
+        args.putString("userId", userId);
         args.putString("type", type);
-        fragment.setArguments(args);  // Attache le Bundle au fragment
+        fragment.setArguments(args);
         return fragment;
     }
 
@@ -59,13 +57,12 @@ public class SearchUserFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Récupère les arguments passés au fragment
         if (getArguments() != null) {
-            userId = getArguments().getString("userId");
-            type = getArguments().getString("type");
+            String userId = getArguments().getString("userId");
+            String type = getArguments().getString("type");
         }
 
-        FooterUtils.setupFooter(getActivity(), R.id.research);  // Met à jour le footer
+        FooterUtils.setupFooter(requireActivity(), R.id.research);
 
         usersRecyclerView = view.findViewById(R.id.usersRecyclerView);
         searchButton = view.findViewById(R.id.searchButton);
@@ -75,7 +72,6 @@ public class SearchUserFragment extends Fragment {
         usersRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         usersRecyclerView.setAdapter(userAdapter);
 
-        // Action au clic du bouton de recherche
         searchButton.setOnClickListener(v -> {
             String query = searchField.getText().toString().trim();
             if (!query.isEmpty()) {
@@ -85,11 +81,9 @@ public class SearchUserFragment extends Fragment {
             }
         });
 
-        // TextWatcher pour la recherche dynamique
         searchField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
-                // Pas nécessaire ici
             }
 
             @Override
@@ -98,21 +92,18 @@ public class SearchUserFragment extends Fragment {
                 if (!query.isEmpty()) {
                     searchUsers(query);
                 } else {
-                    fetchUsersFromFirestore();  // Affiche tous les utilisateurs si la recherche est vide
+                    fetchUsersFromFirestore();
                 }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                // Pas nécessaire ici
             }
         });
 
-        // Charger initialement tous les utilisateurs
         fetchUsersFromFirestore();
     }
 
-    // Méthode pour récupérer tous les utilisateurs depuis Firestore
     private void fetchUsersFromFirestore() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -120,30 +111,27 @@ public class SearchUserFragment extends Fragment {
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        userList.clear();  // Efface les utilisateurs existants
+                        userList.clear();
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String pseudo = document.getString("username");
                             String profileImageUrl = document.getString("profileImageUrl");
                             String id = document.getId();
                             if (pseudo != null && profileImageUrl != null) {
-                                // Crée un objet User et l'ajoute à la liste
                                 User user = new User(pseudo, profileImageUrl, id);
                                 userList.add(user);
                             }
                         }
-                        userAdapter.notifyDataSetChanged();  // Met à jour l'adaptateur
+                        userAdapter.notifyDataSetChanged();
                     } else {
                         Log.e("SearchUserFragment", "Error fetching users: ", task.getException());
                     }
                 });
     }
 
-    // Méthode pour rechercher des utilisateurs en fonction de la requête
-    private void searchUsers(String query) {
+    private void searchUsers(@NonNull String query) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         String queryLowerCase = query.toLowerCase();
-        Log.d("SearchUserFragment", "Starting search for: " + queryLowerCase);  // Log de recherche
 
         db.collection("users")
                 .get()
@@ -151,7 +139,7 @@ public class SearchUserFragment extends Fragment {
                     if (task.isSuccessful()) {
                         Log.d("SearchUserFragment", "Search successful, number of results: " + task.getResult().size());
 
-                        userList.clear();  // Efface la liste avant d'ajouter les résultats de la recherche
+                        userList.clear();
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String pseudo = document.getString("username");
@@ -164,7 +152,7 @@ public class SearchUserFragment extends Fragment {
                             }
                         }
 
-                        userAdapter.notifyDataSetChanged();  // Met à jour l'adaptateur
+                        userAdapter.notifyDataSetChanged();
                     } else {
                         Log.e("SearchUserFragment", "Error fetching users: ", task.getException());
                     }
