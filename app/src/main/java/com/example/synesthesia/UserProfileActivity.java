@@ -313,14 +313,14 @@ public class UserProfileActivity extends AppCompatActivity {
     private void openFollowerList(String userId) {
         Intent intent = new Intent(this, UserListActivity.class);
         intent.putExtra("userId", userId);
-        intent.putExtra("type", "followers"); // Identifier qu'on veut afficher les followers
+        intent.putExtra("type", "followers");
         startActivity(intent);
     }
 
     private void openFollowingList(String userId) {
         Intent intent = new Intent(this, UserListActivity.class);
         intent.putExtra("userId", userId);
-        intent.putExtra("type", "following"); // Identifier qu'on veut afficher les personnes suivies
+        intent.putExtra("type", "following");
         startActivity(intent);
     }
 

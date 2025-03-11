@@ -17,6 +17,7 @@ import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.SearchMusicActivity;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
+import com.example.synesthesia.fragments.UserProfileFragment;
 
 public class FooterUtils {
 
@@ -59,6 +60,14 @@ public class FooterUtils {
             SearchUserFragment searchUserFragment = new SearchUserFragment();
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.fragmentContainer, searchUserFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        profileButton.setOnClickListener(view -> {
+            UserProfileFragment userProfileFragment = new UserProfileFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, userProfileFragment);
             transaction.addToBackStack(null);
             transaction.commit();
         });
