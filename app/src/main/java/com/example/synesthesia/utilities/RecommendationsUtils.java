@@ -1,5 +1,7 @@
 package com.example.synesthesia.utilities;
 
+import static com.example.synesthesia.utilities.UserUtils.db;
+
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -33,6 +35,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -366,8 +371,36 @@ public class RecommendationsUtils {
                 likeUtils.updateLikeUI(likeButton, likeCounter, newLikeStatus, likedBy.size());
                 likeUtils.updateLikeList(userId, recommendation, newLikeStatus);
                 likeUtils.toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
+
+                if (newLikeStatus) {
+                    // Passer le contexte approprié à la méthode sendLikeNotification
+                    sendLikeNotification(cardView.getContext(), recommendation.getUserId());
+                }
             });
         }
+    }
+    private void sendLikeNotification(Context context, String userIdToFollow) {
+        // Récupérer le pseudo de l'utilisateur connecté
+        UserUtils.getPseudo().addOnSuccessListener(username -> {
+            // Récupérer les informations de l'utilisateur suivi
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("users").document(userIdToFollow).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String fcmTokenToFollow = documentSnapshot.getString("fcmToken"); // Token FCM de l'utilisateur à suivre
+
+                            if (fcmTokenToFollow != null) {
+                                String title = "Nouveau Like!";
+                                String message = username + " a liké une de vos recommandations"; // Affiche le pseudo
+
+                                // Envoyer la notification en passant le contexte
+                                NotificationUtils.sendNotificationLike(context, fcmTokenToFollow, title, message);
+                                Log.d("FCM", "Notification envoyée à " + userIdToFollow);
+                            }
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du token de l'utilisateur suivi", e));
+        }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du pseudo de l'utilisateur connecté", e));
     }
 
     /**

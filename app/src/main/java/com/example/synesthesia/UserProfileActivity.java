@@ -257,7 +257,6 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void sendFollowNotification(String userIdToFollow) {
-
         // Récupérer le pseudo de l'utilisateur connecté
         UserUtils.getPseudo().addOnSuccessListener(username -> {
             // Récupérer les informations de l'utilisateur suivi
@@ -271,7 +270,7 @@ public class UserProfileActivity extends AppCompatActivity {
                                 String message = username + " commence à vous suivre."; // Affiche le pseudo
 
                                 // Envoyer la notification
-                                NotificationUtils.sendNotification(this, fcmTokenToFollow, title, message);
+                                NotificationUtils.sendNotificationFollow(this, fcmTokenToFollow, title, message);
                                 Log.d("FCM", "Notification envoyée à " + userIdToFollow);
                             }
                         }

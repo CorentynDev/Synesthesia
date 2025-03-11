@@ -54,6 +54,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage:21.0.0")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("com.google.firebase:firebase-messaging:24.1.0")
+    implementation("androidx.test:core:1.5.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
