@@ -15,6 +15,7 @@ import com.example.synesthesia.SearchBookActivity;
 import com.example.synesthesia.SearchGameActivity;
 import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.SearchMusicActivity;
+import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
@@ -34,7 +35,6 @@ public class FooterUtils {
         bookmarkButton.setImageResource(R.drawable.bookmark);
         profileButton.setImageResource(R.drawable.user);
 
-        // Active le bouton en fonction de l'id fourni
         if (activeButtonId == R.id.homeButton) {
             homeButton.setImageResource(R.drawable.home_active);
         } else if (activeButtonId == R.id.research) {
@@ -47,7 +47,6 @@ public class FooterUtils {
             profileButton.setImageResource(R.drawable.user_active);
         }
 
-        // Configuration des listeners
         homeButton.setOnClickListener(view -> {
             HomeFragment homeFragment = new HomeFragment();
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
@@ -60,6 +59,14 @@ public class FooterUtils {
             SearchUserFragment searchUserFragment = new SearchUserFragment();
             FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
             transaction.replace(R.id.fragmentContainer, searchUserFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        bookmarkButton.setOnClickListener(view -> {
+            BookmarkFragment bookmarkFragment = new BookmarkFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, bookmarkFragment);
             transaction.addToBackStack(null);
             transaction.commit();
         });
@@ -97,7 +104,7 @@ public class FooterUtils {
         });
     }
 
-    private static void replaceFragment(FragmentActivity activity, Fragment fragment) {
+    private static void replaceFragment(@NonNull FragmentActivity activity, Fragment fragment) {
         FragmentManager fragmentManager = activity.getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
 

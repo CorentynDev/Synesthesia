@@ -1,14 +1,18 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
@@ -18,32 +22,38 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class BookmarksActivity extends AppCompatActivity {
+public class BookmarkFragment extends Fragment {
     private FirebaseFirestore db;
     private RecommendationsUtils recommendationsUtils;
     private LinearLayout linearLayoutBookmarks;
     private TextView emptyView;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_bookmarks);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_bookmark, container, false);
+    }
 
-        FooterUtils.setupFooter(this, R.id.bookmarkButton);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        FooterUtils.setupFooter(requireActivity(), R.id.bookmarkButton);
 
         db = FirebaseFirestore.getInstance();
         recommendationsUtils = new RecommendationsUtils(db);
 
-        linearLayoutBookmarks = findViewById(R.id.linearLayoutBookmarks);
-        emptyView = findViewById(R.id.emptyView);
+        linearLayoutBookmarks = view.findViewById(R.id.linearLayoutBookmarks);
+        emptyView = view.findViewById(R.id.emptyView);
 
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
             loadBookmarkedRecommendations(userId);
         } else {
-            Log.e("BookmarksActivity", "User not logged in");
+            Log.e("BookmarksFragment", "User not logged in");
             showEmptyMessage();
         }
     }
@@ -60,12 +70,12 @@ public class BookmarksActivity extends AppCompatActivity {
                             showEmptyMessage();
                         }
                     } else {
-                        Log.d("BookmarksActivity", "User document does not exist");
+                        Log.d("BookmarksFragment", "User document does not exist");
                         showEmptyMessage();
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("BookmarksActivity", "Error fetching user document", e);
+                    Log.e("BookmarksFragment", "Error fetching user document", e);
                     showEmptyMessage();
                 });
     }
@@ -83,18 +93,18 @@ public class BookmarksActivity extends AppCompatActivity {
                                 recommendations.add(recommendation);
                             }
                         } else {
-                            Log.d("BookmarksActivity", "Recommendation document does not exist");
+                            Log.d("BookmarksFragment", "Recommendation document does not exist");
                         }
 
                         if (recommendations.size() == recommendationIds.size()) {
                             recommendations.sort((r1, r2) -> r2.getTimestamp().compareTo(r1.getTimestamp()));
 
                             for (Recommendation recommendation : recommendations) {
-                                recommendationsUtils.addRecommendationCard(this, linearLayoutBookmarks, recommendation, recommendationId);
+                                recommendationsUtils.addRecommendationCard(getContext(), linearLayoutBookmarks, recommendation, recommendationId);
                             }
                         }
                     })
-                    .addOnFailureListener(e -> Log.e("BookmarksActivity", "Error fetching recommendation", e));
+                    .addOnFailureListener(e -> Log.e("BookmarksFragment", "Error fetching recommendation", e));
         }
     }
 
@@ -104,7 +114,7 @@ public class BookmarksActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
 
         // Arrêter la musique si elle est en cours de lecture

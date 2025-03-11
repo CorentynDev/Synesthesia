@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
 import com.example.synesthesia.fragments.UserInfoFragment;
@@ -60,6 +61,16 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainer, userInfoFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showBookmarksFragment() {
+        BookmarkFragment bookmarkFragment = new BookmarkFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, bookmarkFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
