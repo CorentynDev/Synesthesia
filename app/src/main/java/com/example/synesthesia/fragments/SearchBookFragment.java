@@ -104,6 +104,10 @@ public class SearchBookFragment extends Fragment {
         int maxResults = 40;
         int startIndex = 0;
 
+        if (booksAdapter != null) {
+            booksAdapter.clearBooks();
+        }
+
         fetchBooks(query, apiKey, maxResults, startIndex);
     }
 

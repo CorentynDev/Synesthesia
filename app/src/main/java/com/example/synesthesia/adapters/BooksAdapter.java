@@ -21,7 +21,7 @@ import java.util.List;
 
 public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHolder> {
 
-    private List<Book> books;  // List des livres
+    private List<Book> books;  // Liste des livres
     private final Context context;
 
     public BooksAdapter(List<Book> books, Context context) {
@@ -52,6 +52,12 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
         int startPosition = books.size();  // Position de départ des nouveaux livres
         books.addAll(newBooks);  // Ajouter les livres à la liste
         notifyItemRangeInserted(startPosition, newBooks.size());  // Notifier l'adaptateur du changement
+    }
+
+    // Réinitialiser la liste des livres
+    public void clearBooks() {
+        books.clear();
+        notifyDataSetChanged();
     }
 
     class BookViewHolder extends RecyclerView.ViewHolder {
