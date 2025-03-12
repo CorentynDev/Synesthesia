@@ -1,7 +1,6 @@
 package com.example.synesthesia.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.synesthesia.GameDetailsActivity;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.GiantBombGame;
 
@@ -68,9 +67,9 @@ public class GamesAdapter extends RecyclerView.Adapter<GamesAdapter.GameViewHold
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     GiantBombGame selectedGame = games.get(position);
-                    Intent intent = new Intent(context, GameDetailsActivity.class);
-                    intent.putExtra("game", selectedGame);
-                    context.startActivity(intent);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showGameDetailsFragment(selectedGame);
+                    }
                 }
             });
         }

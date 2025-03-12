@@ -1,15 +1,20 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.R;
 import com.example.synesthesia.adapters.GamesAdapter;
 import com.example.synesthesia.api.GiantBombApiClient;
 import com.example.synesthesia.api.GiantBombApiService;
@@ -22,22 +27,28 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SearchGameActivity extends AppCompatActivity {
+public class SearchGameFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private GamesAdapter adapter;
     private EditText searchEditText;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_games);
-        Button searchButton = findViewById(R.id.searchButton);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_search_game, container, false);
+    }
 
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        searchEditText = findViewById(R.id.searchEditText);
+        Button searchButton = view.findViewById(R.id.searchButton);
+
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        searchEditText = view.findViewById(R.id.searchEditText);
 
         searchButton.setOnClickListener(v -> performSearch(searchEditText.getText().toString()));
     }
@@ -50,14 +61,15 @@ public class SearchGameActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     Log.i("API Response", String.valueOf(response));
                     List<GiantBombGame> games = response.body().getGames();
-                    adapter = new GamesAdapter(games, SearchGameActivity.this);
+                    adapter = new GamesAdapter(games, getContext());
                     recyclerView.setAdapter(adapter);
                 }
             }
 
             @Override
-            public void onFailure(Call<GiantBombResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<GiantBombResponse> call, @NonNull Throwable t) {
                 // Gérer l'erreur
+                Log.e("API Error", t.getMessage());
             }
         });
     }

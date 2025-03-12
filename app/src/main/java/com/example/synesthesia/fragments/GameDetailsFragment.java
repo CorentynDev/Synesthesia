@@ -1,16 +1,22 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.models.GiantBombGame;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.models.Recommendation;
@@ -23,33 +29,40 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-public class GameDetailsActivity extends AppCompatActivity {
+public class GameDetailsFragment extends Fragment {
 
     private GiantBombGame game;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private EditText commentField;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_game_details);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_game_details, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         // Initialisation des composants UI
-        TextView gameTitle = findViewById(R.id.gameTitle);
-        TextView gameDescription = findViewById(R.id.gameDescription);
-        ImageView gameImage = findViewById(R.id.gameImage);
-        Button recommendButton = findViewById(R.id.recommendButton);
-        Button backButton = findViewById(R.id.backButton);
-        commentField = findViewById(R.id.commentField);
+        TextView gameTitle = view.findViewById(R.id.gameTitle);
+        TextView gameDescription = view.findViewById(R.id.gameDescription);
+        ImageView gameImage = view.findViewById(R.id.gameImage);
+        Button recommendButton = view.findViewById(R.id.recommendButton);
+        Button backButton = view.findViewById(R.id.backButton);
+        commentField = view.findViewById(R.id.commentField);
 
         // Récupération de l'objet jeu
-        game = getIntent().getParcelableExtra("game");
+        Bundle args = getArguments();
+        if (args != null) {
+            game = args.getParcelable("game");
+        }
 
         // Vérification de nullité
         if (game == null) {
-            Toast.makeText(this, "Les détails du jeu sont indisponibles.", Toast.LENGTH_SHORT).show();
-            finish(); // Ferme l'activité si les données sont manquantes
+            Toast.makeText(getContext(), "Les détails du jeu sont indisponibles.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -66,25 +79,21 @@ public class GameDetailsActivity extends AppCompatActivity {
             gameImage.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Initialisation Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Bouton pour recommander un jeu
         recommendButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
             submitRecommendation(game, comment.isEmpty() ? "" : comment);
 
-            Intent intent = new Intent(GameDetailsActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateToMainPage();
+            }
         });
 
-        // Bouton retour
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> requireActivity().onBackPressed());
     }
 
-    // Fonction pour soumettre une recommandation
     private void submitRecommendation(GiantBombGame game, String commentText) {
         String userId = Objects.requireNonNull(mAuth.getCurrentUser()).getUid();
 
@@ -114,14 +123,13 @@ public class GameDetailsActivity extends AppCompatActivity {
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(GameDetailsActivity.this, "Recommendation saved successfully", Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    Toast.makeText(getContext(), "Recommendation saved successfully", Toast.LENGTH_SHORT).show();
                                 })
-                                .addOnFailureListener(e -> Toast.makeText(GameDetailsActivity.this, "Error saving recommendation", Toast.LENGTH_SHORT).show());
+                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error saving recommendation", Toast.LENGTH_SHORT).show());
                     } else {
-                        Toast.makeText(GameDetailsActivity.this, "User not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "User not found", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(GameDetailsActivity.this, "Error fetching user data", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Error fetching user data", Toast.LENGTH_SHORT).show());
     }
 }

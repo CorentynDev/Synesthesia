@@ -11,11 +11,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.synesthesia.R;
-import com.example.synesthesia.SearchGameActivity;
 import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchBookFragment;
+import com.example.synesthesia.fragments.SearchGameFragment;
 import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
@@ -103,7 +103,10 @@ public class FooterUtils {
                         activity.startActivity(new Intent(activity, SearchMovieActivity.class));
                         break;
                     case 3:
-                        activity.startActivity(new Intent(activity, SearchGameActivity.class));
+                        SearchGameFragment searchGameFragment = new SearchGameFragment();
+                        transaction.replace(R.id.fragmentContainer, searchGameFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                 }
             });
