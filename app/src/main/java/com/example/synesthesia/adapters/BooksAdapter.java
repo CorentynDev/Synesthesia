@@ -1,7 +1,6 @@
 package com.example.synesthesia.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.example.synesthesia.BookDetailsActivity;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Book;
 
@@ -73,9 +72,9 @@ public class BooksAdapter extends RecyclerView.Adapter<BooksAdapter.BookViewHold
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     Book selectedBook = books.get(position);
-                    Intent intent = new Intent(context, BookDetailsActivity.class);
-                    intent.putExtra("book", selectedBook);
-                    context.startActivity(intent);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showBookDetailsFragment(selectedBook);
+                    }
                 }
             });
         }

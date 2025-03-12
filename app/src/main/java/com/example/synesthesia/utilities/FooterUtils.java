@@ -11,11 +11,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.synesthesia.R;
-import com.example.synesthesia.SearchBookActivity;
 import com.example.synesthesia.SearchGameActivity;
 import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
+import com.example.synesthesia.fragments.SearchBookFragment;
 import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
@@ -85,16 +85,19 @@ public class FooterUtils {
 
             String[] types = {"Musique", "Livre", "Film", "Jeu Vidéo"};
             builder.setItems(types, (dialog, which) -> {
+                FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
                 switch (which) {
                     case 0:
                         SearchMusicFragment searchMusicFragment = new SearchMusicFragment();
-                        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
                         transaction.replace(R.id.fragmentContainer, searchMusicFragment);
                         transaction.addToBackStack(null);
                         transaction.commit();
                         break;
                     case 1:
-                        activity.startActivity(new Intent(activity, SearchBookActivity.class));
+                        SearchBookFragment searchBookFragment = new SearchBookFragment();
+                        transaction.replace(R.id.fragmentContainer, searchBookFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                     case 2:
                         activity.startActivity(new Intent(activity, SearchMovieActivity.class));

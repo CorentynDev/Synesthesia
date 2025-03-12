@@ -8,15 +8,18 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.synesthesia.fragments.AlbumDetailsFragment;
 import com.example.synesthesia.fragments.ArtistDetailsFragment;
+import com.example.synesthesia.fragments.BookDetailsFragment;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.MusicDetailsFragment;
+import com.example.synesthesia.fragments.SearchBookFragment;
 import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.UserInfoFragment;
 import com.example.synesthesia.fragments.UserListFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
 import com.example.synesthesia.models.Album;
 import com.example.synesthesia.models.Artist;
+import com.example.synesthesia.models.Book;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
 
@@ -140,6 +143,30 @@ public class MainActivity extends AppCompatActivity {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainer, homeFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showSearchBookFragment() {
+        SearchBookFragment searchBookFragment = new SearchBookFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchBookFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showBookDetailsFragment(Book book) {
+        BookDetailsFragment bookDetailsFragment = new BookDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("book", book);
+        bookDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, bookDetailsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
