@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.synesthesia.AlbumDetailsActivity;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.MusicDetailsActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Artist;
@@ -95,9 +95,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 holder.playPauseButton.setOnClickListener(v -> togglePlayPause(holder, position, track));
 
                 holder.itemView.setOnClickListener(v -> {
-                    Intent intent = new Intent(context, MusicDetailsActivity.class);
-                    intent.putExtra("track", track);
-                    context.startActivity(intent);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showMusicDetailsFragment(track);
+                    }
                 });
             } else if (item instanceof Artist) {
                 Artist artist = (Artist) item;
@@ -115,9 +115,9 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 holder.playPauseButton.setVisibility(View.GONE);
 
                 holder.itemView.setOnClickListener(v -> {
-                    Intent intent = new Intent(context, AlbumDetailsActivity.class);
-                    intent.putExtra("album", album);  // Passer l'objet Album
-                    context.startActivity(intent);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showAlbumDetailsFragment(album);
+                    }
                 });
             } else {
                 holder.playPauseButton.setVisibility(View.GONE);

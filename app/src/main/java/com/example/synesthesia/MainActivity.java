@@ -6,12 +6,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.synesthesia.fragments.AlbumDetailsFragment;
+import com.example.synesthesia.fragments.ArtistDetailsFragment;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
-import com.example.synesthesia.fragments.SearchUserFragment;
+import com.example.synesthesia.fragments.MusicDetailsFragment;
+import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.UserInfoFragment;
 import com.example.synesthesia.fragments.UserListFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
+import com.example.synesthesia.models.Album;
+import com.example.synesthesia.models.Artist;
+import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
 
 public class MainActivity extends AppCompatActivity {
@@ -74,4 +80,68 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
+    public void showArtistDetailsFragment(Artist artist) {
+        ArtistDetailsFragment artistDetailsFragment = new ArtistDetailsFragment();
+
+        // Passez l'objet Artist au fragment
+        Bundle args = new Bundle();
+        args.putParcelable("artist", artist);
+        artistDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, artistDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showSearchMusicFragment() {
+        SearchMusicFragment searchMusicFragment = new SearchMusicFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchMusicFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showAlbumDetailsFragment(Album album) {
+        AlbumDetailsFragment albumDetailsFragment = new AlbumDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("album", album);
+        albumDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, albumDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showMusicDetailsFragment(Track track) {
+        MusicDetailsFragment musicDetailsFragment = new MusicDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("track", track);
+        musicDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, musicDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void navigateToMainPage() {
+        HomeFragment homeFragment = new HomeFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, homeFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
 }

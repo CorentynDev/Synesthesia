@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="albumDetailsLayout" type="id" />
+    <item name="albumCoverImageView" type="id" />
+    <item name="albumTitleTextView" type="id" />
+    <item name="albumArtistTextView" type="id" />
+    <item name="albumTracksCountTextView" type="id" />
+    <item name="tracksRecyclerView" type="id" />
+</resources>

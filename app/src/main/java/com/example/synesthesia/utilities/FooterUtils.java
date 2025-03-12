@@ -14,9 +14,9 @@ import com.example.synesthesia.R;
 import com.example.synesthesia.SearchBookActivity;
 import com.example.synesthesia.SearchGameActivity;
 import com.example.synesthesia.SearchMovieActivity;
-import com.example.synesthesia.SearchMusicActivity;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
+import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
 
@@ -87,7 +87,11 @@ public class FooterUtils {
             builder.setItems(types, (dialog, which) -> {
                 switch (which) {
                     case 0:
-                        activity.startActivity(new Intent(activity, SearchMusicActivity.class));
+                        SearchMusicFragment searchMusicFragment = new SearchMusicFragment();
+                        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+                        transaction.replace(R.id.fragmentContainer, searchMusicFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                     case 1:
                         activity.startActivity(new Intent(activity, SearchBookActivity.class));
@@ -103,6 +107,7 @@ public class FooterUtils {
             builder.create().show();
         });
     }
+
 
     private static void replaceFragment(@NonNull FragmentActivity activity, Fragment fragment) {
         FragmentManager fragmentManager = activity.getSupportFragmentManager();

@@ -1,18 +1,23 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Artist;
 import com.example.synesthesia.models.Comment;
@@ -31,45 +36,51 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class ArtistDetailsActivity extends AppCompatActivity {
+public class ArtistDetailsFragment extends Fragment {
 
-    private static final String TAG = "ArtistDetailsActivity";
+    private static final String TAG = "ArtistDetailsFragment";
 
     private DeezerApi deezerApi;
-    private String artistImageUrl; // Variable pour stocker l'URL de l'image de l'artiste
+    private String artistImageUrl;
     private EditText commentField;
 
-    private FirebaseFirestore db; // Firestore pour stocker les recommandations
-    private FirebaseAuth mAuth; // Authentification Firebase
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_artist_details, container, false);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_artist_details);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        // Initialisation de Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // Récupération de l'objet passé par Intent
-        Artist artist = getIntent().getParcelableExtra("artist");
+        // Récupération de l'objet passé par arguments
+        Bundle args = getArguments();
+        Artist artist;
+        if (args != null) {
+            artist = args.getParcelable("artist");
+        } else {
+            artist = null;
+        }
 
-        // Vérification de l'objet artist
         if (artist == null) {
             Log.e(TAG, "L'objet Artist est nul");
-            Toast.makeText(this, "Erreur: Aucun artiste sélectionné", Toast.LENGTH_SHORT).show();
-            finish();
+            Toast.makeText(getContext(), "Erreur: Aucun artiste sélectionné", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Initialisation des vues
-        ImageView artistImage = findViewById(R.id.artistImage);
-        TextView artistName = findViewById(R.id.artistName);
-        Button backButton = findViewById(R.id.backButton);
-        Button recommendButton = findViewById(R.id.recommendButton);
-        commentField = findViewById(R.id.commentField);
+        ImageView artistImage = view.findViewById(R.id.artistImage);
+        TextView artistName = view.findViewById(R.id.artistName);
+        Button backButton = view.findViewById(R.id.backButton);
+        Button recommendButton = view.findViewById(R.id.recommendButton);
+        commentField = view.findViewById(R.id.commentField);
 
-        // Initialisation de Retrofit pour l'API Deezer
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.deezer.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -77,47 +88,41 @@ public class ArtistDetailsActivity extends AppCompatActivity {
 
         deezerApi = retrofit.create(DeezerApi.class);
 
-        // Chargement des détails de l'artiste
         String artistId = artist.getId();
         fetchArtistDetails(artistId, artistImage, artistName);
 
-        // Action du bouton retour
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> requireActivity().onBackPressed());
 
-        // Action du bouton de recommandation
         recommendButton.setOnClickListener(v -> {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(artist, commentText.isEmpty() ? "" : commentText);
 
-            Intent intent = new Intent(ArtistDetailsActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateToMainPage();
+            }
         });
     }
 
     private void fetchArtistDetails(String artistId, ImageView artistImage, TextView artistName) {
-        Call<Artist> call = deezerApi.getArtistById(artistId); // Assurez-vous d'avoir cette méthode dans DeezerApi
+        Call<Artist> call = deezerApi.getArtistById(artistId);
         call.enqueue(new Callback<Artist>() {
             @Override
             public void onResponse(@NonNull Call<Artist> call, @NonNull Response<Artist> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Récupération des détails de l'artiste
                     Artist artistDetails = response.body();
-
-                    // Chargement de l'image de l'artiste
                     artistImageUrl = artistDetails.getImageUrl();
                     loadArtistImage(artistImageUrl, artistImage);
                     artistName.setText(artistDetails.getName());
                 } else {
                     Log.e(TAG, "Erreur lors de la réponse : " + response.code() + " - " + response.message());
-                    Toast.makeText(ArtistDetailsActivity.this, "Erreur lors de la récupération des détails de l'artiste : " + response.message(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Erreur lors de la récupération des détails de l'artiste : " + response.message(), Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Artist> call, Throwable t) {
                 Log.e(TAG, "Échec de la récupération des détails de l'artiste", t);
-                Toast.makeText(ArtistDetailsActivity.this, "Échec de la connexion à l'API", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Échec de la connexion à l'API", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -126,7 +131,7 @@ public class ArtistDetailsActivity extends AppCompatActivity {
         if (artistUrl != null && !artistUrl.isEmpty()) {
             Glide.with(this)
                     .load(artistUrl)
-                    .placeholder(R.drawable.rotating_loader) // Assurez-vous d'avoir une image par défaut
+                    .placeholder(R.drawable.rotating_loader)
                     .into(artistImage);
         } else {
             Log.w(TAG, "URL d'image de l'artiste est null ou vide");
@@ -136,24 +141,21 @@ public class ArtistDetailsActivity extends AppCompatActivity {
 
     private void submitRecommendation(Artist artist, String commentText) {
         if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "Utilisateur non authentifié", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Utilisateur non authentifié", Toast.LENGTH_SHORT).show();
             return;
         }
 
         String userId = mAuth.getCurrentUser().getUid();
 
-        // Vérifier que le nom d'utilisateur est disponible
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String username = documentSnapshot.getString("username");
 
                         Comment firstComment = new Comment(userId, commentText, new Timestamp(new Date()));
-
                         List<Comment> commentsList = new ArrayList<>();
                         commentsList.add(firstComment);
 
-                        // Utiliser artistImageUrl récupéré dans fetchArtistDetails
                         String recommendationCoverUrl = artistImageUrl;
 
                         Log.d(TAG, "URL de couverture de recommandation: " + recommendationCoverUrl);
@@ -162,7 +164,7 @@ public class ArtistDetailsActivity extends AppCompatActivity {
                         String type = "artist";
 
                         Recommendation recommendation = new Recommendation(
-                                artist.getName(), // Le nom de l'artiste
+                                artist.getName(),
                                 null,
                                 recommendationCoverUrl,
                                 userId,
@@ -174,25 +176,23 @@ public class ArtistDetailsActivity extends AppCompatActivity {
                                 artist.getId()
                         );
 
-                        // Ajouter la recommandation à Firestore
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(ArtistDetailsActivity.this, "Recommandation enregistrée", Toast.LENGTH_SHORT).show();
-                                    finish(); // Fermer l'activité après l'enregistrement
+                                    Toast.makeText(getContext(), "Recommandation enregistrée", Toast.LENGTH_SHORT).show();
                                 })
                                 .addOnFailureListener(e -> {
                                     Log.e(TAG, "Erreur lors de l'enregistrement de la recommandation", e);
-                                    Toast.makeText(ArtistDetailsActivity.this, "Erreur lors de l'enregistrement de la recommandation", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Erreur lors de l'enregistrement de la recommandation", Toast.LENGTH_SHORT).show();
                                 });
                     } else {
                         Log.e(TAG, "Utilisateur non trouvé");
-                        Toast.makeText(ArtistDetailsActivity.this, "Utilisateur non trouvé", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Utilisateur non trouvé", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Erreur lors de la récupération des données de l'utilisateur", e);
-                    Toast.makeText(ArtistDetailsActivity.this, "Erreur lors de la récupération des données de l'utilisateur", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Erreur lors de la récupération des données de l'utilisateur", Toast.LENGTH_SHORT).show();
                 });
     }
 }

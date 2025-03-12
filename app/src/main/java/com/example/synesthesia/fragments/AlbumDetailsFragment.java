@@ -1,8 +1,10 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -10,11 +12,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.adapters.TracksAdapter;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Album;
@@ -37,9 +42,9 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class AlbumDetailsActivity extends AppCompatActivity {
+public class AlbumDetailsFragment extends Fragment {
 
-    private static final String TAG = "AlbumDetailsActivity";
+    private static final String TAG = "AlbumDetailsFragment";
 
     private ImageView albumCoverImageView;
     private TextView albumTitleTextView;
@@ -56,33 +61,41 @@ public class AlbumDetailsActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_album_details);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_album_details, container, false);
+    }
 
-        FooterUtils.setupFooter(this, R.id.createRecommendationButton);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        FooterUtils.setupFooter(getActivity(), R.id.createRecommendationButton);
 
         // Initialize FirebaseAuth and Firestore
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
         // Initialiser les vues
-        albumCoverImageView = findViewById(R.id.albumCoverImageView);
-        albumTitleTextView = findViewById(R.id.albumTitleTextView);
-        albumArtistTextView = findViewById(R.id.albumArtistTextView);
-        albumTracksCountTextView = findViewById(R.id.albumTracksCountTextView);
-        tracksRecyclerView = findViewById(R.id.tracksRecyclerView);
-        backButton = findViewById(R.id.backButton);
-        commentField = findViewById(R.id.commentField);
-        recommendButton = findViewById(R.id.recommendButton);
+        albumCoverImageView = view.findViewById(R.id.albumCoverImageView);
+        albumTitleTextView = view.findViewById(R.id.albumTitleTextView);
+        albumArtistTextView = view.findViewById(R.id.albumArtistTextView);
+        albumTracksCountTextView = view.findViewById(R.id.albumTracksCountTextView);
+        tracksRecyclerView = view.findViewById(R.id.tracksRecyclerView);
+        backButton = view.findViewById(R.id.backButton);
+        commentField = view.findViewById(R.id.commentField);
+        recommendButton = view.findViewById(R.id.recommendButton);
 
-        // Récupérer l'objet Album depuis l'intent
-        album = getIntent().getParcelableExtra("album");
+        // Récupérer l'objet Album depuis les arguments
+        Bundle args = getArguments();
+        if (args != null) {
+            album = args.getParcelable("album");
+        }
+
         if (album == null) {
             Log.e(TAG, "Album object is null");
-            Toast.makeText(this, "Erreur: Aucun album sélectionné", Toast.LENGTH_SHORT).show();
-            finish();
+            Toast.makeText(getContext(), "Erreur: Aucun album sélectionné", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -98,7 +111,7 @@ public class AlbumDetailsActivity extends AppCompatActivity {
         deezerApi = retrofit.create(DeezerApi.class);
 
         // Configurer le RecyclerView pour les pistes
-        tracksRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        tracksRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         tracksAdapter = new TracksAdapter();
         tracksRecyclerView.setAdapter(tracksAdapter);
 
@@ -106,22 +119,21 @@ public class AlbumDetailsActivity extends AppCompatActivity {
         loadAlbumTracks();
 
         // Configurer le bouton de retour
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> getActivity().onBackPressed());
 
         recommendButton.setOnClickListener(v -> {
             String commentText = commentField.getText().toString().trim();
             submitRecommendation(album, commentText.isEmpty() ? "" : commentText);
 
-            Intent intent = new Intent(AlbumDetailsActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateToMainPage();
+            }
         });
     }
 
-
     private void submitRecommendation(Album album, String commentText) {
         if (mAuth.getCurrentUser() == null) {
-            Toast.makeText(this, "Utilisateur non authentifié", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Utilisateur non authentifié", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -150,7 +162,7 @@ public class AlbumDetailsActivity extends AppCompatActivity {
                         // Créer l'objet Recommendation pour l'album
                         Recommendation recommendation = new Recommendation(
                                 album.getTitle(), // Utiliser le titre de l'album
-                                null, // Laissez null si aucune description supplémentaire n'est nécessaire
+                                null, // Laisser null si aucune description supplémentaire n'est nécessaire
                                 recommendationCoverUrl,
                                 userId,
                                 username,
@@ -165,24 +177,22 @@ public class AlbumDetailsActivity extends AppCompatActivity {
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(AlbumDetailsActivity.this, "Recommandation enregistrée", Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    Toast.makeText(getContext(), "Recommandation enregistrée", Toast.LENGTH_SHORT).show();
                                 })
                                 .addOnFailureListener(e -> {
                                     Log.e(TAG, "Erreur lors de l'enregistrement de la recommandation", e);
-                                    Toast.makeText(AlbumDetailsActivity.this, "Erreur lors de l'enregistrement de la recommandation", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getContext(), "Erreur lors de l'enregistrement de la recommandation", Toast.LENGTH_SHORT).show();
                                 });
                     } else {
                         Log.e(TAG, "Utilisateur non trouvé");
-                        Toast.makeText(AlbumDetailsActivity.this, "Utilisateur non trouvé", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Utilisateur non trouvé", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Erreur lors de la récupération des données de l'utilisateur", e);
-                    Toast.makeText(AlbumDetailsActivity.this, "Erreur lors de la récupération des données de l'utilisateur", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Erreur lors de la récupération des données de l'utilisateur", Toast.LENGTH_SHORT).show();
                 });
     }
-
 
     private void displayAlbumDetails() {
         albumTitleTextView.setText(album.getTitle());
@@ -205,11 +215,11 @@ public class AlbumDetailsActivity extends AppCompatActivity {
 
         if (tracklistUrl == null || tracklistUrl.isEmpty()) {
             Log.e(TAG, "Tracklist URL est null ou vide");
-            Toast.makeText(this, "Aucune piste disponible pour cet album", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Aucune piste disponible pour cet album", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Extraire l'endpoint relatif pour Retrofit (enlève le domaine)
+        // Extraire l'endpoint relatif pour Retrofit (enlever le domaine)
         String relativeUrl = tracklistUrl.replace("https://api.deezer.com/", "");
 
         Call<TrackResponse> call = deezerApi.getAlbumTracks(relativeUrl);
@@ -221,24 +231,23 @@ public class AlbumDetailsActivity extends AppCompatActivity {
                     tracksAdapter.setTracks(tracks);
                 } else {
                     Log.e(TAG, "Réponse non réussie lors du chargement des pistes: " + response.code());
-                    Toast.makeText(AlbumDetailsActivity.this, "Erreur lors du chargement des pistes", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Erreur lors du chargement des pistes", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<TrackResponse> call, @NonNull Throwable t) {
                 Log.e(TAG, "Échec du chargement des pistes", t);
-                Toast.makeText(AlbumDetailsActivity.this, "Erreur réseau lors du chargement des pistes", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Erreur réseau lors du chargement des pistes", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         if (tracksAdapter != null) {
             tracksAdapter.resetPlayer(); // Arrêtez le lecteur audio
         }
     }
-
 }

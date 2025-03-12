@@ -1,8 +1,10 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -10,10 +12,13 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.adapters.MusicAdapter;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.models.Album;
@@ -32,20 +37,24 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-
-public class SearchMusicActivity extends AppCompatActivity {
+public class SearchMusicFragment extends Fragment {
 
     private MusicAdapter musicAdapter;
     private EditText searchField;
     private RadioGroup searchTypeGroup;
     private DeezerApi deezerApi;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_music);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_search_music, container, false);
+    }
 
-        FooterUtils.setupFooter(this, R.id.createRecommendationButton);
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        FooterUtils.setupFooter(requireActivity(), R.id.createRecommendationButton);
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.deezer.com/")
@@ -54,35 +63,32 @@ public class SearchMusicActivity extends AppCompatActivity {
 
         deezerApi = retrofit.create(DeezerApi.class);
 
-        RecyclerView resultsRecyclerView = findViewById(R.id.resultsRecyclerView);
-        searchField = findViewById(R.id.searchField);
-        Button searchButton = findViewById(R.id.searchButton);
-        searchTypeGroup = findViewById(R.id.searchTypeGroup);
+        RecyclerView resultsRecyclerView = view.findViewById(R.id.resultsRecyclerView);
+        searchField = view.findViewById(R.id.searchField);
+        Button searchButton = view.findViewById(R.id.searchButton);
+        searchTypeGroup = view.findViewById(R.id.searchTypeGroup);
 
-        resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        musicAdapter = new MusicAdapter(new ArrayList<>(), this);
+        resultsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        musicAdapter = new MusicAdapter(new ArrayList<>(), getContext());
         resultsRecyclerView.setAdapter(musicAdapter);
 
-        // Mise en focus automatique et affichage du clavier
         searchField.requestFocus();
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-
+        requireActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
 
         musicAdapter.setOnItemClickListener(item -> {
             if (item instanceof Artist) {
-                if (item instanceof Artist) {
-                    Artist artist = (Artist) item;
-                    Log.d("SearchMusic", "Clic sur l'artiste : " + artist.getName());
-                    Intent intent = new Intent(SearchMusicActivity.this, ArtistDetailsActivity.class);
-                    intent.putExtra("artist", artist);
-                    startActivity(intent);
+                Artist artist = (Artist) item;
+                Log.d("SearchMusic", "Clic sur l'artiste : " + artist.getName());
+
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).showArtistDetailsFragment(artist);
                 }
             } else if (item instanceof Album) {
                 Album album = (Album) item;
                 Log.d("SearchMusic", "Clicked on album: " + album.getTitle());
-                Intent intent = new Intent(SearchMusicActivity.this, AlbumDetailsActivity.class);
-                intent.putExtra("album", album);
-                startActivity(intent);
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).showAlbumDetailsFragment(album);
+                }
             } else if (item instanceof Track) {
                 Track track = (Track) item;
                 Log.d("SearchMusic", "Clicked on track: " + track.getTitle());
@@ -90,9 +96,9 @@ public class SearchMusicActivity extends AppCompatActivity {
         });
 
         searchField.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == EditorInfo.IME_ACTION_DONE) { // Vérifie si l'action est "Done" (OK)
-                performSearch(); // Appelle la recherche
-                return true; // Action gérée
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                performSearch();
+                return true;
             }
             return false;
         });
@@ -170,10 +176,10 @@ public class SearchMusicActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
         if (musicAdapter != null) {
-            musicAdapter.resetPlayer(); // Arrêtez le lecteur audio
+            musicAdapter.resetPlayer();
         }
     }
 }
