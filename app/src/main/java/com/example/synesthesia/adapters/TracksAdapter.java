@@ -2,7 +2,6 @@ package com.example.synesthesia.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
@@ -16,7 +15,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.synesthesia.MusicDetailsActivity;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Track;
 
@@ -65,10 +64,9 @@ public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.TrackViewH
 
         // Optionnel: clic sur la piste pour afficher plus de détails ou jouer la prévisualisation
         holder.itemView.setOnClickListener(v -> {
-            // Par exemple, démarrer une activité de détails de piste
-            Intent intent = new Intent(context, MusicDetailsActivity.class);
-            intent.putExtra("track", track);
-            context.startActivity(intent);
+            if (context instanceof MainActivity) {
+                ((MainActivity) context).showMusicDetailsFragment(track);
+            }
         });
     }
 

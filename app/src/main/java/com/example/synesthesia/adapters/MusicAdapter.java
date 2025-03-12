@@ -2,7 +2,6 @@ package com.example.synesthesia.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.util.Log;
@@ -18,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.synesthesia.MainActivity;
-import com.example.synesthesia.MusicDetailsActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Artist;
 import com.example.synesthesia.models.Album;
