@@ -380,6 +380,14 @@ public class RecommendationsUtils {
         }
     }
     private void sendLikeNotification(Context context, String userIdToFollow) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // ID de l'utilisateur connecté
+
+        // Vérifier que l'utilisateur ne s'envoie pas une notification à lui-même
+        if (currentUserId.equals(userIdToFollow)) {
+            Log.d("FCM", "Aucune notification envoyée : l'utilisateur a liké sa propre recommandation.");
+            return;
+        }
+
         // Récupérer le pseudo de l'utilisateur connecté
         UserUtils.getPseudo().addOnSuccessListener(username -> {
             // Récupérer les informations de l'utilisateur suivi

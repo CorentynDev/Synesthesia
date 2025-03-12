@@ -127,7 +127,8 @@ public class CommentUtils {
      * @param adapter               The adapter of RecyclerView which will be notified of data update to display the new comments.
      * @param commentsRecyclerView  RecyclerView where the comments will be displayed, used to scroll to new comments.
      */
-    public void postComment(String recommendationId, String commentText, TextView commentCounter, List<Comment> commentList, CommentsAdapter adapter, RecyclerView commentsRecyclerView) {
+    public void postComment(String recommendationId, String commentText, TextView commentCounter,
+                            List<Comment> commentList, CommentsAdapter adapter, RecyclerView commentsRecyclerView) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             String userId = currentUser.getUid();
@@ -149,8 +150,37 @@ public class CommentUtils {
                         commentCounter.setText(String.valueOf(currentCount + 1));
 
                         commentsRecyclerView.scrollToPosition(0);
+
+                        // Récupérer le token FCM de l'auteur de la recommandation
+                        db.collection("recommendations").document(recommendationId)
+                                .get()
+                                .addOnSuccessListener(documentSnapshot -> {
+                                    if (documentSnapshot.exists()) {
+                                        String authorId = documentSnapshot.getString("userId");
+
+                                        if (authorId != null && !authorId.equals(userId)) { // Éviter d'envoyer une notif à soi-même
+                                            db.collection("users").document(authorId)
+                                                    .get()
+                                                    .addOnSuccessListener(userSnapshot -> {
+                                                        if (userSnapshot.exists()) {
+                                                            String token = userSnapshot.getString("fcmToken");
+
+                                                            if (token != null) {
+                                                                // Envoyer la notification
+                                                                String title = "Nouveau commentaire !";
+                                                                String message = "Quelqu'un a commenté votre recommandation.";
+                                                                NotificationUtils.sendNotificationLike(
+                                                                        commentsRecyclerView.getContext(), token, title, message
+                                                                );
+                                                            }
+                                                        }
+                                                    });
+                                        }
+                                    }
+                                });
                     })
-                    .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
+                    .addOnFailureListener(e -> Log.e("Firestore", "Erreur lors de l'ajout du commentaire", e));
         }
     }
+
 }
