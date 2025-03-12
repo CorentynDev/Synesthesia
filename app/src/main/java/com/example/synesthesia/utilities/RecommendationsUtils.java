@@ -23,6 +23,7 @@ import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
+import com.example.synesthesia.firebase.MyFirebaseMessagingService;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.TmdbMovie;
 import com.example.synesthesia.models.Track;
@@ -64,13 +65,11 @@ public class RecommendationsUtils {
     /**
      * Get recommendations data from Firestore and display it as a list.
      *
-     * @param context                Context in which method is called (an activity).
-     * @param recommendationList     LinearLayout in which recommendations cards will be added.
-     * @param swipeRefreshLayout     SwipeRefreshLayout used to allow user to refresh the list.
+     * @param context            Context in which method is called (an activity).
+     * @param recommendationList LinearLayout in which recommendations cards will be added.
+     * @param swipeRefreshLayout SwipeRefreshLayout used to allow user to refresh the list.
      */
-    public void getRecommendationData(Context context, LinearLayout recommendationList,
-                                      @NonNull SwipeRefreshLayout swipeRefreshLayout,
-                                      boolean filterFollowed) {
+    public void getRecommendationData(Context context, LinearLayout recommendationList, @NonNull SwipeRefreshLayout swipeRefreshLayout, boolean filterFollowed) {
         Log.d("RecommendationsUtils", "Starting to fetch recommendations");
 
         swipeRefreshLayout.setRefreshing(true);
@@ -86,50 +85,37 @@ public class RecommendationsUtils {
 
         if (filterFollowed) {
             // Charger uniquement les recommandations des utilisateurs suivis
-            db.collection("followers")
-                    .document(userId)
-                    .collection("following")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        List<String> followedUsers = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : querySnapshot) {
-                            followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
-                        }
+            db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
+                List<String> followedUsers = new ArrayList<>();
+                for (QueryDocumentSnapshot document : querySnapshot) {
+                    followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
+                }
 
-                        if (!followedUsers.isEmpty()) {
-                            // Maintenant récupérer les recommandations des utilisateurs suivis
-                            db.collection("recommendations")
-                                    .whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
-                                    .orderBy("timestamp", Query.Direction.DESCENDING)
-                                    .get()
-                                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                                        populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                                        swipeRefreshLayout.setRefreshing(false);
-                                    });
-                        } else {
-                            Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
-                            swipeRefreshLayout.setRefreshing(false);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("RecommendationsUtils", "Error fetching following users.", e);
-                        swipeRefreshLayout.setRefreshing(false);
-                    });
+                if (!followedUsers.isEmpty()) {
+                    // Maintenant récupérer les recommandations des utilisateurs suivis
+                    db.collection("recommendations").whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
+                            .orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                            }).addOnFailureListener(e -> {
+                                Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                                swipeRefreshLayout.setRefreshing(false);
+                            });
+                } else {
+                    Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }).addOnFailureListener(e -> {
+                Log.e("RecommendationsUtils", "Error fetching following users.", e);
+                swipeRefreshLayout.setRefreshing(false);
+            });
         } else {
             // Charger toutes les recommandations sans filtre
-            db.collection("recommendations")
-                    .orderBy("timestamp", Query.Direction.DESCENDING)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                        swipeRefreshLayout.setRefreshing(false);
-                    });
+            db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+            }).addOnFailureListener(e -> {
+                Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                swipeRefreshLayout.setRefreshing(false);
+            });
         }
     }
 
@@ -151,10 +137,10 @@ public class RecommendationsUtils {
     /**
      * Add a recommendation card to a context (an activity).
      *
-     * @param context               Context in which the method is called (the activity).
-     * @param container             LinearLayout in which the recommendation card will be added.
-     * @param recommendation        The object Recommendation that contains the several details to display on the card.
-     * @param recommendationId      ID of the recommendation, used for the interactions (like, comment, bookmark).
+     * @param context          Context in which the method is called (the activity).
+     * @param container        LinearLayout in which the recommendation card will be added.
+     * @param recommendation   The object Recommendation that contains the several details to display on the card.
+     * @param recommendationId ID of the recommendation, used for the interactions (like, comment, bookmark).
      */
     public void addRecommendationCard(Context context, LinearLayout container, @NonNull Recommendation recommendation, String recommendationId) {
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -280,8 +266,7 @@ public class RecommendationsUtils {
                     Toast.makeText(context, "ID de l'artiste introuvable", Toast.LENGTH_SHORT).show();
                 }
             });
-        }
-        else {
+        } else {
             recommendationLink.setVisibility(View.GONE);
         }
 
@@ -325,9 +310,9 @@ public class RecommendationsUtils {
     /**
      * Configure the several buttons (like and bookmark).
      *
-     * @param cardView             Vue of the recommendation card that contains the buttons to configure.
-     * @param recommendation       The Recommendation object for which the buttons are configured.
-     * @param recommendationId     ID of the recommendation, used for the interactions.
+     * @param cardView         Vue of the recommendation card that contains the buttons to configure.
+     * @param recommendation   The Recommendation object for which the buttons are configured.
+     * @param recommendationId ID of the recommendation, used for the interactions.
      */
     private void setupLikeAndMarkButtons(@NonNull View cardView, @NonNull Recommendation recommendation, String recommendationId) {
         ImageView likeButton = cardView.findViewById(R.id.likeButton);
@@ -347,24 +332,22 @@ public class RecommendationsUtils {
 
             // Récupérer les bookmarks de l'utilisateur et initialiser l'état du bouton
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("users").document(userId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
-                            boolean isBookmarked = bookmarkedRecommendations != null && bookmarkedRecommendations.contains(recommendationId);
+            db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
+                    boolean isBookmarked = bookmarkedRecommendations != null && bookmarkedRecommendations.contains(recommendationId);
 
-                            markButton.setImageResource(isBookmarked ? R.drawable.bookmark_active : R.drawable.bookmark);
+                    markButton.setImageResource(isBookmarked ? R.drawable.bookmark_active : R.drawable.bookmark);
 
-                            final boolean[] isCurrentlyMarked = {isBookmarked};
-                            markButton.setOnClickListener(v -> {
-                                boolean newMarkStatus = !isCurrentlyMarked[0];
-                                bookmarkUtils.updateMarkUI(markButton, newMarkStatus);
-                                bookmarkUtils.updateMarkList(userId, recommendation, newMarkStatus);
-                                bookmarkUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
-                            });
-                        }
-                    })
-                    .addOnFailureListener(e -> Log.e("setupLikeAndMarkButtons", "Error fetching user bookmarks", e));
+                    final boolean[] isCurrentlyMarked = {isBookmarked};
+                    markButton.setOnClickListener(v -> {
+                        boolean newMarkStatus = !isCurrentlyMarked[0];
+                        bookmarkUtils.updateMarkUI(markButton, newMarkStatus);
+                        bookmarkUtils.updateMarkList(userId, recommendation, newMarkStatus);
+                        bookmarkUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
+                    });
+                }
+            }).addOnFailureListener(e -> Log.e("setupLikeAndMarkButtons", "Error fetching user bookmarks", e));
 
             likeButton.setOnClickListener(v -> {
                 boolean newLikeStatus = !isCurrentlyLiked[0];
@@ -373,12 +356,16 @@ public class RecommendationsUtils {
                 likeUtils.toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
 
                 if (newLikeStatus) {
-                    // Passer le contexte approprié à la méthode sendLikeNotification
-                    sendLikeNotification(cardView.getContext(), recommendation.getUserId());
+                    // ID de l'utilisateur qui a publié la recommandation (le destinataire de la notification)
+                    String userIdToFollow = recommendation.getUserId(); // Assure-toi que `getUserId()` existe et retourne l'ID du créateur de la recommandation.
+
+                    // Envoi de la notification
+                    sendLikeNotification(cardView.getContext(), userIdToFollow);
                 }
             });
         }
     }
+
     private void sendLikeNotification(Context context, String userIdToFollow) {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // ID de l'utilisateur connecté
 
@@ -392,31 +379,30 @@ public class RecommendationsUtils {
         UserUtils.getPseudo().addOnSuccessListener(username -> {
             // Récupérer les informations de l'utilisateur suivi
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("users").document(userIdToFollow).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            String fcmTokenToFollow = documentSnapshot.getString("fcmToken"); // Token FCM de l'utilisateur à suivre
+            db.collection("users").document(userIdToFollow).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String fcmTokenToFollow = documentSnapshot.getString("fcmToken"); // Token FCM de l'utilisateur à suivre
 
-                            if (fcmTokenToFollow != null) {
-                                String title = "Nouveau Like!";
-                                String message = username + " a liké une de vos recommandations"; // Affiche le pseudo
+                    if (fcmTokenToFollow != null) {
+                        String title = "Nouveau Like!";
+                        String message = username + " a liké une de vos recommandations"; // Affiche le pseudo
 
-                                // Envoyer la notification en passant le contexte
-                                NotificationUtils.sendNotificationLike(context, fcmTokenToFollow, title, message);
-                                Log.d("FCM", "Notification envoyée à " + userIdToFollow);
-                            }
-                        }
-                    })
-                    .addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du token de l'utilisateur suivi", e));
+                        // Envoyer la notification en passant le contexte
+                        NotificationUtils.sendNotification(context, fcmTokenToFollow, title, message);
+                        Log.d("FCM", "Notification envoyée à " + userIdToFollow);
+                        MyFirebaseMessagingService.saveNotificationToFirestore(userIdToFollow, title, message);
+                    }
+                }
+            }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du token de l'utilisateur suivi", e));
         }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du pseudo de l'utilisateur connecté", e));
     }
 
     /**
      * Fetch the preview URL from Deezer using their API.
      *
-     * @param context      Context in which the method is called.
-     * @param playButton   ImageView for play/pause button.
-     * @param articleId    ID of the article to search on Deezer.
+     * @param context    Context in which the method is called.
+     * @param playButton ImageView for play/pause button.
+     * @param articleId  ID of the article to search on Deezer.
      */
     private void fetchPreviewFromDeezer(Context context, ImageView playButton, String articleId) {
         if (articleId == null || articleId.isEmpty()) {
@@ -464,9 +450,9 @@ public class RecommendationsUtils {
     /**
      * Set up the play/pause button to play the preview from Deezer.
      *
-     * @param context      Context of the application.
-     * @param playButton   ImageView to be configured as play/pause.
-     * @param previewUrl   The preview URL obtained from Deezer API.
+     * @param context    Context of the application.
+     * @param playButton ImageView to be configured as play/pause.
+     * @param previewUrl The preview URL obtained from Deezer API.
      */
     private void setupPlayPauseButton(Context context, ImageView playButton, String previewUrl) {
         playButton.setOnClickListener(v -> {
@@ -531,9 +517,9 @@ public class RecommendationsUtils {
     /**
      * Configure the play button for the movie trailer.
      *
-     * @param context      Context of the application.
-     * @param playButton   ImageView to be configured as the play button.
-     * @param movieId      The movie ID to fetch the trailer.
+     * @param context    Context of the application.
+     * @param playButton ImageView to be configured as the play button.
+     * @param movieId    The movie ID to fetch the trailer.
      */
     private void setupTrailerButton(Context context, ImageView playButton, String movieId) {
         playButton.setOnClickListener(v -> {
@@ -553,8 +539,8 @@ public class RecommendationsUtils {
     /**
      * Fetch the trailer URL from TMDB and return it via a callback.
      *
-     * @param movieId      The movie ID to fetch the trailer for.
-     * @param callback     A callback to handle the fetched trailer URL.
+     * @param movieId  The movie ID to fetch the trailer for.
+     * @param callback A callback to handle the fetched trailer URL.
      */
     private void fetchTrailerUrl(String movieId, TrailerUrlCallback callback) {
         TmdbApiService apiService = TmdbApiClient.getRetrofitInstance().create(TmdbApiService.class);

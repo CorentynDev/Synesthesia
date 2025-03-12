@@ -8,13 +8,20 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
+
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import com.example.synesthesia.R;
 import com.example.synesthesia.UserProfileActivity;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -32,14 +39,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         String channelId = "default_channel";
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-        NotificationCompat.Builder notificationBuilder =
-                new NotificationCompat.Builder(this, channelId)
-                        .setSmallIcon(R.drawable.baseline_notifications_active_24)
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setAutoCancel(true)
-                        .setSound(defaultSoundUri)
-                        .setContentIntent(pendingIntent);
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, channelId).setSmallIcon(R.drawable.baseline_notifications_active_24).setContentTitle(title).setContentText(message).setAutoCancel(true).setSound(defaultSoundUri).setContentIntent(pendingIntent);
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -50,4 +50,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
         notificationManager.notify(0, notificationBuilder.build());
     }
+
+    public static void saveNotificationToFirestore(String userId, String title, String message) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String notificationId = db.collection("users").document(userId).collection("notifications").document().getId();
+
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("title", title);
+        notificationData.put("message", message);
+        notificationData.put("timestamp", System.currentTimeMillis());
+
+        db.collection("users").document(userId).collection("notifications").document(notificationId).set(notificationData).addOnSuccessListener(aVoid -> Log.d("Firestore", "Notification enregistrée")).addOnFailureListener(e -> Log.e("Firestore", "Erreur lors de l'enregistrement", e));
+    }
+
 }

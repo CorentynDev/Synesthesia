@@ -31,16 +31,14 @@ public class NotificationUtils {
     // Récupère le token OAuth 2.0
     private static String getAccessToken(Context context) throws IOException {
         if (accessToken == null || accessToken.getExpirationTime().before(new Date())) {
-            GoogleCredentials credentials = GoogleCredentials
-                    .fromStream(context.getAssets().open("service-account.json"))
-                    .createScoped(Collections.singletonList("https://www.googleapis.com/auth/firebase.messaging"));
+            GoogleCredentials credentials = GoogleCredentials.fromStream(context.getAssets().open("service-account.json")).createScoped(Collections.singletonList("https://www.googleapis.com/auth/firebase.messaging"));
             credentials.refreshIfExpired();
             accessToken = credentials.getAccessToken();
         }
         return accessToken.getTokenValue();
     }
 
-    public static void sendNotificationFollow(Context context, String token, String title, String message) {
+    public static void sendNotification(Context context, String token, String title, String message) {
         new Thread(() -> {
             try {
                 OkHttpClient client = new OkHttpClient();
@@ -56,70 +54,11 @@ public class NotificationUtils {
 
                 json.put("message", messageJson);
 
-                RequestBody body = RequestBody.create(
-                        MediaType.parse("application/json; charset=utf-8"),
-                        json.toString()
-                );
-
-                // 🔥 Passer le contexte pour obtenir le token
                 String tokenAuth = getAccessToken(context);
 
-                Request request = new Request.Builder()
-                        .url(FCM_ENDPOINT)
-                        .post(body)
-                        .addHeader("Authorization", "Bearer " + tokenAuth)
-                        .addHeader("Content-Type", "application/json")
-                        .build();
+                RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), json.toString());
 
-                Response response = client.newCall(request).execute();
-                String responseBody = response.body() != null ? response.body().string() : "Aucune réponse";
-
-                Log.d(TAG, "Code réponse : " + response.code());
-                Log.d(TAG, "Message réponse : " + response.message());
-                Log.d(TAG, "Corps réponse : " + responseBody);
-
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "Notification envoyée avec succès !");
-                } else {
-                    Log.e(TAG, "Erreur lors de l'envoi de la notification : " + responseBody);
-                }
-
-            } catch (Exception e) {
-                Log.e(TAG, "Erreur lors de l'envoi de la notification", e);
-                e.printStackTrace();
-            }
-        }).start();
-    }
-    public static void sendNotificationLike(Context context, String token, String title, String message) {
-        new Thread(() -> {
-            try {
-                OkHttpClient client = new OkHttpClient();
-
-                JSONObject json = new JSONObject();
-                JSONObject notification = new JSONObject();
-                notification.put("title", title);
-                notification.put("body", message);
-
-                JSONObject messageJson = new JSONObject();
-                messageJson.put("token", token);
-                messageJson.put("notification", notification);
-
-                json.put("message", messageJson);
-
-                RequestBody body = RequestBody.create(
-                        MediaType.parse("application/json; charset=utf-8"),
-                        json.toString()
-                );
-
-                // Utilisation du contexte passé en paramètre pour obtenir le token
-                String tokenAuth = getAccessToken(context);
-
-                Request request = new Request.Builder()
-                        .url(FCM_ENDPOINT)
-                        .post(body)
-                        .addHeader("Authorization", "Bearer " + tokenAuth)
-                        .addHeader("Content-Type", "application/json")
-                        .build();
+                Request request = new Request.Builder().url(FCM_ENDPOINT).post(body).addHeader("Authorization", "Bearer " + tokenAuth).addHeader("Content-Type", "application/json").build();
 
                 Response response = client.newCall(request).execute();
                 String responseBody = response.body() != null ? response.body().string() : "Aucune réponse";
