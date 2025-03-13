@@ -1,7 +1,6 @@
 package com.example.synesthesia.utilities;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -11,11 +10,11 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.synesthesia.R;
-import com.example.synesthesia.SearchMovieActivity;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.SearchBookFragment;
 import com.example.synesthesia.fragments.SearchGameFragment;
+import com.example.synesthesia.fragments.SearchMovieFragment;
 import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.SearchUserFragment;
 import com.example.synesthesia.fragments.UserProfileFragment;
@@ -100,7 +99,10 @@ public class FooterUtils {
                         transaction.commit();
                         break;
                     case 2:
-                        activity.startActivity(new Intent(activity, SearchMovieActivity.class));
+                        SearchMovieFragment searchMovieFragment = new SearchMovieFragment();
+                        transaction.replace(R.id.fragmentContainer, searchMovieFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                     case 3:
                         SearchGameFragment searchGameFragment = new SearchGameFragment();

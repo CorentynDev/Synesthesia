@@ -12,9 +12,11 @@ import com.example.synesthesia.fragments.BookDetailsFragment;
 import com.example.synesthesia.fragments.BookmarkFragment;
 import com.example.synesthesia.fragments.GameDetailsFragment;
 import com.example.synesthesia.fragments.HomeFragment;
+import com.example.synesthesia.fragments.MovieDetailsFragment;
 import com.example.synesthesia.fragments.MusicDetailsFragment;
 import com.example.synesthesia.fragments.SearchBookFragment;
 import com.example.synesthesia.fragments.SearchGameFragment;
+import com.example.synesthesia.fragments.SearchMovieFragment;
 import com.example.synesthesia.fragments.SearchMusicFragment;
 import com.example.synesthesia.fragments.UserInfoFragment;
 import com.example.synesthesia.fragments.UserListFragment;
@@ -23,6 +25,7 @@ import com.example.synesthesia.models.Album;
 import com.example.synesthesia.models.Artist;
 import com.example.synesthesia.models.Book;
 import com.example.synesthesia.models.GiantBombGame;
+import com.example.synesthesia.models.TmdbMovie;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
 
@@ -197,5 +200,30 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
+    public void showSearchMovieFragment() {
+        SearchMovieFragment searchMovieFragment = new SearchMovieFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchMovieFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showMovieDetailsFragment(TmdbMovie movie) {
+        MovieDetailsFragment movieDetailsFragment = new MovieDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("movie", movie);
+        movieDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, movieDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
 
 }

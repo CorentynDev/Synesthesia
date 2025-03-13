@@ -34,7 +34,6 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     private int currentlyPlayingPosition = RecyclerView.NO_POSITION;
 
     private MediaPlayer globalMediaPlayer;
-    private OnItemClickListener onItemClickListener;
 
 
     public MusicAdapter(List<Object> items, Context context) {
@@ -43,7 +42,6 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
-        this.onItemClickListener = listener;
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -101,8 +99,8 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MusicViewHol
                 Artist artist = (Artist) item;
                 holder.bindArtist(artist);
                 holder.itemView.setOnClickListener(v -> {
-                    if (onItemClickListener != null) {
-                        onItemClickListener.onItemClick(artist);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showArtistDetailsFragment(artist);
                     }
                 });
                 holder.playPauseButton.setVisibility(View.GONE);

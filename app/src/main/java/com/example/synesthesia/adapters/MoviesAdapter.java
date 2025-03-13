@@ -1,7 +1,6 @@
 package com.example.synesthesia.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.synesthesia.MovieDetailsActivity;
+import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
@@ -71,9 +70,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieViewH
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
                     TmdbMovie selectedMovie = movies.get(position);
-                    Intent intent = new Intent(context, MovieDetailsActivity.class);
-                    intent.putExtra("movie", selectedMovie);
-                    context.startActivity(intent);
+                    if (context instanceof MainActivity) {
+                        ((MainActivity) context).showMovieDetailsFragment(selectedMovie);
+                    }
                 }
             });
         }

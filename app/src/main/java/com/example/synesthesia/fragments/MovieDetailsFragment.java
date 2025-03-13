@@ -1,12 +1,12 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewTreeObserver;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -14,9 +14,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
+import com.example.synesthesia.MainActivity;
+import com.example.synesthesia.R;
 import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
 import com.example.synesthesia.models.Comment;
@@ -45,7 +48,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MovieDetailsActivity extends AppCompatActivity {
+public class MovieDetailsFragment extends Fragment {
 
     private TmdbMovie movie;
     private FirebaseFirestore db;
@@ -54,37 +57,44 @@ public class MovieDetailsActivity extends AppCompatActivity {
     private final Map<Integer, String> genreMap = new HashMap<>();
     private TextView directorTextView;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_movie_details);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_movie_details, container, false);
+    }
 
-        // Récupération du film depuis l'intent
-        movie = getIntent().getParcelableExtra("movie");
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // Récupération du film depuis les arguments
+        Bundle args = getArguments();
+        if (args != null) {
+            movie = args.getParcelable("movie");
+        }
+
         if (movie == null) {
-            Toast.makeText(this, "Erreur : Film non disponible", Toast.LENGTH_SHORT).show();
-            finish();
+            Toast.makeText(getContext(), "Erreur : Film non disponible", Toast.LENGTH_SHORT).show();
             return;
         }
 
         // Initialisation des vues
-        TextView movieTitle = findViewById(R.id.movieTitle);
-        TextView movieOverview = findViewById(R.id.movieOverview);
-        TextView movieGenres = findViewById(R.id.movieGenres);
-        TextView actorsList = findViewById(R.id.actorsList);
-        ImageView moviePoster = findViewById(R.id.moviePoster);
-        Button trailerButton = findViewById(R.id.trailerButton);
-        Button recommendButton = findViewById(R.id.recommendButton);
-        Button backButton = findViewById(R.id.backButton);
-        commentField = findViewById(R.id.commentField);
-        TextView movieDate = findViewById(R.id.movieDate);
-        directorTextView = findViewById(R.id.movieDirector);
+        TextView movieTitle = view.findViewById(R.id.movieTitle);
+        TextView movieOverview = view.findViewById(R.id.movieOverview);
+        TextView movieGenres = view.findViewById(R.id.movieGenres);
+        TextView actorsList = view.findViewById(R.id.actorsList);
+        ImageView moviePoster = view.findViewById(R.id.moviePoster);
+        Button trailerButton = view.findViewById(R.id.trailerButton);
+        Button recommendButton = view.findViewById(R.id.recommendButton);
+        Button backButton = view.findViewById(R.id.backButton);
+        commentField = view.findViewById(R.id.commentField);
+        TextView movieDate = view.findViewById(R.id.movieDate);
+        directorTextView = view.findViewById(R.id.movieDirector);
 
         movieTitle.setText(movie.getTitle());
         movieOverview.setText(movie.getOverview());
 
         fetchGenres(movie.getGenreIds());
-
         fetchActors(movie.getId());
         fetchDirector(movie.getId());
 
@@ -107,7 +117,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailerUrl));
                 startActivity(intent);
             } else {
-                Toast.makeText(this, "Bande-annonce non disponible", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Bande-annonce non disponible", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -117,52 +127,49 @@ public class MovieDetailsActivity extends AppCompatActivity {
         recommendButton.setOnClickListener(v -> {
             String comment = commentField.getText().toString().trim();
             submitRecommendation(movie, comment.isEmpty() ? "" : comment);
-            Intent intent = new Intent(MovieDetailsActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).navigateToMainPage();
+            }
         });
 
-        backButton.setOnClickListener(v -> finish());
+        backButton.setOnClickListener(v -> requireActivity().onBackPressed());
 
         setupOverviewExpandable();
     }
 
     private void setupOverviewExpandable() {
-        TextView movieOverview = findViewById(R.id.movieOverview);
-        TextView seeMoreButton = findViewById(R.id.seeMoreButton);
+        TextView movieOverview = requireView().findViewById(R.id.movieOverview);
+        TextView seeMoreButton = requireView().findViewById(R.id.seeMoreButton);
 
-        movieOverview.post(new Runnable() {
-            @Override
-            public void run() {
-                if (movieOverview.getLineCount() > 4) {
+        movieOverview.post(() -> {
+            if (movieOverview.getLineCount() > 4) {
+                seeMoreButton.setVisibility(View.VISIBLE);
+
+                movieOverview.setMaxLines(4);
+                movieOverview.setEllipsize(TextUtils.TruncateAt.END);
+
+                seeMoreButton.setText("Voir plus");
+                seeMoreButton.setOnClickListener(v -> {
+                    movieOverview.setMaxLines(Integer.MAX_VALUE);
+                    movieOverview.setEllipsize(null);
                     seeMoreButton.setVisibility(View.VISIBLE);
+                    seeMoreButton.setText("Voir moins");
+                });
+            } else {
+                seeMoreButton.setVisibility(View.GONE);
+            }
 
+            seeMoreButton.setOnClickListener(v -> {
+                if ("Voir moins".equals(seeMoreButton.getText().toString())) {
                     movieOverview.setMaxLines(4);
                     movieOverview.setEllipsize(TextUtils.TruncateAt.END);
-
                     seeMoreButton.setText("Voir plus");
-                    seeMoreButton.setOnClickListener(v -> {
-                        movieOverview.setMaxLines(Integer.MAX_VALUE);
-                        movieOverview.setEllipsize(null);
-                        seeMoreButton.setVisibility(View.VISIBLE);
-                        seeMoreButton.setText("Voir moins");
-                    });
                 } else {
-                    seeMoreButton.setVisibility(View.GONE);
+                    movieOverview.setMaxLines(Integer.MAX_VALUE);
+                    movieOverview.setEllipsize(null);
+                    seeMoreButton.setText("Voir moins");
                 }
-
-                seeMoreButton.setOnClickListener(v -> {
-                    if ("Voir moins".equals(seeMoreButton.getText().toString())) {
-                        movieOverview.setMaxLines(4);
-                        movieOverview.setEllipsize(TextUtils.TruncateAt.END);
-                        seeMoreButton.setText("Voir plus");
-                    } else {
-                        movieOverview.setMaxLines(Integer.MAX_VALUE);
-                        movieOverview.setEllipsize(null);
-                        seeMoreButton.setText("Voir moins");
-                    }
-                });
-            }
+            });
         });
     }
 
@@ -214,14 +221,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
                     movie.setGenres(genreNames);
 
                     // Mettre à jour l'interface utilisateur
-                    TextView genresTextView = findViewById(R.id.movieGenres);
+                    TextView genresTextView = requireView().findViewById(R.id.movieGenres);
                     genresTextView.setText("Genres : " + String.join(", ", genreNames));
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<GenreResponse> call, @NonNull Throwable t) {
-                TextView genresTextView = findViewById(R.id.movieGenres);
+                TextView genresTextView = requireView().findViewById(R.id.movieGenres);
                 genresTextView.setText("Genres : non disponibles");
             }
         });
@@ -253,7 +260,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private void updateActorsView(List<String> actorNames) {
-        TextView actorsList = findViewById(R.id.actorsList);
+        TextView actorsList = requireView().findViewById(R.id.actorsList);
         if (actorNames != null && !actorNames.isEmpty()) {
             actorsList.setText("Acteurs principaux : " + String.join(", ", actorNames));
         } else {
@@ -263,13 +270,10 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
     public static String formatDate(String originalDate) {
         SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
         SimpleDateFormat outputFormat = new SimpleDateFormat("d MMMM yyyy", Locale.FRENCH);
 
         try {
             Date date = inputFormat.parse(originalDate);
-
-            assert date != null;
             return outputFormat.format(date);
         } catch (ParseException e) {
             e.printStackTrace();
@@ -306,15 +310,14 @@ public class MovieDetailsActivity extends AppCompatActivity {
                         db.collection("recommendations")
                                 .add(recommendation)
                                 .addOnSuccessListener(documentReference -> {
-                                    Toast.makeText(MovieDetailsActivity.this, "Recommandation enregistrée avec succès", Toast.LENGTH_SHORT).show();
-                                    finish();
+                                    Toast.makeText(getContext(), "Recommandation enregistrée avec succès", Toast.LENGTH_SHORT).show();
                                 })
-                                .addOnFailureListener(e -> Toast.makeText(MovieDetailsActivity.this, "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show());
+                                .addOnFailureListener(e -> Toast.makeText(getContext(), "Erreur lors de l'enregistrement", Toast.LENGTH_SHORT).show());
                     } else {
-                        Toast.makeText(MovieDetailsActivity.this, "Utilisateur introuvable", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Utilisateur introuvable", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(MovieDetailsActivity.this, "Erreur de connexion à la base de données", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> Toast.makeText(getContext(), "Erreur de connexion à la base de données", Toast.LENGTH_SHORT).show());
     }
 
     private void fetchDirector(String movieId) {

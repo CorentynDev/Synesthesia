@@ -1,14 +1,19 @@
-package com.example.synesthesia;
+package com.example.synesthesia.fragments;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.synesthesia.R;
 import com.example.synesthesia.adapters.MoviesAdapter;
 import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
@@ -21,22 +26,28 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class SearchMovieActivity extends AppCompatActivity {
+public class SearchMovieFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private MoviesAdapter adapter;
     private EditText searchEditText;
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_movies);
-        Button searchButton = findViewById(R.id.searchButton);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_search_movie, container, false);
+    }
 
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        searchEditText = findViewById(R.id.searchEditText);
+        Button searchButton = view.findViewById(R.id.searchButton);
+
+        recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        searchEditText = view.findViewById(R.id.searchEditText);
 
         searchButton.setOnClickListener(v -> performSearch(searchEditText.getText().toString()));
     }
@@ -48,7 +59,7 @@ public class SearchMovieActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call<TmdbMovieResponse> call, @NonNull Response<TmdbMovieResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<TmdbMovie> movies = response.body().getMovies();
-                    adapter = new MoviesAdapter(movies, SearchMovieActivity.this);
+                    adapter = new MoviesAdapter(movies, getContext());
                     recyclerView.setAdapter(adapter);
                 }
             }
