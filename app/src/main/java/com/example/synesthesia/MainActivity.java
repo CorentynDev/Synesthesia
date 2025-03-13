@@ -1,113 +1,229 @@
 package com.example.synesthesia;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuInflater;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
+import com.example.synesthesia.fragments.AlbumDetailsFragment;
+import com.example.synesthesia.fragments.ArtistDetailsFragment;
+import com.example.synesthesia.fragments.BookDetailsFragment;
+import com.example.synesthesia.fragments.BookmarkFragment;
+import com.example.synesthesia.fragments.GameDetailsFragment;
+import com.example.synesthesia.fragments.HomeFragment;
+import com.example.synesthesia.fragments.MovieDetailsFragment;
+import com.example.synesthesia.fragments.MusicDetailsFragment;
+import com.example.synesthesia.fragments.SearchBookFragment;
+import com.example.synesthesia.fragments.SearchGameFragment;
+import com.example.synesthesia.fragments.SearchMovieFragment;
+import com.example.synesthesia.fragments.SearchMusicFragment;
+import com.example.synesthesia.fragments.UserInfoFragment;
+import com.example.synesthesia.fragments.UserListFragment;
+import com.example.synesthesia.fragments.UserProfileFragment;
+import com.example.synesthesia.models.Album;
+import com.example.synesthesia.models.Artist;
+import com.example.synesthesia.models.Book;
+import com.example.synesthesia.models.GiantBombGame;
+import com.example.synesthesia.models.TmdbMovie;
+import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
-import com.example.synesthesia.utilities.RecommendationsUtils;
-import com.example.synesthesia.utilities.UserUtils;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
-
-    private boolean isFollowingFilterActive = false; // Variable pour suivre l'état du filtre
-
-    RecommendationsUtils recommendationsUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState == null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.fragmentContainer, new HomeFragment());
+            fragmentTransaction.commit();
+        }
         FooterUtils.setupFooter(this, R.id.homeButton);
-
-        Button filterMenuButton = findViewById(R.id.filterMenuButton); // Remplacement du Spinner par un bouton
-        LinearLayout recommendationList = findViewById(R.id.recommendationList);
-        SwipeRefreshLayout swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-
-        recommendationsUtils = new RecommendationsUtils(FirebaseFirestore.getInstance());
-
-        // Ajouter un listener pour afficher le PopupMenu
-        filterMenuButton.setOnClickListener(view -> {
-            PopupMenu popupMenu = new PopupMenu(MainActivity.this, filterMenuButton);
-            MenuInflater inflater = popupMenu.getMenuInflater();
-            inflater.inflate(R.menu.filter_menu, popupMenu.getMenu()); // Fichier XML du menu
-
-            // Gérer les clics sur les options du menu
-            popupMenu.setOnMenuItemClickListener(item -> {
-                int id = item.getItemId();
-                if (id == R.id.all_recommendations) {
-                    // Filtrer pour toutes les recommandations
-                    recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, false);
-                    // Mettre à jour le texte du bouton
-                    filterMenuButton.setText(R.string.all_recommendations);
-                    isFollowingFilterActive = false; // Mise à jour de l'état du filtre
-                    return true;
-                } else if (id == R.id.followed_recommendations) {
-                    // Filtrer pour les recommandations des gens suivis
-                    recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, true);
-                    // Mettre à jour le texte du bouton
-                    filterMenuButton.setText(R.string.followed_recommendations);
-                    isFollowingFilterActive = true; // Mise à jour de l'état du filtre
-                    return true;
-                }
-                return false;
-            });
-
-            popupMenu.show(); // Afficher le menu
-        });
-
-        // Ajouter le Listener pour le SwipeRefreshLayout
-        swipeRefreshLayout.setOnRefreshListener(() -> {
-            // Relancer les données avec le filtre actuel et mettre à jour le texte du bouton
-            recommendationsUtils.getRecommendationData(MainActivity.this, recommendationList, swipeRefreshLayout, isFollowingFilterActive);
-
-            // Mettre à jour le texte du bouton en fonction du filtre actif
-            if (isFollowingFilterActive) {
-                filterMenuButton.setText(R.string.followed_recommendations);
-            } else {
-                filterMenuButton.setText(R.string.all_recommendations);
-            }
-        });
-
-        // Charger les recommandations par défaut à la création (filtre "Toutes")
-        recommendationsUtils.getRecommendationData(this, recommendationList, swipeRefreshLayout, false);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        UserUtils userUtils = new UserUtils();
-        if (!userUtils.isUserLoggedIn()) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
+    public void showUserListFragment(String userId, String type) {
+        UserListFragment userListFragment = UserListFragment.newInstance(userId, type);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, userListFragment);
+
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    public void showUserProfileFragment(String userId) {
+        UserProfileFragment userProfileFragment = new UserProfileFragment();
 
-        // Arrêter la musique si elle est en cours de lecture
-        if (RecommendationsUtils.globalMediaPlayer != null && RecommendationsUtils.globalMediaPlayer.isPlaying()) {
-            RecommendationsUtils.globalMediaPlayer.stop();
-            RecommendationsUtils.globalMediaPlayer.release();
-            RecommendationsUtils.globalMediaPlayer = null;
-        }
+        Bundle args = new Bundle();
+        args.putString("userId", userId);
+        userProfileFragment.setArguments(args);
 
-        // Réinitialiser le bouton de lecture/pause de la musique en cours
-        if (RecommendationsUtils.currentlyPlayingButton != null) {
-            RecommendationsUtils.currentlyPlayingButton.setImageResource(R.drawable.bouton_de_lecture);
-            RecommendationsUtils.currentlyPlayingButton = null;
-        }
-        RecommendationsUtils.currentlyPlayingUrl = null;
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, userProfileFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
+
+    public void showUserInfoFragment() {
+        UserInfoFragment userInfoFragment = new UserInfoFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, userInfoFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showBookmarksFragment() {
+        BookmarkFragment bookmarkFragment = new BookmarkFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, bookmarkFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showArtistDetailsFragment(Artist artist) {
+        ArtistDetailsFragment artistDetailsFragment = new ArtistDetailsFragment();
+
+        // Passez l'objet Artist au fragment
+        Bundle args = new Bundle();
+        args.putParcelable("artist", artist);
+        artistDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, artistDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showSearchMusicFragment() {
+        SearchMusicFragment searchMusicFragment = new SearchMusicFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchMusicFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showAlbumDetailsFragment(Album album) {
+        AlbumDetailsFragment albumDetailsFragment = new AlbumDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("album", album);
+        albumDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, albumDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showMusicDetailsFragment(Track track) {
+        MusicDetailsFragment musicDetailsFragment = new MusicDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("track", track);
+        musicDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, musicDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void navigateToMainPage() {
+        HomeFragment homeFragment = new HomeFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, homeFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showSearchBookFragment() {
+        SearchBookFragment searchBookFragment = new SearchBookFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchBookFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showBookDetailsFragment(Book book) {
+        BookDetailsFragment bookDetailsFragment = new BookDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("book", book);
+        bookDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, bookDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showSearchGameFragment() {
+        SearchGameFragment searchGameFragment = new SearchGameFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchGameFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showGameDetailsFragment(GiantBombGame game) {
+        GameDetailsFragment gameDetailsFragment = new GameDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("game", game);
+        gameDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, gameDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showSearchMovieFragment() {
+        SearchMovieFragment searchMovieFragment = new SearchMovieFragment();
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, searchMovieFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+    public void showMovieDetailsFragment(TmdbMovie movie) {
+        MovieDetailsFragment movieDetailsFragment = new MovieDetailsFragment();
+
+        Bundle args = new Bundle();
+        args.putParcelable("movie", movie);
+        movieDetailsFragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragmentContainer, movieDetailsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+    }
+
+
 }

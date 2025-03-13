@@ -1,31 +1,27 @@
 package com.example.synesthesia.utilities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
-import com.example.synesthesia.BookmarksActivity;
-import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
-import com.example.synesthesia.SearchBookActivity;
-import com.example.synesthesia.SearchGameActivity;
-import com.example.synesthesia.SearchMovieActivity;
-import com.example.synesthesia.SearchMusicActivity;
-import com.example.synesthesia.SearchUserActivity;
-import com.example.synesthesia.UserProfileActivity;
+import com.example.synesthesia.fragments.BookmarkFragment;
+import com.example.synesthesia.fragments.HomeFragment;
+import com.example.synesthesia.fragments.SearchBookFragment;
+import com.example.synesthesia.fragments.SearchGameFragment;
+import com.example.synesthesia.fragments.SearchMovieFragment;
+import com.example.synesthesia.fragments.SearchMusicFragment;
+import com.example.synesthesia.fragments.SearchUserFragment;
+import com.example.synesthesia.fragments.UserProfileFragment;
 
 public class FooterUtils {
 
-    /**
-     * Method to initialize footer redirections and manage active/inactive states.
-     * @param activity Current activity.
-     * @param activeButtonId Resource ID of the button to be set as active.
-     */
-    public static void setupFooter(@NonNull Activity activity, int activeButtonId) {
-        // Get all buttons
+    public static void setupFooter(@NonNull FragmentActivity activity, int activeButtonId) {
         ImageView homeButton = activity.findViewById(R.id.homeButton);
         ImageView research = activity.findViewById(R.id.research);
         ImageView createRecommendationButton = activity.findViewById(R.id.createRecommendationButton);
@@ -40,7 +36,7 @@ public class FooterUtils {
 
         if (activeButtonId == R.id.homeButton) {
             homeButton.setImageResource(R.drawable.home_active);
-        } if (activeButtonId == R.id.research) {
+        } else if (activeButtonId == R.id.research) {
             research.setImageResource(R.drawable.loupe_active);
         } else if (activeButtonId == R.id.createRecommendationButton) {
             createRecommendationButton.setImageResource(R.drawable.add_active);
@@ -51,13 +47,35 @@ public class FooterUtils {
         }
 
         homeButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, MainActivity.class);
-            activity.startActivity(intent);
+            HomeFragment homeFragment = new HomeFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, homeFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
 
         research.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, SearchUserActivity.class);
-            activity.startActivity(intent);
+            SearchUserFragment searchUserFragment = new SearchUserFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, searchUserFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        bookmarkButton.setOnClickListener(view -> {
+            BookmarkFragment bookmarkFragment = new BookmarkFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, bookmarkFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+        });
+
+        profileButton.setOnClickListener(view -> {
+            UserProfileFragment userProfileFragment = new UserProfileFragment();
+            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.fragmentContainer, userProfileFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
         });
 
         createRecommendationButton.setOnClickListener(view -> {
@@ -66,32 +84,45 @@ public class FooterUtils {
 
             String[] types = {"Musique", "Livre", "Film", "Jeu Vidéo"};
             builder.setItems(types, (dialog, which) -> {
+                FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
                 switch (which) {
                     case 0:
-                        activity.startActivity(new Intent(activity, SearchMusicActivity.class));
+                        SearchMusicFragment searchMusicFragment = new SearchMusicFragment();
+                        transaction.replace(R.id.fragmentContainer, searchMusicFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                     case 1:
-                        activity.startActivity(new Intent(activity, SearchBookActivity.class));
+                        SearchBookFragment searchBookFragment = new SearchBookFragment();
+                        transaction.replace(R.id.fragmentContainer, searchBookFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                     case 2:
-                        activity.startActivity(new Intent(activity, SearchMovieActivity.class));
+                        SearchMovieFragment searchMovieFragment = new SearchMovieFragment();
+                        transaction.replace(R.id.fragmentContainer, searchMovieFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                     case 3:
-                        activity.startActivity(new Intent(activity, SearchGameActivity.class));
+                        SearchGameFragment searchGameFragment = new SearchGameFragment();
+                        transaction.replace(R.id.fragmentContainer, searchGameFragment);
+                        transaction.addToBackStack(null);
+                        transaction.commit();
                         break;
                 }
             });
             builder.create().show();
         });
+    }
 
-        bookmarkButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, BookmarksActivity.class);
-            activity.startActivity(intent);
-        });
 
-        profileButton.setOnClickListener(view -> {
-            Intent intent = new Intent(activity, UserProfileActivity.class);
-            activity.startActivity(intent);
-        });
+    private static void replaceFragment(@NonNull FragmentActivity activity, Fragment fragment) {
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        transaction.replace(R.id.fragmentContainer, fragment);
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 }
