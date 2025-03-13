@@ -1,9 +1,13 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -75,6 +79,30 @@ public class SearchUserActivity extends AppCompatActivity {
 
         // Charger initialement tous les utilisateurs
         fetchUsersFromFirestore();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.user_info_menu, menu);
+        MenuItem parametreItem = menu.findItem(R.id.paramètre); // Remplacez `R.id.parametre` par l'ID réel de l'élément
+        if (parametreItem != null) {
+            parametreItem.setVisible(false);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.notif) {
+            Intent intent = new Intent(this, NotifActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     // Méthode pour récupérer tous les utilisateurs depuis Firestore

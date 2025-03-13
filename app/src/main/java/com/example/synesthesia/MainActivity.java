@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
@@ -123,7 +124,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.notif, menu);
+        inflater.inflate(R.menu.user_info_menu, menu);
+        MenuItem parametreItem = menu.findItem(R.id.paramètre); // Remplacez `R.id.parametre` par l'ID réel de l'élément
+        if (parametreItem != null) {
+            parametreItem.setVisible(false);
+        }
         return true;
     }
 
