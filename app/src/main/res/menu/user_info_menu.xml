@@ -1,8 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/deconection"
+        android:icon="@drawable/deconection"
+        android:title="Paramètre"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/paramètre"
         android:icon="@drawable/parametres"
         android:title="Paramètre"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/notif"
+        android:icon="@drawable/notification"
+        android:title="Notification"
         app:showAsAction="ifRoom"/>
 </menu>

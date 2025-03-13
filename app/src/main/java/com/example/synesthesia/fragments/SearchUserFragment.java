@@ -116,7 +116,7 @@ public class SearchUserFragment extends Fragment {
                             String pseudo = document.getString("username");
                             String profileImageUrl = document.getString("profileImageUrl");
                             String id = document.getId();
-                            if (pseudo != null && profileImageUrl != null) {
+                            if (pseudo != null) {
                                 User user = new User(pseudo, profileImageUrl, id);
                                 userList.add(user);
                             }
@@ -146,7 +146,7 @@ public class SearchUserFragment extends Fragment {
                             String profileImageUrl = document.getString("profileImageUrl");
                             String id = document.getId();
 
-                            if (pseudo != null && profileImageUrl != null && pseudo.toLowerCase().contains(queryLowerCase)) {
+                            if (pseudo != null && pseudo.toLowerCase().contains(queryLowerCase)) {
                                 User user = new User(pseudo, profileImageUrl, id);
                                 userList.add(user);
                             }

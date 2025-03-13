@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +24,9 @@ import androidx.fragment.app.Fragment;
 import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
 import com.example.synesthesia.authentication.LoginActivity;
+import com.example.synesthesia.firebase.MyFirebaseMessagingService;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.NotificationUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
 import com.google.firebase.auth.FirebaseAuth;
@@ -45,6 +48,7 @@ public class UserProfileFragment extends Fragment {
     private TextView followingCount;
     private LinearLayout followerLayout;
     private LinearLayout followingLayout;
+    private boolean isCurrentUser;
 
     public UserProfileFragment() {
         // Required empty constructor
@@ -54,6 +58,17 @@ public class UserProfileFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(@NonNull Menu menu) {
+        MenuItem parametreItem = menu.findItem(R.id.paramètre);
+        MenuItem deconectionItem = menu.findItem(R.id.deconection);
+        if (parametreItem != null && deconectionItem != null) {
+            parametreItem.setVisible(isCurrentUser); // Rendre l'élément visible si c'est le profil de l'utilisateur connecté
+            deconectionItem.setVisible(isCurrentUser); // Rendre l'élément visible si c'est le profil de l'utilisateur connecté
+        }
+        super.onPrepareOptionsMenu(menu);
     }
 
     @Nullable
@@ -88,41 +103,35 @@ public class UserProfileFragment extends Fragment {
             targetUserId = userUtils.getCurrentUserId();
         }
 
+        isCurrentUser = targetUserId.equals(userUtils.getCurrentUserId());
+
         final String finalTargetUserId = targetUserId;
         followerLayout.setOnClickListener(v -> openFollowerList(finalTargetUserId));
         followingLayout.setOnClickListener(v -> openFollowingList(finalTargetUserId));
-
-        boolean isCurrentUser = targetUserId.equals(userUtils.getCurrentUserId());
 
         loadUserData(targetUserId, isCurrentUser);
         loadUserRecommendations(targetUserId, linearLayoutUserRecommendations);
         loadUserStats(targetUserId);
 
         if (!isCurrentUser) {
-            view.findViewById(R.id.logoutButton).setVisibility(View.GONE);
             followButton.setVisibility(View.VISIBLE);
             followButton.setOnClickListener(v -> toggleFollowUser(finalTargetUserId));
         } else {
-            Button logoutButton = view.findViewById(R.id.logoutButton);
-            logoutButton.setOnClickListener(v -> logoutUser());
             followButton.setVisibility(View.GONE);
         }
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        inflater.inflate(R.menu.user_info_menu, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.paramètre) {
+        if (id == R.id.paramètre) { // ID de l'élément du menu
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).showUserInfoFragment();
             }
+            return true;
+        } else if (id == R.id.deconection) {
+            logoutUser();
             return true;
         }
 
@@ -145,34 +154,20 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadUserStats(String userId) {
-        db.collection("recommendations")
-                .whereEqualTo("userId", userId)
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int publicationCountValue = querySnapshot.size();
-                    publicationCount.setText(String.valueOf(publicationCountValue));
-                })
-                .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des publications", e));
+        db.collection("recommendations").whereEqualTo("userId", userId).get().addOnSuccessListener(querySnapshot -> {
+            int publicationCountValue = querySnapshot.size();
+            publicationCount.setText(String.valueOf(publicationCountValue));
+        }).addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des publications", e));
 
-        db.collection("followers")
-                .document(userId)
-                .collection("followers")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int followerCountValue = querySnapshot.size();
-                    followerCount.setText(String.valueOf(followerCountValue));
-                })
-                .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des followers", e));
+        db.collection("followers").document(userId).collection("followers").get().addOnSuccessListener(querySnapshot -> {
+            int followerCountValue = querySnapshot.size();
+            followerCount.setText(String.valueOf(followerCountValue));
+        }).addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des followers", e));
 
-        db.collection("followers")
-                .document(userId)
-                .collection("following")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int followingCountValue = querySnapshot.size();
-                    followingCount.setText(String.valueOf(followingCountValue));
-                })
-                .addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des following", e));
+        db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
+            int followingCountValue = querySnapshot.size();
+            followingCount.setText(String.valueOf(followingCountValue));
+        }).addOnFailureListener(e -> Log.e("LoadUserStats", "Erreur lors du chargement des following", e));
     }
 
     private void logoutUser() {
@@ -185,8 +180,13 @@ public class UserProfileFragment extends Fragment {
         db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
+                        String pseudo = documentSnapshot.getString("username");
                         String profileImageUrl = documentSnapshot.getString("profileImageUrl");
                         UserUtils.loadImageFromUrl(requireContext(), profileImageUrl, userProfileImageView);
+                        // Si c'est l'utilisateur actuel, charge aussi son email
+                        if (isCurrentUser) {
+                            String email = documentSnapshot.getString("email");
+                        }
                     }
                 })
                 .addOnFailureListener(e -> Log.e("LoadUserData", "Erreur lors du chargement des données utilisateur", e));
@@ -206,19 +206,55 @@ public class UserProfileFragment extends Fragment {
 
     private void followUser(String userIdToFollow) {
         String currentUserId = userUtils.getCurrentUserId();
-        db.collection("followers").document(currentUserId).collection("following").document(userIdToFollow)
-                .set(new HashMap<>())
-                .addOnSuccessListener(aVoid -> {
-                    followButton.setText("Suivi");
-                });
+        db.collection("followers").document(currentUserId).collection("following").document(userIdToFollow).set(new HashMap<>()).addOnSuccessListener(aVoid -> {
+            db.collection("followers").document(userIdToFollow).collection("followers").document(currentUserId).set(new HashMap<>()).addOnSuccessListener(aVoid2 -> {
+                Log.d("FollowUser", "Utilisateur suivi avec succès.");
+                followButton.setText("Suivi");
+                followButton.setEnabled(true);
+                Toast.makeText(requireContext(), "Vous suivez maintenant cet utilisateur.", Toast.LENGTH_SHORT).show();
+                // Mettre à jour les compteurs
+                loadUserStats(userIdToFollow);
+
+                // Envoyer une notification
+                sendFollowNotification(userIdToFollow);
+            }).addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'followers'", e));
+        }).addOnFailureListener(e -> Log.e("FollowUser", "Erreur lors de l'ajout dans 'following'", e));
+    }
+
+    private void sendFollowNotification(String userIdToFollow) {
+        // Récupérer le pseudo de l'utilisateur connecté
+        UserUtils.getPseudo().addOnSuccessListener(username -> {
+            // Récupérer les informations de l'utilisateur suivi
+            db.collection("users").document(userIdToFollow).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String fcmTokenToFollow = documentSnapshot.getString("fcmToken"); // Token FCM du suivi
+
+                    if (fcmTokenToFollow != null) {
+                        String title = "Nouveau follower!";
+                        String message = username + " commence à vous suivre."; // Affiche le pseudo
+
+                        // Envoyer la notification
+                        NotificationUtils.sendNotification(requireContext(), fcmTokenToFollow, title, message);
+                        Log.d("FCM", "Notification envoyée à " + userIdToFollow);
+                        MyFirebaseMessagingService.saveNotificationToFirestore(userIdToFollow, title, message);
+                    }
+                }
+            }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du token de l'utilisateur suivi", e));
+        }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du pseudo de l'utilisateur connecté", e));
     }
 
     private void unfollowUser(String userIdToFollow) {
         String currentUserId = userUtils.getCurrentUserId();
-        db.collection("followers").document(currentUserId).collection("following").document(userIdToFollow)
-                .delete().addOnSuccessListener(aVoid -> {
-                    followButton.setText("Suivre");
-                });
+        db.collection("followers").document(currentUserId).collection("following").document(userIdToFollow).delete().addOnSuccessListener(aVoid -> {
+            db.collection("followers").document(userIdToFollow).collection("followers").document(currentUserId).delete().addOnSuccessListener(aVoid2 -> {
+                Log.d("UnfollowUser", "Utilisateur désabonné avec succès.");
+                followButton.setText("Suivre");
+                followButton.setEnabled(true);
+                Toast.makeText(requireContext(), "Vous ne suivez plus cet utilisateur.", Toast.LENGTH_SHORT).show();
+                // Mettre à jour les compteurs
+                loadUserStats(userIdToFollow);
+            }).addOnFailureListener(e -> Log.e("UnfollowUser", "Erreur lors de la suppression dans 'followers'", e));
+        }).addOnFailureListener(e -> Log.e("UnfollowUser", "Erreur lors de la suppression dans 'following'", e));
     }
 
     private void openFollowerList(String userId) {
