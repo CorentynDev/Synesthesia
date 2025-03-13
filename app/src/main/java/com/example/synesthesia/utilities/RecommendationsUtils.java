@@ -36,6 +36,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -57,13 +58,14 @@ public class RecommendationsUtils {
     }
 
     /**
-     * Get recommendations data from Firestore and display it as a list.
+     * Get recommendations data from Firestore and pass it to the callback.
      *
      * @param context                Context in which method is called (an activity).
-     * @param recommendationList     LinearLayout in which recommendations cards will be added.
+     * @param callback               Callback to handle the list of recommendations.
      * @param swipeRefreshLayout     SwipeRefreshLayout used to allow user to refresh the list.
+     * @param filterFollowed         Boolean to filter recommendations by followed users.
      */
-    public void getRecommendationData(Context context, LinearLayout recommendationList,
+    public void getRecommendationData(Context context, Consumer<List<Recommendation>> callback,
                                       @NonNull SwipeRefreshLayout swipeRefreshLayout,
                                       boolean filterFollowed) {
         Log.d("RecommendationsUtils", "Starting to fetch recommendations");
@@ -98,7 +100,12 @@ public class RecommendationsUtils {
                                     .orderBy("timestamp", Query.Direction.DESCENDING)
                                     .get()
                                     .addOnSuccessListener(queryDocumentSnapshots -> {
-                                        populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                                        List<Recommendation> recommendations = new ArrayList<>();
+                                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                                            recommendations.add(document.toObject(Recommendation.class));
+                                        }
+                                        callback.accept(recommendations);
+                                        swipeRefreshLayout.setRefreshing(false);
                                     })
                                     .addOnFailureListener(e -> {
                                         Log.e("FirestoreData", "Error when fetching recommendations: ", e);
@@ -119,7 +126,12 @@ public class RecommendationsUtils {
                     .orderBy("timestamp", Query.Direction.DESCENDING)
                     .get()
                     .addOnSuccessListener(queryDocumentSnapshots -> {
-                        populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                        List<Recommendation> recommendations = new ArrayList<>();
+                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                            recommendations.add(document.toObject(Recommendation.class));
+                        }
+                        callback.accept(recommendations);
+                        swipeRefreshLayout.setRefreshing(false);
                     })
                     .addOnFailureListener(e -> {
                         Log.e("FirestoreData", "Error when fetching recommendations: ", e);
