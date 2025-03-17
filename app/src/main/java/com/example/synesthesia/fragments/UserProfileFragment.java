@@ -26,6 +26,7 @@ import com.example.synesthesia.R;
 import com.example.synesthesia.authentication.LoginActivity;
 import com.example.synesthesia.firebase.MyFirebaseMessagingService;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.NotificationUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
@@ -89,6 +90,8 @@ public class UserProfileFragment extends Fragment {
         userProfileImageView = view.findViewById(R.id.userProfileImageView);
         LinearLayout linearLayoutUserRecommendations = view.findViewById(R.id.linearLayoutUserRecommendations);
         followButton = view.findViewById(R.id.followButton);
+
+        FooterUtils.setupFooter(requireActivity(), R.id.profileButton);
 
         userUtils = new UserUtils();
         recommendationsUtils = new RecommendationsUtils(db);

@@ -1,6 +1,7 @@
 package com.example.synesthesia.utilities;
 
 import android.app.AlertDialog;
+import android.util.Log;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -47,68 +48,44 @@ public class FooterUtils {
         }
 
         homeButton.setOnClickListener(view -> {
-            HomeFragment homeFragment = new HomeFragment();
-            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentContainer, homeFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            Log.d("FooterUtils", "Home button clicked");
+            replaceFragment(activity, new HomeFragment());
         });
 
         research.setOnClickListener(view -> {
-            SearchUserFragment searchUserFragment = new SearchUserFragment();
-            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentContainer, searchUserFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            Log.d("FooterUtils", "Research button clicked");
+            replaceFragment(activity, new SearchUserFragment());
         });
 
         bookmarkButton.setOnClickListener(view -> {
-            BookmarkFragment bookmarkFragment = new BookmarkFragment();
-            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentContainer, bookmarkFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            Log.d("FooterUtils", "Bookmark button clicked");
+            replaceFragment(activity, new BookmarkFragment());
         });
 
         profileButton.setOnClickListener(view -> {
-            UserProfileFragment userProfileFragment = new UserProfileFragment();
-            FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.fragmentContainer, userProfileFragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+            Log.d("FooterUtils", "Profile button clicked");
+            replaceFragment(activity, new UserProfileFragment());
         });
 
         createRecommendationButton.setOnClickListener(view -> {
+            Log.d("FooterUtils", "Create recommendation button clicked");
             AlertDialog.Builder builder = new AlertDialog.Builder(activity);
             builder.setTitle("Choisissez un type de recommandation");
 
             String[] types = {"Musique", "Livre", "Film", "Jeu Vidéo"};
             builder.setItems(types, (dialog, which) -> {
-                FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction();
                 switch (which) {
                     case 0:
-                        SearchMusicFragment searchMusicFragment = new SearchMusicFragment();
-                        transaction.replace(R.id.fragmentContainer, searchMusicFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
+                        replaceFragment(activity, new SearchMusicFragment());
                         break;
                     case 1:
-                        SearchBookFragment searchBookFragment = new SearchBookFragment();
-                        transaction.replace(R.id.fragmentContainer, searchBookFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
+                        replaceFragment(activity, new SearchBookFragment());
                         break;
                     case 2:
-                        SearchMovieFragment searchMovieFragment = new SearchMovieFragment();
-                        transaction.replace(R.id.fragmentContainer, searchMovieFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
+                        replaceFragment(activity, new SearchMovieFragment());
                         break;
                     case 3:
-                        SearchGameFragment searchGameFragment = new SearchGameFragment();
-                        transaction.replace(R.id.fragmentContainer, searchGameFragment);
-                        transaction.addToBackStack(null);
-                        transaction.commit();
+                        replaceFragment(activity, new SearchGameFragment());
                         break;
                 }
             });
@@ -116,13 +93,13 @@ public class FooterUtils {
         });
     }
 
-
     private static void replaceFragment(@NonNull FragmentActivity activity, Fragment fragment) {
+        Log.d("FooterUtils", "Replacing fragment with: " + fragment.getClass().getSimpleName());
         FragmentManager fragmentManager = activity.getSupportFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-
         transaction.replace(R.id.fragmentContainer, fragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 }
+
