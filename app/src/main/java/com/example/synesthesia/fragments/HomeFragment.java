@@ -17,6 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.R;
 import com.example.synesthesia.authentication.LoginActivity;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -38,6 +39,8 @@ public class HomeFragment extends Fragment {
         Button filterMenuButton = view.findViewById(R.id.filterMenuButton);
         LinearLayout recommendationList = view.findViewById(R.id.recommendationList);
         SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
+
+        FooterUtils.setupFooter(requireActivity(), R.id.homeButton);
 
         recommendationsUtils = new RecommendationsUtils(FirebaseFirestore.getInstance());
 
