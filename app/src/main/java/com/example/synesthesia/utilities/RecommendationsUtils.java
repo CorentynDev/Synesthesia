@@ -21,6 +21,7 @@ import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
+import com.example.synesthesia.firebase.MyFirebaseMessagingService;
 import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.models.TmdbMovie;
 import com.example.synesthesia.models.Track;
@@ -83,60 +84,36 @@ public class RecommendationsUtils {
 
         if (filterFollowed) {
             // Charger uniquement les recommandations des utilisateurs suivis
-            db.collection("followers")
-                    .document(userId)
-                    .collection("following")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
+            db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
                         List<String> followedUsers = new ArrayList<>();
                         for (QueryDocumentSnapshot document : querySnapshot) {
                             followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
                         }
 
-                        if (!followedUsers.isEmpty()) {
-                            // Maintenant récupérer les recommandations des utilisateurs suivis
-                            db.collection("recommendations")
-                                    .whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
-                                    .orderBy("timestamp", Query.Direction.DESCENDING)
-                                    .get()
-                                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                                        List<Recommendation> recommendations = new ArrayList<>();
-                                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                                            recommendations.add(document.toObject(Recommendation.class));
-                                        }
-                                        callback.accept(recommendations);
-                                        swipeRefreshLayout.setRefreshing(false);
-                                    })
-                                    .addOnFailureListener(e -> {
-                                        Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                                        swipeRefreshLayout.setRefreshing(false);
-                                    });
-                        } else {
-                            Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
-                            swipeRefreshLayout.setRefreshing(false);
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("RecommendationsUtils", "Error fetching following users.", e);
-                        swipeRefreshLayout.setRefreshing(false);
-                    });
+                if (!followedUsers.isEmpty()) {
+                    // Maintenant récupérer les recommandations des utilisateurs suivis
+                    db.collection("recommendations").whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
+                            .orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                            }).addOnFailureListener(e -> {
+                                Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                                swipeRefreshLayout.setRefreshing(false);
+                            });
+                } else {
+                    Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+            }).addOnFailureListener(e -> {
+                Log.e("RecommendationsUtils", "Error fetching following users.", e);
+                swipeRefreshLayout.setRefreshing(false);
+            });
         } else {
-            // Charger toutes les recommandations sans filtre
-            db.collection("recommendations")
-                    .orderBy("timestamp", Query.Direction.DESCENDING)
-                    .get()
-                    .addOnSuccessListener(queryDocumentSnapshots -> {
-                        List<Recommendation> recommendations = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                            recommendations.add(document.toObject(Recommendation.class));
-                        }
-                        callback.accept(recommendations);
-                        swipeRefreshLayout.setRefreshing(false);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                        swipeRefreshLayout.setRefreshing(false);
-                    });
+            db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+            }).addOnFailureListener(e -> {
+                Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                swipeRefreshLayout.setRefreshing(false);
+            });
         }
     }
 
@@ -356,32 +333,69 @@ public class RecommendationsUtils {
 
             // Récupérer les bookmarks de l'utilisateur et initialiser l'état du bouton
             FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("users").document(userId).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
-                            boolean isBookmarked = bookmarkedRecommendations != null && bookmarkedRecommendations.contains(recommendationId);
+            db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
+                    boolean isBookmarked = bookmarkedRecommendations != null && bookmarkedRecommendations.contains(recommendationId);
 
-                            markButton.setImageResource(isBookmarked ? R.drawable.bookmark_active : R.drawable.bookmark);
+                    markButton.setImageResource(isBookmarked ? R.drawable.bookmark_active : R.drawable.bookmark);
 
-                            final boolean[] isCurrentlyMarked = {isBookmarked};
-                            markButton.setOnClickListener(v -> {
-                                boolean newMarkStatus = !isCurrentlyMarked[0];
-                                bookmarkUtils.updateMarkUI(markButton, newMarkStatus);
-                                bookmarkUtils.updateMarkList(userId, recommendation, newMarkStatus);
-                                bookmarkUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
-                            });
-                        }
-                    })
-                    .addOnFailureListener(e -> Log.e("setupLikeAndMarkButtons", "Error fetching user bookmarks", e));
+                    final boolean[] isCurrentlyMarked = {isBookmarked};
+                    markButton.setOnClickListener(v -> {
+                        boolean newMarkStatus = !isCurrentlyMarked[0];
+                        bookmarkUtils.updateMarkUI(markButton, newMarkStatus);
+                        bookmarkUtils.updateMarkList(userId, recommendation, newMarkStatus);
+                        bookmarkUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
+                    });
+                }
+            }).addOnFailureListener(e -> Log.e("setupLikeAndMarkButtons", "Error fetching user bookmarks", e));
 
             likeButton.setOnClickListener(v -> {
                 boolean newLikeStatus = !isCurrentlyLiked[0];
                 likeUtils.updateLikeUI(likeButton, likeCounter, newLikeStatus, likedBy.size());
                 likeUtils.updateLikeList(userId, recommendation, newLikeStatus);
                 likeUtils.toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
+
+                if (newLikeStatus) {
+                    // ID de l'utilisateur qui a publié la recommandation (le destinataire de la notification)
+                    String userIdToFollow = recommendation.getUserId(); // Assure-toi que `getUserId()` existe et retourne l'ID du créateur de la recommandation.
+
+                    // Envoi de la notification
+                    sendLikeNotification(cardView.getContext(), userIdToFollow);
+                }
             });
         }
+    }
+
+    private void sendLikeNotification(Context context, String userIdToFollow) {
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // ID de l'utilisateur connecté
+
+        // Vérifier que l'utilisateur ne s'envoie pas une notification à lui-même
+        if (currentUserId.equals(userIdToFollow)) {
+            Log.d("FCM", "Aucune notification envoyée : l'utilisateur a liké sa propre recommandation.");
+            return;
+        }
+
+        // Récupérer le pseudo de l'utilisateur connecté
+        UserUtils.getPseudo().addOnSuccessListener(username -> {
+            // Récupérer les informations de l'utilisateur suivi
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            db.collection("users").document(userIdToFollow).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    String fcmTokenToFollow = documentSnapshot.getString("fcmToken"); // Token FCM de l'utilisateur à suivre
+
+                    if (fcmTokenToFollow != null) {
+                        String title = "Nouveau Like!";
+                        String message = username + " a liké une de vos recommandations"; // Affiche le pseudo
+
+                        // Envoyer la notification en passant le contexte
+                        NotificationUtils.sendNotification(context, fcmTokenToFollow, title, message);
+                        Log.d("FCM", "Notification envoyée à " + userIdToFollow);
+                        MyFirebaseMessagingService.saveNotificationToFirestore(userIdToFollow, title, message);
+                    }
+                }
+            }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du token de l'utilisateur suivi", e));
+        }).addOnFailureListener(e -> Log.e("FCM", "Erreur lors de la récupération du pseudo de l'utilisateur connecté", e));
     }
 
     /**

@@ -1,8 +1,21 @@
 package com.example.synesthesia;
 
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.Toast;
 
+import android.Manifest;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -28,13 +41,33 @@ import com.example.synesthesia.models.GiantBombGame;
 import com.example.synesthesia.models.TmdbMovie;
 import com.example.synesthesia.models.Track;
 import com.example.synesthesia.utilities.FooterUtils;
+import com.example.synesthesia.utilities.UserUtils;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MainActivity extends AppCompatActivity {
 
+    private final ActivityResultLauncher<String> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+        @Override
+        public void onActivityResult(Boolean o) {
+            if (o){
+                Toast.makeText(MainActivity.this, "Post  notification permission granted!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FirebaseApp.initializeApp(this);
+
+        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED){
+            activityResultLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+        }
 
         if (savedInstanceState == null) {
             FragmentManager fragmentManager = getSupportFragmentManager();
@@ -43,6 +76,35 @@ public class MainActivity extends AppCompatActivity {
             fragmentTransaction.commit();
         }
         FooterUtils.setupFooter(this, R.id.homeButton);
+
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                String token = task.getResult();
+                String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                new UserUtils().saveUserToken(currentUserId, token);
+            }
+        });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.user_info_menu, menu);
+        MenuItem parametreItem = menu.findItem(R.id.paramètre); // Remplacez `R.id.parametre` par l'ID réel de l'élément
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.notif) {
+            Intent intent = new Intent(this, NotifActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void showUserListFragment(String userId, String type) {

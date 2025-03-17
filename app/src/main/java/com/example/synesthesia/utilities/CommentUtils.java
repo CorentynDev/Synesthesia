@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.R;
+import com.example.synesthesia.firebase.MyFirebaseMessagingService;
 import com.example.synesthesia.models.Comment;
 import com.example.synesthesia.adapters.CommentsAdapter;
 import com.google.firebase.Timestamp;
@@ -45,13 +46,10 @@ public class CommentUtils {
      * @param commentCounter    TextView to display the number of comments.
      */
     public void loadCommentCount(String recommendationId, TextView commentCounter) {
-        db.collection("recommendations").document(recommendationId)
-                .collection("comments").get()
-                .addOnSuccessListener(querySnapshot -> {
-                    int commentCount = querySnapshot.size();
-                    commentCounter.setText(String.valueOf(commentCount));
-                })
-                .addOnFailureListener(e -> commentCounter.setText("0"));
+        db.collection("recommendations").document(recommendationId).collection("comments").get().addOnSuccessListener(querySnapshot -> {
+            int commentCount = querySnapshot.size();
+            commentCounter.setText(String.valueOf(commentCount));
+        }).addOnFailureListener(e -> commentCounter.setText("0"));
     }
 
     /**
@@ -103,18 +101,13 @@ public class CommentUtils {
      */
     @SuppressLint("NotifyDataSetChanged")
     public void loadComments(String recommendationId, List<Comment> commentList, CommentsAdapter adapter) {
-        db.collection("recommendations").document(recommendationId)
-                .collection("comments")
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        Comment comment = document.toObject(Comment.class);
-                        commentList.add(comment);
-                    }
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> Log.e("Firestore", "Error loading comments", e));
+        db.collection("recommendations").document(recommendationId).collection("comments").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                Comment comment = document.toObject(Comment.class);
+                commentList.add(comment);
+            }
+            adapter.notifyDataSetChanged();
+        }).addOnFailureListener(e -> Log.e("Firestore", "Error loading comments", e));
     }
 
     /**
@@ -137,20 +130,49 @@ public class CommentUtils {
             comment.put("commentText", commentText);
             comment.put("timestamp", FieldValue.serverTimestamp());
 
-            db.collection("recommendations").document(recommendationId)
-                    .collection("comments").add(comment)
-                    .addOnSuccessListener(documentReference -> {
-                        Comment newComment = new Comment(userId, commentText, Timestamp.now());
+            db.collection("recommendations").document(recommendationId).collection("comments").add(comment).addOnSuccessListener(documentReference -> {
+                Comment newComment = new Comment(userId, commentText, Timestamp.now());
 
-                        commentList.add(0, newComment);
-                        adapter.notifyItemInserted(0);
+                commentList.add(0, newComment);
+                adapter.notifyItemInserted(0);
 
-                        int currentCount = Integer.parseInt(commentCounter.getText().toString());
-                        commentCounter.setText(String.valueOf(currentCount + 1));
+                int currentCount = Integer.parseInt(commentCounter.getText().toString());
+                commentCounter.setText(String.valueOf(currentCount + 1));
 
-                        commentsRecyclerView.scrollToPosition(0);
-                    })
-                    .addOnFailureListener(e -> Log.e("Firestore", "Error adding comment", e));
+                commentsRecyclerView.scrollToPosition(0);
+
+                sendCommentNotification(recommendationId, userId, commentText, commentsRecyclerView.getContext());
+            }).addOnFailureListener(e -> Log.e("Firestore", "Erreur lors de l'ajout du commentaire", e));
         }
+    }
+
+    private void sendCommentNotification(String recommendationId, String userId, String commentText, Context context) {
+        db.collection("recommendations").document(recommendationId).get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                String authorId = documentSnapshot.getString("userId");
+
+                if (authorId != null && !authorId.equals(userId)) { // Éviter d'envoyer une notif à soi-même
+                    UserUtils.getPseudo().addOnSuccessListener(username -> {
+                        db.collection("users").document(authorId).get().addOnSuccessListener(userSnapshot -> {
+                            if (userSnapshot.exists()) {
+                                String token = userSnapshot.getString("fcmToken");
+
+                                if (token != null) {
+                                    // Construire et envoyer la notification
+                                    String title = "Nouveau commentaire !";
+                                    String message = username + " a commenté votre recommandation: " + commentText;
+                                    NotificationUtils.sendNotification(context, token, title, message);
+
+                                    // Sauvegarder la notification dans Firestore
+                                    Log.d("Notification", "Appel de saveNotificationToFirestore pour " + authorId);
+                                    MyFirebaseMessagingService.saveNotificationToFirestore(authorId, title, message);
+
+                                }
+                            }
+                        });
+                    });
+                }
+            }
+        }).addOnFailureListener(e -> Log.e("Firestore", "Erreur lors de la récupération des informations de l'auteur", e));
     }
 }

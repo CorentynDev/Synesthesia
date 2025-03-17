@@ -5,4 +5,5 @@
     <color name="gray_medium">#2C2C2C</color>
     <color name="white">#FFFFFF</color>
     <color name="red">#FF1100</color>
+    <color name="notification_accent_color">#2196F3</color>
 </resources>
