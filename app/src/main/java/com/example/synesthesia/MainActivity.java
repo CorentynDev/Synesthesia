@@ -27,6 +27,7 @@ import com.example.synesthesia.fragments.GameDetailsFragment;
 import com.example.synesthesia.fragments.HomeFragment;
 import com.example.synesthesia.fragments.MovieDetailsFragment;
 import com.example.synesthesia.fragments.MusicDetailsFragment;
+import com.example.synesthesia.fragments.NotifFragment;
 import com.example.synesthesia.fragments.SearchBookFragment;
 import com.example.synesthesia.fragments.SearchGameFragment;
 import com.example.synesthesia.fragments.SearchMovieFragment;
@@ -99,10 +100,16 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.notif) {
-            Intent intent = new Intent(this, NotifActivity.class);
-            startActivity(intent);
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction transaction = fragmentManager.beginTransaction();
+            NotifFragment notifFragment = new NotifFragment();
+            transaction.replace(R.id.fragmentContainer, notifFragment);
+            transaction.addToBackStack(null);
+            transaction.commit();
+
             return true;
         }
+
 
         return super.onOptionsItemSelected(item);
     }
