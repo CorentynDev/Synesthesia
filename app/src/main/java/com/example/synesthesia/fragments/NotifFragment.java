@@ -1,66 +1,74 @@
 package com.example.synesthesia.fragments;
 
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.synesthesia.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link NotifFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.synesthesia.adapters.NotificationAdapter;
+import com.example.synesthesia.models.Notification;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class NotifFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public NotifFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment NotifFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static NotifFragment newInstance(String param1, String param2) {
-        NotifFragment fragment = new NotifFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private RecyclerView notifRecyclerView;
+    private NotificationAdapter adapter;
+    private List<Notification> notificationList;
+    private TextView titleTextView;
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_notif, container, false);
+
+        notifRecyclerView = view.findViewById(R.id.notifRecyclerView);
+        notifRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        titleTextView = view.findViewById(R.id.titleTextView);
+        titleTextView.setText("Notifications");
+
+        notificationList = new ArrayList<>();
+        adapter = new NotificationAdapter(notificationList);
+        notifRecyclerView.setAdapter(adapter);
+
+        loadNotifications();
+
+        return view;
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_notif, container, false);
+    private void loadNotifications() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users").document(userId).collection("notifications")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(15) // Limiter à 30 notifications
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                    @Override
+                    public void onEvent(@NonNull QuerySnapshot snapshots, FirebaseFirestoreException e) {
+                        if (e != null) {
+                            Log.e("NotifFragment", "Erreur de récupération", e);
+                            return;
+                        }
+
+                        notificationList.clear();
+                        for (DocumentSnapshot doc : snapshots) {
+                            Notification notification = doc.toObject(Notification.class);
+                            notificationList.add(notification);
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
+                });
     }
 }
