@@ -7,33 +7,24 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.R;
-import com.example.synesthesia.adapters.RecommendationAdapter;
 import com.example.synesthesia.authentication.LoginActivity;
-import com.example.synesthesia.models.Recommendation;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class HomeFragment extends Fragment {
 
     private boolean isFollowingFilterActive = false;
     private RecommendationsUtils recommendationsUtils;
-    private RecommendationAdapter recommendationAdapter;
-    private List<Recommendation> recommendationList;
-    private SwipeRefreshLayout swipeRefreshLayout; // Déclarez ici
 
     public HomeFragment() {
         // Required empty public constructor
@@ -45,16 +36,10 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         Button filterMenuButton = view.findViewById(R.id.filterMenuButton);
-        RecyclerView recommendationRecyclerView = view.findViewById(R.id.recommendationList);
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout); // Initialisez ici
+        LinearLayout recommendationList = view.findViewById(R.id.recommendationList);
+        SwipeRefreshLayout swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout);
 
         recommendationsUtils = new RecommendationsUtils(FirebaseFirestore.getInstance());
-        recommendationList = new ArrayList<>();
-
-        // Set up RecyclerView
-        recommendationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recommendationAdapter = new RecommendationAdapter(recommendationList);
-        recommendationRecyclerView.setAdapter(recommendationAdapter);
 
         filterMenuButton.setOnClickListener(v -> {
             PopupMenu popupMenu = new PopupMenu(requireContext(), filterMenuButton);
@@ -64,12 +49,12 @@ public class HomeFragment extends Fragment {
             popupMenu.setOnMenuItemClickListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.all_recommendations) {
-                    updateRecommendations(false);
+                    recommendationsUtils.getRecommendationData(requireActivity(), recommendationList, swipeRefreshLayout, false);
                     filterMenuButton.setText(R.string.all_recommendations);
                     isFollowingFilterActive = false;
                     return true;
                 } else if (id == R.id.followed_recommendations) {
-                    updateRecommendations(true);
+                    recommendationsUtils.getRecommendationData(requireActivity(), recommendationList, swipeRefreshLayout, true);
                     filterMenuButton.setText(R.string.followed_recommendations);
                     isFollowingFilterActive = true;
                     return true;
@@ -81,7 +66,8 @@ public class HomeFragment extends Fragment {
         });
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
-            updateRecommendations(isFollowingFilterActive);
+            recommendationsUtils.getRecommendationData(requireActivity(), recommendationList, swipeRefreshLayout, isFollowingFilterActive);
+
             if (isFollowingFilterActive) {
                 filterMenuButton.setText(R.string.followed_recommendations);
             } else {
@@ -89,17 +75,9 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        updateRecommendations(false);
+        recommendationsUtils.getRecommendationData(requireActivity(), recommendationList, swipeRefreshLayout, false);
 
         return view;
-    }
-
-    private void updateRecommendations(boolean isFollowing) {
-        recommendationsUtils.getRecommendationData(requireActivity(), recommendations -> {
-            recommendationList.clear();
-            recommendationList.addAll(recommendations);
-            recommendationAdapter.notifyDataSetChanged();
-        }, swipeRefreshLayout, isFollowing);
     }
 
     @Override

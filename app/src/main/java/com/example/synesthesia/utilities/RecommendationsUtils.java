@@ -37,7 +37,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -59,16 +58,13 @@ public class RecommendationsUtils {
     }
 
     /**
-     * Get recommendations data from Firestore and pass it to the callback.
+     * Get recommendations data from Firestore and display it as a list.
      *
      * @param context                Context in which method is called (an activity).
-     * @param callback               Callback to handle the list of recommendations.
+     * @param recommendationList     LinearLayout in which recommendations cards will be added.
      * @param swipeRefreshLayout     SwipeRefreshLayout used to allow user to refresh the list.
-     * @param filterFollowed         Boolean to filter recommendations by followed users.
      */
-    public void getRecommendationData(Context context, Consumer<List<Recommendation>> callback,
-                                      @NonNull SwipeRefreshLayout swipeRefreshLayout,
-                                      boolean filterFollowed) {
+    public void getRecommendationData(Context context, LinearLayout recommendationList, @NonNull SwipeRefreshLayout swipeRefreshLayout, boolean filterFollowed) {
         Log.d("RecommendationsUtils", "Starting to fetch recommendations");
 
         swipeRefreshLayout.setRefreshing(true);
@@ -85,10 +81,10 @@ public class RecommendationsUtils {
         if (filterFollowed) {
             // Charger uniquement les recommandations des utilisateurs suivis
             db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
-                        List<String> followedUsers = new ArrayList<>();
-                        for (QueryDocumentSnapshot document : querySnapshot) {
-                            followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
-                        }
+                List<String> followedUsers = new ArrayList<>();
+                for (QueryDocumentSnapshot document : querySnapshot) {
+                    followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
+                }
 
                 if (!followedUsers.isEmpty()) {
                     // Maintenant récupérer les recommandations des utilisateurs suivis
