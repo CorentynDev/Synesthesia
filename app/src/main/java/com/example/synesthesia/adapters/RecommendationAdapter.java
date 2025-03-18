@@ -1,8 +1,7 @@
 package com.example.synesthesia.adapters;
 
-import static android.content.ContentValues.TAG;
-
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +14,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.synesthesia.R;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.CommentUtils;
+import com.example.synesthesia.utilities.LikeUtils;
+import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.TimeUtils;
+import com.example.synesthesia.utilities.UserUtils;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
 
@@ -28,11 +33,19 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     private List<Recommendation> recommendations;
     private final FirebaseFirestore db;
     private final HashMap<String, User> userCache;
+    private final LikeUtils likeUtils;
+    private final CommentUtils commentUtils;
+    private final Context context;
+    private final HashMap<String, String> recommendationIdMap; // Map to store recommendation IDs
 
-    public RecommendationAdapter(List<Recommendation> recommendations) {
+    public RecommendationAdapter(List<Recommendation> recommendations, Context context) {
         this.recommendations = recommendations;
         this.db = FirebaseFirestore.getInstance();
         this.userCache = new HashMap<>();
+        this.likeUtils = new LikeUtils(db);
+        this.commentUtils = new CommentUtils(db);
+        this.context = context;
+        this.recommendationIdMap = new HashMap<>();
     }
 
     @NonNull
@@ -46,11 +59,10 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Recommendation recommendation = recommendations.get(position);
+        String recommendationId = recommendationIdMap.get(recommendation.getTitle()); // Get the ID from the map
 
-        // Titre de la recommandation
         holder.titleTextView.setText(recommendation.getTitle());
 
-        // Charger l'image de couverture avec Picasso
         if (recommendation.getCoverUrl() != null && !recommendation.getCoverUrl().isEmpty()) {
             Picasso.get().load(recommendation.getCoverUrl())
                     .placeholder(R.drawable.rotating_loader)
@@ -59,7 +71,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.coverImageView.setImageResource(R.drawable.placeholder_image);
         }
 
-        // Note utilisateur
         String userNote = recommendation.getUserNote();
         if (userNote != null && !userNote.isEmpty()) {
             holder.userRating.setText(userNote);
@@ -67,7 +78,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             holder.userRating.setText("Pas de note");
         }
 
-        // Récupération des informations utilisateur
         String userId = recommendation.getUserId();
         if (userId != null && !userId.isEmpty()) {
             loadUserData(userId, holder);
@@ -75,22 +85,73 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             displayDefaultUser(holder);
         }
 
-        // Afficher le nombre de likes
-        List<String> likedBy = recommendation.getLikedBy() != null ? recommendation.getLikedBy() : new ArrayList<>();
+        List<String> likedBy = recommendation.getLikedBy();
+        if (likedBy == null) {
+            likedBy = new ArrayList<>();
+        }
         holder.likesCountTextView.setText(String.valueOf(likedBy.size()));
 
-        // Afficher la date
         if (recommendation.getTimestamp() != null) {
             String timeAgo = TimeUtils.getTimeAgo(recommendation.getTimestamp());
             holder.dateTextView.setText(timeAgo);
         } else {
             holder.dateTextView.setText("Date inconnue");
         }
+
+        setupLikeButton(holder, recommendation, recommendationId);
+        setupCommentButton(holder, recommendationId);
+        setupBookmarkButton(holder, recommendation, recommendationId);
     }
 
-    /**
-     * Méthode pour charger les données utilisateur depuis Firestore ou le cache.
-     */
+    private void setupLikeButton(ViewHolder holder, Recommendation recommendation, String recommendationId) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            final boolean[] isCurrentlyLiked = {likeUtils.isLiked(userId, recommendation)};
+            holder.likeButton.setImageResource(isCurrentlyLiked[0] ? R.drawable.given_like : R.drawable.like);
+
+            holder.likeButton.setOnClickListener(v -> {
+                boolean newLikeStatus = !isCurrentlyLiked[0];
+                likeUtils.updateLikeUI(holder.likeButton, holder.likesCountTextView, newLikeStatus, recommendation.getLikedBy().size());
+                likeUtils.updateLikeList(userId, recommendation, newLikeStatus);
+                likeUtils.toggleLike(recommendationId, userId, newLikeStatus, () -> isCurrentlyLiked[0] = newLikeStatus);
+
+                if (newLikeStatus) {
+                    RecommendationsUtils.sendLikeNotification(context, recommendation.getUserId());
+                }
+            });
+        }
+    }
+
+    private void setupCommentButton(ViewHolder holder, String recommendationId) {
+        commentUtils.loadCommentCount(recommendationId, holder.commentCounter);
+
+        holder.commentButton.setOnClickListener(v -> commentUtils.showCommentModal(context, recommendationId, holder.commentCounter));
+    }
+
+    private void setupBookmarkButton(ViewHolder holder, Recommendation recommendation, String recommendationId) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser != null) {
+            String userId = currentUser.getUid();
+            db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
+                if (documentSnapshot.exists()) {
+                    List<String> bookmarkedRecommendations = (List<String>) documentSnapshot.get("bookmarkedRecommendations");
+                    boolean isBookmarked = bookmarkedRecommendations != null && bookmarkedRecommendations.contains(recommendationId);
+
+                    holder.markButton.setImageResource(isBookmarked ? R.drawable.bookmark_active : R.drawable.bookmark);
+
+                    final boolean[] isCurrentlyMarked = {isBookmarked};
+                    holder.markButton.setOnClickListener(v -> {
+                        boolean newMarkStatus = !isCurrentlyMarked[0];
+                        RecommendationsUtils.updateMarkUI(holder.markButton, newMarkStatus);
+                        RecommendationsUtils.updateMarkList(userId, recommendationId, newMarkStatus);
+                        RecommendationsUtils.toggleMark(recommendationId, userId, newMarkStatus, () -> isCurrentlyMarked[0] = newMarkStatus);
+                    });
+                }
+            }).addOnFailureListener(e -> Log.e("setupBookmarkButton", "Error fetching user bookmarks", e));
+        }
+    }
+
     private void loadUserData(String userId, ViewHolder holder) {
         if (userCache.containsKey(userId)) {
             bindUserData(holder, userCache.get(userId));
@@ -102,22 +163,19 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
                             String username = documentSnapshot.getString("username");
                             User user = new User(profileImageUrl, username);
 
-                            userCache.put(userId, user); // Ajouter l'utilisateur au cache
+                            userCache.put(userId, user);
                             bindUserData(holder, user);
                         } else {
                             displayDefaultUser(holder);
                         }
                     })
                     .addOnFailureListener(e -> {
-                        Log.e(TAG, "Erreur lors du chargement de l'utilisateur: ", e);
+                        Log.e("TAG", "Erreur lors du chargement de l'utilisateur: ", e);
                         displayDefaultUser(holder);
                     });
         }
     }
 
-    /**
-     * Méthode pour lier les données utilisateur à la vue.
-     */
     private void bindUserData(ViewHolder holder, User user) {
         if (user.getProfileImageUrl() != null && !user.getProfileImageUrl().isEmpty()) {
             Picasso.get().load(user.getProfileImageUrl())
@@ -129,9 +187,6 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         holder.userNameTextView.setText(user.getUsername() != null ? user.getUsername() : "Utilisateur inconnu");
     }
 
-    /**
-     * Méthode pour afficher les valeurs par défaut lorsque les données utilisateur sont indisponibles.
-     */
     private void displayDefaultUser(ViewHolder holder) {
         holder.userNameTextView.setText("Utilisateur inconnu");
         holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
@@ -143,14 +198,13 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    public void setRecommendations(List<Recommendation> recommendations) {
+    public void setRecommendations(List<Recommendation> recommendations, HashMap<String, String> recommendationIdMap) {
         this.recommendations = recommendations;
+        this.recommendationIdMap.clear();
+        this.recommendationIdMap.putAll(recommendationIdMap);
         notifyDataSetChanged();
     }
 
-    /**
-     * ViewHolder pour le RecyclerView.
-     */
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView coverImageView;
         ImageView profileImageView;
@@ -159,6 +213,10 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         TextView likesCountTextView;
         TextView dateTextView;
         TextView userRating;
+        ImageView likeButton;
+        ImageView commentButton;
+        TextView commentCounter;
+        ImageView markButton;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -169,12 +227,13 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             likesCountTextView = itemView.findViewById(R.id.likeCounter);
             dateTextView = itemView.findViewById(R.id.recommendationDate);
             userRating = itemView.findViewById(R.id.userRating);
+            likeButton = itemView.findViewById(R.id.likeButton);
+            commentButton = itemView.findViewById(R.id.commentButton);
+            commentCounter = itemView.findViewById(R.id.commentCounter);
+            markButton = itemView.findViewById(R.id.bookmarkRecommendationButton);
         }
     }
 
-    /**
-     * Classe interne pour représenter un utilisateur.
-     */
     private static class User {
         private final String profileImageUrl;
         private final String username;

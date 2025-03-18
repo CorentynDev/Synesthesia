@@ -17,6 +17,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
+import com.example.synesthesia.adapters.RecommendationAdapter;
 import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.api.TmdbApiClient;
@@ -29,6 +30,7 @@ import com.example.synesthesia.models.Video;
 import com.example.synesthesia.models.VideoResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -36,6 +38,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import retrofit2.Call;
@@ -57,14 +60,31 @@ public class RecommendationsUtils {
         this.commentUtils = new CommentUtils(db);
     }
 
+    public static void updateMarkUI(@NonNull ImageView markButton, boolean isMarked) {
+        markButton.setImageResource(isMarked ? R.drawable.bookmark_active : R.drawable.bookmark);
+    }
+
+    public static void updateMarkList(String userId, String recommendationId, boolean isMarked) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users").document(userId).update("bookmarkedRecommendations",
+                isMarked ? FieldValue.arrayUnion(recommendationId) : FieldValue.arrayRemove(recommendationId));
+    }
+
+    public static void toggleMark(String recommendationId, String userId, boolean isMarked, Runnable onToggleComplete) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("recommendations").document(recommendationId).update("bookmarkedBy",
+                        isMarked ? FieldValue.arrayUnion(userId) : FieldValue.arrayRemove(userId))
+                .addOnSuccessListener(aVoid -> onToggleComplete.run())
+                .addOnFailureListener(e -> Log.e("toggleMark", "Error toggling bookmark", e));
+    }
+
     /**
      * Get recommendations data from Firestore and display it as a list.
      *
      * @param context                Context in which method is called (an activity).
-     * @param recommendationList     LinearLayout in which recommendations cards will be added.
      * @param swipeRefreshLayout     SwipeRefreshLayout used to allow user to refresh the list.
      */
-    public void getRecommendationData(Context context, LinearLayout recommendationList, @NonNull SwipeRefreshLayout swipeRefreshLayout, boolean filterFollowed) {
+    public void getRecommendationData(Context context, RecommendationAdapter adapter, @NonNull SwipeRefreshLayout swipeRefreshLayout, boolean filterFollowed) {
         Log.d("RecommendationsUtils", "Starting to fetch recommendations");
 
         swipeRefreshLayout.setRefreshing(true);
@@ -79,18 +99,16 @@ public class RecommendationsUtils {
         String userId = currentUser.getUid();
 
         if (filterFollowed) {
-            // Charger uniquement les recommandations des utilisateurs suivis
             db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
                 List<String> followedUsers = new ArrayList<>();
                 for (QueryDocumentSnapshot document : querySnapshot) {
-                    followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
+                    followedUsers.add(document.getId());
                 }
 
                 if (!followedUsers.isEmpty()) {
-                    // Maintenant récupérer les recommandations des utilisateurs suivis
-                    db.collection("recommendations").whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
+                    db.collection("recommendations").whereIn("userId", followedUsers)
                             .orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                                populateRecommendations(context, adapter, queryDocumentSnapshots, swipeRefreshLayout);
                             }).addOnFailureListener(e -> {
                                 Log.e("FirestoreData", "Error when fetching recommendations: ", e);
                                 swipeRefreshLayout.setRefreshing(false);
@@ -105,13 +123,29 @@ public class RecommendationsUtils {
             });
         } else {
             db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
+                populateRecommendations(context, adapter, queryDocumentSnapshots, swipeRefreshLayout);
             }).addOnFailureListener(e -> {
                 Log.e("FirestoreData", "Error when fetching recommendations: ", e);
                 swipeRefreshLayout.setRefreshing(false);
             });
         }
     }
+
+    private void populateRecommendations(Context context, RecommendationAdapter adapter, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+        Log.d("RecommendationsUtils", "Successfully fetched recommendations");
+        List<Recommendation> recommendations = new ArrayList<>();
+        HashMap<String, String> recommendationIdMap = new HashMap<>();
+
+        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+            Recommendation recommendation = document.toObject(Recommendation.class);
+            recommendations.add(recommendation);
+            recommendationIdMap.put(recommendation.getTitle(), document.getId()); // Store the ID
+        }
+
+        adapter.setRecommendations(recommendations, recommendationIdMap);
+        swipeRefreshLayout.setRefreshing(false);
+    }
+
 
     /**
      * Helper method to populate recommendations list.
@@ -363,7 +397,7 @@ public class RecommendationsUtils {
         }
     }
 
-    private void sendLikeNotification(Context context, String userIdToFollow) {
+    public static void sendLikeNotification(Context context, String userIdToFollow) {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // ID de l'utilisateur connecté
 
         // Vérifier que l'utilisateur ne s'envoie pas une notification à lui-même
