@@ -15,7 +15,9 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Transaction;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class LikeUtils {
 
@@ -46,6 +48,8 @@ public class LikeUtils {
         } else {
             likedBy.remove(userId);
         }
+        // Update like count for the recommendation type
+        updateUserPreferenceScore(userId, recommendation.getType(), addLike);
     }
 
     /**
@@ -122,6 +126,22 @@ public class LikeUtils {
         }).addOnFailureListener(e -> {
             Log.e("ToggleLike", "Transaction failure.", e);
             onComplete.run();
+        });
+    }
+
+    private void updateUserPreferenceScore(String userId, String type, boolean increment) {
+        DocumentReference userRef = db.collection("users").document(userId);
+        db.runTransaction((Transaction.Function<Void>) transaction -> {
+            DocumentSnapshot snapshot = transaction.get(userRef);
+            Map<String, Long> preferenceScores = snapshot.contains("preferenceScores") ?
+                    (Map<String, Long>) snapshot.get("preferenceScores") : new HashMap<>();
+
+            long currentScore = preferenceScores.getOrDefault(type, 0L);
+            long newScore = increment ? currentScore + 1 : Math.max(currentScore - 1, 0);
+            preferenceScores.put(type, newScore);
+
+            transaction.update(userRef, "preferenceScores", preferenceScores);
+            return null;
         });
     }
 }

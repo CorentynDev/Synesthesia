@@ -29,14 +29,19 @@ import com.example.synesthesia.models.Video;
 import com.example.synesthesia.models.VideoResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,6 +60,27 @@ public class RecommendationsUtils {
         this.likeUtils = new LikeUtils(db);
         this.bookmarkUtils = new BookmarkUtils(db);
         this.commentUtils = new CommentUtils(db);
+    }
+
+    public void getUserPreferenceScores(String userId, OnPreferenceScoresCallback callback) {
+        db.collection("users").document(userId).get().addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                Map<String, Long> preferenceScores = (Map<String, Long>) documentSnapshot.get("preferenceScores");
+                if (preferenceScores == null) {
+                    preferenceScores = new HashMap<>(); // Initialiser avec une map vide si null
+                }
+                callback.onPreferenceScoresFetched(preferenceScores);
+            } else {
+                callback.onPreferenceScoresFetched(new HashMap<>()); // Retourner une map vide si le document n'existe pas
+            }
+        }).addOnFailureListener(e -> {
+            Log.e("RecommendationsUtils", "Error fetching user preference scores", e);
+            callback.onPreferenceScoresFetched(new HashMap<>()); // Retourner une map vide en cas d'erreur
+        });
+    }
+
+    public interface OnPreferenceScoresCallback {
+        void onPreferenceScoresFetched(Map<String, Long> preferenceScores);
     }
 
     /**
@@ -78,55 +104,76 @@ public class RecommendationsUtils {
 
         String userId = currentUser.getUid();
 
-        if (filterFollowed) {
-            // Charger uniquement les recommandations des utilisateurs suivis
-            db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
-                List<String> followedUsers = new ArrayList<>();
-                for (QueryDocumentSnapshot document : querySnapshot) {
-                    followedUsers.add(document.getId()); // Chaque document dans "following" représente un utilisateur suivi
-                }
+        getUserPreferenceScores(userId, preferenceScores -> {
+            if (filterFollowed) {
+                db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
+                    List<String> followedUsers = new ArrayList<>();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        followedUsers.add(document.getId());
+                    }
 
-                if (!followedUsers.isEmpty()) {
-                    // Maintenant récupérer les recommandations des utilisateurs suivis
-                    db.collection("recommendations").whereIn("userId", followedUsers) // Filtrer les recommandations par les utilisateurs suivis
-                            .orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
-                            }).addOnFailureListener(e -> {
-                                Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                                swipeRefreshLayout.setRefreshing(false);
-                            });
-                } else {
-                    Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
+                    if (!followedUsers.isEmpty()) {
+                        db.collection("recommendations").whereIn("userId", followedUsers)
+                                .orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                                    List<DocumentSnapshot> sortedRecommendations = sortRecommendationsByPreference(queryDocumentSnapshots.getDocuments(), preferenceScores);
+                                    populateRecommendations(context, recommendationList, sortedRecommendations, swipeRefreshLayout);
+                                }).addOnFailureListener(e -> {
+                                    Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                                    swipeRefreshLayout.setRefreshing(false);
+                                });
+                    } else {
+                        Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                }).addOnFailureListener(e -> {
+                    Log.e("RecommendationsUtils", "Error fetching following users.", e);
                     swipeRefreshLayout.setRefreshing(false);
-                }
-            }).addOnFailureListener(e -> {
-                Log.e("RecommendationsUtils", "Error fetching following users.", e);
-                swipeRefreshLayout.setRefreshing(false);
-            });
-        } else {
-            db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                populateRecommendations(context, recommendationList, queryDocumentSnapshots, swipeRefreshLayout);
-            }).addOnFailureListener(e -> {
-                Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                swipeRefreshLayout.setRefreshing(false);
-            });
-        }
+                });
+            } else {
+                db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<DocumentSnapshot> sortedRecommendations = sortRecommendationsByPreference(queryDocumentSnapshots.getDocuments(), preferenceScores);
+                    populateRecommendations(context, recommendationList, sortedRecommendations, swipeRefreshLayout);
+                }).addOnFailureListener(e -> {
+                    Log.e("FirestoreData", "Error when fetching recommendations: ", e);
+                    swipeRefreshLayout.setRefreshing(false);
+                });
+            }
+        });
     }
+
+    private List<DocumentSnapshot> sortRecommendationsByPreference(List<DocumentSnapshot> documents, Map<String, Long> preferenceScores) {
+        if (preferenceScores == null) {
+            preferenceScores = new HashMap<>();
+        }
+
+        Map<String, Long> finalPreferenceScores = preferenceScores;
+        documents.sort((doc1, doc2) -> {
+            Recommendation rec1 = doc1.toObject(Recommendation.class);
+            Recommendation rec2 = doc2.toObject(Recommendation.class);
+            long score1 = finalPreferenceScores.getOrDefault(rec1.getType(), 0L);
+            long score2 = finalPreferenceScores.getOrDefault(rec2.getType(), 0L);
+            return Long.compare(score2, score1); // Ordre décroissant
+        });
+        return documents;
+    }
+
 
     /**
      * Helper method to populate recommendations list.
      */
-    private void populateRecommendations(Context context, @NonNull LinearLayout recommendationList, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+    private void populateRecommendations(Context context, @NonNull LinearLayout recommendationList, List<DocumentSnapshot> documents, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
         Log.d("RecommendationsUtils", "Successfully fetched recommendations");
         recommendationList.removeAllViews();
 
-        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+        for (DocumentSnapshot document : documents) {
             Recommendation recommendation = document.toObject(Recommendation.class);
+            assert recommendation != null;
             addRecommendationCard(context, recommendationList, recommendation, document.getId());
         }
 
         swipeRefreshLayout.setRefreshing(false);
     }
+
 
     /**
      * Add a recommendation card to a context (an activity).
