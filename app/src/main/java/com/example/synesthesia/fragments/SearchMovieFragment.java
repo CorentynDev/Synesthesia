@@ -19,7 +19,6 @@ import com.example.synesthesia.api.TmdbApiClient;
 import com.example.synesthesia.api.TmdbApiService;
 import com.example.synesthesia.models.TmdbMovie;
 import com.example.synesthesia.models.TmdbMovieResponse;
-import com.example.synesthesia.utilities.FooterUtils;
 
 import java.util.List;
 
@@ -42,8 +41,6 @@ public class SearchMovieFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        FooterUtils.setupFooter(requireActivity(), R.id.createRecommendationButton);
 
         Button searchButton = view.findViewById(R.id.searchButton);
 

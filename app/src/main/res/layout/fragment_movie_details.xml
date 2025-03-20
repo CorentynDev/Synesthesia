@@ -121,7 +121,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/white"
             android:textColorHint="@color/white"
-            android:hint="Ajoutez une note ou un commentaire" />
+            android:hint="Ajouter un commentaire..." />
 
         <LinearLayout
             android:layout_width="match_parent"
