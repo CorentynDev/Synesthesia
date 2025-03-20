@@ -100,7 +100,7 @@ public class BookmarkFragment extends Fragment {
                             recommendations.sort((r1, r2) -> r2.getTimestamp().compareTo(r1.getTimestamp()));
 
                             for (Recommendation recommendation : recommendations) {
-                                recommendationsUtils.addRecommendationCard(getContext(), linearLayoutBookmarks, recommendation, recommendationId);
+                                recommendationsUtils.addRecommendationCard(requireContext(), linearLayoutBookmarks, recommendation, recommendationId);
                             }
                         }
                     })

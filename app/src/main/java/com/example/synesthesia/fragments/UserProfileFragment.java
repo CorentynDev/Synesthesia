@@ -26,6 +26,7 @@ import com.example.synesthesia.R;
 import com.example.synesthesia.authentication.LoginActivity;
 import com.example.synesthesia.firebase.MyFirebaseMessagingService;
 import com.example.synesthesia.models.Recommendation;
+import com.example.synesthesia.utilities.FooterUtils;
 import com.example.synesthesia.utilities.NotificationUtils;
 import com.example.synesthesia.utilities.RecommendationsUtils;
 import com.example.synesthesia.utilities.UserUtils;
@@ -90,6 +91,8 @@ public class UserProfileFragment extends Fragment {
         LinearLayout linearLayoutUserRecommendations = view.findViewById(R.id.linearLayoutUserRecommendations);
         followButton = view.findViewById(R.id.followButton);
 
+        FooterUtils.setupFooter(requireActivity(), R.id.profileButton);
+
         userUtils = new UserUtils();
         recommendationsUtils = new RecommendationsUtils(db);
 
@@ -115,6 +118,8 @@ public class UserProfileFragment extends Fragment {
 
         if (!isCurrentUser) {
             followButton.setVisibility(View.VISIBLE);
+            followButton.setEnabled(false); // Désactiver le bouton temporairement pendant la vérification
+            checkIfFollowing(finalTargetUserId);
             followButton.setOnClickListener(v -> toggleFollowUser(finalTargetUserId));
         } else {
             followButton.setVisibility(View.GONE);
@@ -268,4 +273,23 @@ public class UserProfileFragment extends Fragment {
             ((MainActivity) getActivity()).showUserListFragment(userId, "following");
         }
     }
+
+    private void checkIfFollowing(String targetUserId) {
+        String currentUserId = userUtils.getCurrentUserId();
+        db.collection("followers")
+                .document(currentUserId)
+                .collection("following")
+                .document(targetUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        followButton.setText("Suivi");
+                    } else {
+                        followButton.setText("Suivre");
+                    }
+                    followButton.setEnabled(true);
+                })
+                .addOnFailureListener(e -> Log.e("CheckFollow", "Erreur lors de la vérification du suivi", e));
+    }
+
 }
