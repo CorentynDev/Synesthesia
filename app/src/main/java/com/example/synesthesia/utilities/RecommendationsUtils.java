@@ -31,15 +31,19 @@ import com.example.synesthesia.models.VideoResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.jetbrains.annotations.Contract;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -129,6 +133,16 @@ public class RecommendationsUtils {
                 swipeRefreshLayout.setRefreshing(false);
             });
         }
+
+        Map<String, Long> finalPreferenceScores = preferenceScores;
+        documents.sort((doc1, doc2) -> {
+            Recommendation rec1 = doc1.toObject(Recommendation.class);
+            Recommendation rec2 = doc2.toObject(Recommendation.class);
+            long score1 = finalPreferenceScores.getOrDefault(rec1.getType(), 0L);
+            long score2 = finalPreferenceScores.getOrDefault(rec2.getType(), 0L);
+            return Long.compare(score2, score1); // Ordre décroissant
+        });
+        return documents;
     }
 
     private void populateRecommendations(Context context, RecommendationAdapter adapter, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
@@ -155,18 +169,18 @@ public class RecommendationsUtils {
     }
 
     private void populateRecommendationsInLayout(Context context, @NonNull LinearLayout recommendationList, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+      
         Log.d("RecommendationsUtils", "Successfully fetched recommendations");
         recommendationList.removeAllViews();
 
-        for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+        for (DocumentSnapshot document : documents) {
             Recommendation recommendation = document.toObject(Recommendation.class);
+            assert recommendation != null;
             addRecommendationCard(context, recommendationList, recommendation, document.getId());
         }
 
         swipeRefreshLayout.setRefreshing(false);
     }
-
-
 
     /**
      * Add a recommendation card to a context (an activity).
