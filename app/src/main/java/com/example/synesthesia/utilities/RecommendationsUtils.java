@@ -136,21 +136,25 @@ public class RecommendationsUtils {
         List<Recommendation> recommendations = new ArrayList<>();
         HashMap<String, String> recommendationIdMap = new HashMap<>();
 
+        // Assurez-vous d'avoir un conteneur pour ajouter les cartes de recommandation
+        LinearLayout recommendationList = new LinearLayout(context);
+        recommendationList.setOrientation(LinearLayout.VERTICAL);
+
         for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
             Recommendation recommendation = document.toObject(Recommendation.class);
             recommendations.add(recommendation);
             recommendationIdMap.put(recommendation.getTitle(), document.getId()); // Store the ID
+
+            // Ajoutez la carte de recommandation au conteneur
+            addRecommendationCard(context, recommendationList, recommendation, document.getId());
         }
 
+        // Mettez à jour l'adaptateur si nécessaire
         adapter.setRecommendations(recommendations, recommendationIdMap);
         swipeRefreshLayout.setRefreshing(false);
     }
 
-
-    /**
-     * Helper method to populate recommendations list.
-     */
-    private void populateRecommendations(Context context, @NonNull LinearLayout recommendationList, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
+    private void populateRecommendationsInLayout(Context context, @NonNull LinearLayout recommendationList, @NonNull QuerySnapshot queryDocumentSnapshots, @NonNull SwipeRefreshLayout swipeRefreshLayout) {
         Log.d("RecommendationsUtils", "Successfully fetched recommendations");
         recommendationList.removeAllViews();
 
@@ -161,6 +165,8 @@ public class RecommendationsUtils {
 
         swipeRefreshLayout.setRefreshing(false);
     }
+
+
 
     /**
      * Add a recommendation card to a context (an activity).
@@ -435,7 +441,7 @@ public class RecommendationsUtils {
      * @param playButton   ImageView for play/pause button.
      * @param articleId    ID of the article to search on Deezer.
      */
-    private void fetchPreviewFromDeezer(Context context, ImageView playButton, String articleId) {
+    public static void fetchPreviewFromDeezer(Context context, ImageView playButton, String articleId) {
         if (articleId == null || articleId.isEmpty()) {
             Log.e("DeezerAPI", "Article ID is null or empty, skipping API call.");
             playButton.setVisibility(View.GONE);
@@ -485,7 +491,7 @@ public class RecommendationsUtils {
      * @param playButton   ImageView to be configured as play/pause.
      * @param previewUrl   The preview URL obtained from Deezer API.
      */
-    private void setupPlayPauseButton(Context context, ImageView playButton, String previewUrl) {
+    private static void setupPlayPauseButton(Context context, ImageView playButton, String previewUrl) {
         playButton.setOnClickListener(v -> {
             try {
                 // Si le bouton est déjà actif (musique en cours de lecture ou pause sur la même URL)

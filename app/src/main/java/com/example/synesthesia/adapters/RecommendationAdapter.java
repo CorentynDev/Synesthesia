@@ -2,12 +2,16 @@ package com.example.synesthesia.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -37,6 +41,11 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
     private final CommentUtils commentUtils;
     private final Context context;
     private final HashMap<String, String> recommendationIdMap; // Map to store recommendation IDs
+
+    // Variables globales nécessaires
+    public static MediaPlayer globalMediaPlayer; // MediaPlayer partagé
+    public static ImageView currentlyPlayingButton; // Bouton actuellement actif
+    public static String currentlyPlayingUrl; // URL en cours de lecture
 
     public RecommendationAdapter(List<Recommendation> recommendations, Context context) {
         this.recommendations = recommendations;
@@ -101,6 +110,47 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         setupLikeButton(holder, recommendation, recommendationId);
         setupCommentButton(holder, recommendationId);
         setupBookmarkButton(holder, recommendation, recommendationId);
+        setupTypeIcon(holder, recommendation);
+        setupPlayPauseButton(holder, recommendation);
+    }
+
+    private void setupTypeIcon(ViewHolder holder, Recommendation recommendation) {
+        String recommendationType = recommendation.getType();
+        if ("book".equals(recommendationType)) {
+            holder.typeIconImageView.setImageResource(R.drawable.book);
+        } else if ("music".equals(recommendationType)) {
+            holder.typeIconImageView.setImageResource(R.drawable.musical_note);
+        } else if ("artist".equals(recommendationType)) {
+            holder.typeIconImageView.setImageResource(R.drawable.artist);
+        } else if ("album".equals(recommendationType)) {
+            holder.typeIconImageView.setImageResource(R.drawable.music_album);
+        } else if ("movie".equals(recommendationType)) {
+            holder.typeIconImageView.setImageResource(R.drawable.film);
+        } else if ("game".equals(recommendationType)) {
+            holder.typeIconImageView.setImageResource(R.drawable.console);
+        } else {
+            holder.typeIconImageView.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupPlayPauseButton(ViewHolder holder, Recommendation recommendation) {
+        if ("music".equals(recommendation.getType())) {
+            holder.playPauseButton.setImageResource(R.drawable.bouton_de_lecture);
+            holder.playPauseButton.setVisibility(View.VISIBLE);
+            fetchPreviewFromDeezer(holder.playPauseButton, recommendation.getArticleId());
+        } else {
+            holder.playPauseButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void fetchPreviewFromDeezer(ImageView playButton, String articleId) {
+        if (articleId == null || articleId.isEmpty()) {
+            Log.e("DeezerAPI", "Article ID is null or empty, skipping API call.");
+            playButton.setVisibility(View.GONE);
+            return;
+        }
+
+        RecommendationsUtils.fetchPreviewFromDeezer(context, playButton, articleId);
     }
 
     private void setupLikeButton(ViewHolder holder, Recommendation recommendation, String recommendationId) {
@@ -217,6 +267,8 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
         ImageView commentButton;
         TextView commentCounter;
         ImageView markButton;
+        ImageView typeIconImageView;
+        ImageView playPauseButton;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -231,6 +283,8 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
             commentButton = itemView.findViewById(R.id.commentButton);
             commentCounter = itemView.findViewById(R.id.commentCounter);
             markButton = itemView.findViewById(R.id.bookmarkRecommendationButton);
+            typeIconImageView = itemView.findViewById(R.id.recommendationTypeIcon);
+            playPauseButton = itemView.findViewById(R.id.playPauseButton);
         }
     }
 
