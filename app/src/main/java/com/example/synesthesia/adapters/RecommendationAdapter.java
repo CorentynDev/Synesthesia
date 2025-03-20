@@ -182,14 +182,14 @@ public class RecommendationAdapter extends RecyclerView.Adapter<RecommendationAd
                     .placeholder(R.drawable.rotating_loader)
                     .into(holder.profileImageView);
         } else {
-            holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+            holder.profileImageView.setImageResource(R.drawable.placeholder_image);
         }
         holder.userNameTextView.setText(user.getUsername() != null ? user.getUsername() : "Utilisateur inconnu");
     }
 
     private void displayDefaultUser(ViewHolder holder) {
         holder.userNameTextView.setText("Utilisateur inconnu");
-        holder.profileImageView.setImageResource(R.drawable.default_profil_picture);
+        holder.profileImageView.setImageResource(R.drawable.placeholder_image);
     }
 
     @Override
