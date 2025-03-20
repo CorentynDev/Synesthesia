@@ -20,6 +20,7 @@ import com.example.synesthesia.api.GiantBombApiClient;
 import com.example.synesthesia.api.GiantBombApiService;
 import com.example.synesthesia.models.GiantBombGame;
 import com.example.synesthesia.models.GiantBombResponse;
+import com.example.synesthesia.utilities.FooterUtils;
 
 import java.util.List;
 
@@ -42,6 +43,8 @@ public class SearchGameFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        FooterUtils.setupFooter(requireActivity(), R.id.createRecommendationButton);
 
         Button searchButton = view.findViewById(R.id.searchButton);
 
