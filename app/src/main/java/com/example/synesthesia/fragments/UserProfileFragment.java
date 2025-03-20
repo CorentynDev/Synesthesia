@@ -118,6 +118,8 @@ public class UserProfileFragment extends Fragment {
 
         if (!isCurrentUser) {
             followButton.setVisibility(View.VISIBLE);
+            followButton.setEnabled(false); // Désactiver le bouton temporairement pendant la vérification
+            checkIfFollowing(finalTargetUserId);
             followButton.setOnClickListener(v -> toggleFollowUser(finalTargetUserId));
         } else {
             followButton.setVisibility(View.GONE);
@@ -271,4 +273,23 @@ public class UserProfileFragment extends Fragment {
             ((MainActivity) getActivity()).showUserListFragment(userId, "following");
         }
     }
+
+    private void checkIfFollowing(String targetUserId) {
+        String currentUserId = userUtils.getCurrentUserId();
+        db.collection("followers")
+                .document(currentUserId)
+                .collection("following")
+                .document(targetUserId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        followButton.setText("Suivi");
+                    } else {
+                        followButton.setText("Suivre");
+                    }
+                    followButton.setEnabled(true);
+                })
+                .addOnFailureListener(e -> Log.e("CheckFollow", "Erreur lors de la vérification du suivi", e));
+    }
+
 }
