@@ -17,6 +17,8 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.synesthesia.MainActivity;
 import com.example.synesthesia.R;
+import com.example.synesthesia.algorithm.Recommender;
+import com.example.synesthesia.algorithm.UserItemMatrix;
 import com.example.synesthesia.api.DeezerApiClient;
 import com.example.synesthesia.api.DeezerApi;
 import com.example.synesthesia.api.TmdbApiClient;
@@ -40,8 +42,11 @@ import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -104,43 +109,58 @@ public class RecommendationsUtils {
 
         String userId = currentUser.getUid();
 
-        getUserPreferenceScores(userId, preferenceScores -> {
-            if (filterFollowed) {
-                db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
-                    List<String> followedUsers = new ArrayList<>();
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        followedUsers.add(document.getId());
+        db.collection("followers").document(userId).collection("following").get().addOnSuccessListener(querySnapshot -> {
+            Set<String> followedUsers = new HashSet<>();
+            for (QueryDocumentSnapshot document : querySnapshot) {
+                followedUsers.add(document.getId());
+            }
+
+            getUserPreferenceScores(userId, preferenceScores -> {
+                UserItemMatrix matrix = new UserItemMatrix();
+                db.collection("recommendations").get().addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        Recommendation recommendation = document.toObject(Recommendation.class);
+                        assert recommendation != null;
+                        String recUserId = recommendation.getUserId();
+                        String recId = document.getId();
+
+                        List<String> likedBy = recommendation.getLikedBy();
+                        if (likedBy != null) {
+                            for (String likerId : likedBy) {
+                                if (followedUsers.contains(likerId)) {
+                                    matrix.addRating(likerId, recId, 1);
+                                }
+                            }
+                        }
                     }
 
-                    if (!followedUsers.isEmpty()) {
-                        db.collection("recommendations").whereIn("userId", followedUsers)
-                                .orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                                    List<DocumentSnapshot> sortedRecommendations = sortRecommendationsByPreference(queryDocumentSnapshots.getDocuments(), preferenceScores);
-                                    populateRecommendations(context, recommendationList, sortedRecommendations, swipeRefreshLayout);
-                                }).addOnFailureListener(e -> {
-                                    Log.e("FirestoreData", "Error when fetching recommendations: ", e);
-                                    swipeRefreshLayout.setRefreshing(false);
-                                });
-                    } else {
-                        Toast.makeText(context, "Vous ne suivez encore personne.", Toast.LENGTH_SHORT).show();
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-                }).addOnFailureListener(e -> {
-                    Log.e("RecommendationsUtils", "Error fetching following users.", e);
-                    swipeRefreshLayout.setRefreshing(false);
-                });
-            } else {
-                db.collection("recommendations").orderBy("timestamp", Query.Direction.DESCENDING).get().addOnSuccessListener(queryDocumentSnapshots -> {
-                    List<DocumentSnapshot> sortedRecommendations = sortRecommendationsByPreference(queryDocumentSnapshots.getDocuments(), preferenceScores);
+                    matrix.filterUsers(followedUsers);
+
+                    Recommender recommender = new Recommender();
+                    List<String> recommendedItemIds = recommender.recommendItems(matrix, userId, followedUsers, 10);
+
+                    List<DocumentSnapshot> sortedRecommendations = queryDocumentSnapshots.getDocuments().stream()
+                            .sorted((doc1, doc2) -> {
+                                int index1 = recommendedItemIds.indexOf(doc1.getId());
+                                int index2 = recommendedItemIds.indexOf(doc2.getId());
+                                return Integer.compare(index1, index2);
+                            })
+                            .collect(Collectors.toList());
+
                     populateRecommendations(context, recommendationList, sortedRecommendations, swipeRefreshLayout);
                 }).addOnFailureListener(e -> {
                     Log.e("FirestoreData", "Error when fetching recommendations: ", e);
                     swipeRefreshLayout.setRefreshing(false);
                 });
-            }
+            });
+        }).addOnFailureListener(e -> {
+            Log.e("RecommendationsUtils", "Error fetching following users.", e);
+            swipeRefreshLayout.setRefreshing(false);
         });
     }
 
+    @NonNull
+    @Contract("_, _ -> param1")
     private List<DocumentSnapshot> sortRecommendationsByPreference(List<DocumentSnapshot> documents, Map<String, Long> preferenceScores) {
         if (preferenceScores == null) {
             preferenceScores = new HashMap<>();
